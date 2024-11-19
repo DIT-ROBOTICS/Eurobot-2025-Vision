@@ -1,0 +1,97 @@
+FROM ros:humble AS base
+LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
+LABEL org.opencontainers.image.vendor="DIT-Robotics"
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+    git \
+    sudo \
+    curl \
+    wget \
+    usbutils \
+    v4l-utils \
+    net-tools \
+    iputils-ping \
+    apt-transport-https \
+    software-properties-common \
+    ros-humble-cv-bridge \
+    ros-humble-image-transport \
+    && apt clean -y && rm -rf /var/lib/apt/lists/*
+
+# RealSense Module
+FROM base AS realsense
+ARG USER
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+    ros-humble-librealsense2 \
+    ros-humble-xacro \
+    ros-humble-diagnostic-updater \
+    ros-humble-launch-pytest \
+    ros-humble-sensor-msgs-py \
+    python3-tqdm \
+    python3-requests \
+    && apt clean -y && rm -rf /var/lib/apt/lists/*
+# Intel RealSense SDK 2.0
+RUN mkdir -p /etc/apt/keyrings && \ 
+    curl -sSf https://librealsense.intel.com/Debian/librealsense.pgp | tee /etc/apt/keyrings/librealsense.pgp > /dev/null && \
+    echo "deb [signed-by=/etc/apt/keyrings/librealsense.pgp] https://librealsense.intel.com/Debian/apt-repo `lsb_release -cs` main" | \
+    tee /etc/apt/sources.list.d/librealsense.list && \
+    apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+    librealsense2-dkms \
+    librealsense2-utils \
+    && apt clean -y && rm -rf /var/lib/apt/lists/*
+# Add user and setup workspace
+RUN groupadd --gid $USER_GID $USER && \
+    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
+    usermod -aG video $USER \
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$USER && \
+    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
+    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+USER $USER
+RUN mkdir -p /home/$USER/vision-ws/src && \
+    # Install ROS2 Realsense package
+    git clone --branch ros2-master https://github.com/IntelRealSense/realsense-ros.git /home/$USER/vision-ws/src/realsense-ros && \
+    rosdep update && \
+    rosdep install -i --from-path /home/$USER/vision-ws/src --rosdistro humble -y && \
+    cd /home/$USER/vision-ws && \
+    /bin/bash -c "source /opt/ros/humble/setup.bash && \
+                colcon build --symlink-install"
+WORKDIR /home/$USER/vision-ws
+CMD [ "/bin/bash" ]
+
+# Aruco Module
+FROM base AS aruco 
+ARG USER
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN groupadd --gid $USER_GID $USER && \
+    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$USER && \
+    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
+    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+USER $USER
+RUN mkdir -p /home/$USER/vision-ws/src && \
+    # Install ROS2 Aruco package
+    git clone --branch humble-devel https://github.com/pal-robotics/aruco_ros.git /home/$USER/vision-ws/src/aruco-ros && \
+    rosdep update && \
+    rosdep install -i --from-path /home/$USER/vision-ws/src --rosdistro humble -y && \
+    cd /home/$USER/vision-ws && \
+    /bin/bash -c "source /opt/ros/humble/setup.bash && \
+                colcon build --symlink-install"
+WORKDIR /home/$USER/vision-ws
+CMD [ "/bin/bash" ]
+
+FROM base AS gui
+ARG USER
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+    ros-humble-rqt* \
+    ros-humble-rviz2 \
+    && apt clean -y && rm -rf /var/lib/apt/list/*
+RUN groupadd --gid $USER_GID $USER && \
+    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$USER && \
+    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc
+USER $USER
+CMD [ "/bin/bash" ]
