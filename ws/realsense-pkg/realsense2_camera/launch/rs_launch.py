@@ -21,13 +21,13 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 
 
-configurable_parameters = [{'name': 'camera_name',                  'default': 'camera', 'description': 'camera unique name'},
-                           {'name': 'camera_namespace',             'default': 'camera', 'description': 'namespace for camera'},
-                           {'name': 'serial_no',                    'default': "''", 'description': 'choose device by serial number'},
+configurable_parameters = [{'name': 'camera_name',                  'default': 'D435i', 'description': 'camera unique name'},
+                           {'name': 'camera_namespace',             'default': 'cam1', 'description': 'namespace for camera'},
+                           {'name': 'serial_no',                    'default': "_949122070603", 'description': 'choose device by serial number'},
                            {'name': 'usb_port_id',                  'default': "''", 'description': 'choose device by usb port id'},
                            {'name': 'device_type',                  'default': "''", 'description': 'choose device by type'},
                            {'name': 'config_file',                  'default': "''", 'description': 'yaml config file'},
-                           {'name': 'json_file_path',               'default': "''", 'description': 'allows advanced configuration'},
+                           {'name': 'json_file_path',               'default': "./src/realsense-ros/realsense2_camera/visual_presets/HighAccuracyPreset.json", 'description': 'allows advanced configuration'},
                            {'name': 'initial_reset',                'default': 'false', 'description': "''"},
                            {'name': 'accelerate_gpu_with_glsl',     'default': "false", 'description': 'enable GPU acceleration with GLSL'},
                            {'name': 'rosbag_filename',              'default': "''", 'description': 'A realsense bagfile to run from as a device'},
@@ -73,7 +73,7 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'pointcloud.stream_index_filter','default': '0', 'description': 'texture stream index for pointcloud'},
                            {'name': 'pointcloud.ordered_pc',        'default': 'false', 'description': ''},
                            {'name': 'pointcloud.allow_no_texture_points', 'default': 'false', 'description': "''"},
-                           {'name': 'align_depth.enable',           'default': 'false', 'description': 'enable align depth filter'},
+                           {'name': 'align_depth.enable',           'default': 'true', 'description': 'enable align depth filter'},
                            {'name': 'colorizer.enable',             'default': 'false', 'description': 'enable colorizer filter'},
                            {'name': 'decimation_filter.enable',     'default': 'false', 'description': 'enable_decimation_filter'},
                            {'name': 'spatial_filter.enable',        'default': 'false', 'description': 'enable_spatial_filter'},
