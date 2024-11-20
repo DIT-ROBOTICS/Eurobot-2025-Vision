@@ -25,7 +25,7 @@ services:
       - DISPLAY=${DISPLAY}
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=42
-    command: bash -ic "colcon build && bash"
+    command: bash -ic "colcon build && ros2 launch realsense2_camera rs_launch.py"
   
   aruco:
     build:
@@ -60,4 +60,4 @@ services:
       - DISPLAY=${DISPLAY}
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=42
-    command: bash -ic "rqt"
+    command: bash -ic "rviz2"
