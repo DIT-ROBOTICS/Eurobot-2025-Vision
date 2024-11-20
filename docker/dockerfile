@@ -15,6 +15,8 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     software-properties-common \
     ros-humble-cv-bridge \
     ros-humble-image-transport \
+    ros-humble-image-transport-plugins \    
+    ros-humble-rmw-cyclonedds-cpp \
     && apt clean -y && rm -rf /var/lib/apt/lists/*
 
 # RealSense Module
@@ -43,10 +45,12 @@ RUN mkdir -p /etc/apt/keyrings && \
 # Add user and setup workspace
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
-    usermod -aG video $USER \
-    echo "$USER ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$USER && \
+    usermod -aG video $USER && \
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
+    chmod 0440 /etc/sudoers.d/$USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
     echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+
 USER $USER
 RUN mkdir -p /home/$USER/vision-ws/src && \
     # Install ROS2 Realsense package
@@ -66,9 +70,11 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
-    echo "$USER ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$USER && \
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
+    chmod 0440 /etc/sudoers.d/$USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
     echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+
 USER $USER
 RUN mkdir -p /home/$USER/vision-ws/src && \
     # Install ROS2 Aruco package
@@ -91,7 +97,9 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     && apt clean -y && rm -rf /var/lib/apt/list/*
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
-    echo "$USER ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/$USER && \
-    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
+    chmod 0440 /etc/sudoers.d/$USER && \
+    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
+    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
 USER $USER
 CMD [ "/bin/bash" ]
