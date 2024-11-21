@@ -34,14 +34,16 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     python3-requests \
     && apt clean -y && rm -rf /var/lib/apt/lists/*
 # Intel RealSense SDK 2.0
-RUN mkdir -p /etc/apt/keyrings && \ 
-    curl -sSf https://librealsense.intel.com/Debian/librealsense.pgp | tee /etc/apt/keyrings/librealsense.pgp > /dev/null && \
-    echo "deb [signed-by=/etc/apt/keyrings/librealsense.pgp] https://librealsense.intel.com/Debian/apt-repo `lsb_release -cs` main" | \
-    tee /etc/apt/sources.list.d/librealsense.list && \
+RUN git clone --branch v2.50.0 https://github.com/IntelRealSense/librealsense.git /opt/librealsense && \
     apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
-    librealsense2-dkms \
-    librealsense2-utils \
-    && apt clean -y && rm -rf /var/lib/apt/lists/*
+    libgl1-mesa-glx libssl-dev libusb-1.0-0-dev libudev-dev pkg-config libgtk-3-dev \
+    libqt5gui5 libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \
+    && apt clean -y && rm -rf /var/lib/apt/list/* 
+WORKDIR /opt/librealsense
+RUN /opt/librealsense/scripts/setup_udev_rules.sh && \
+    /opt/realsense/scripts/patch-realsense-ubuntu-lts-hwe.sh 
+RUN cmake ../ -DBUILD_EXAMPLES=true -DCMAKE_BUILD_TYPE=Release \
+    && make -j4 && make install
 # Add user and setup workspace
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
