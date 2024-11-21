@@ -13,6 +13,7 @@ services:
       target: realsense  
       args:
         USER: realsense
+        LIBREALSENSE_VERSION: 2.56.2
     <<: *common-env
     network_mode: host
     image: vision-main:realsense
@@ -25,6 +26,9 @@ services:
       - DISPLAY=${DISPLAY}
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=42
+    device_cgroup_rules:
+      - "c 81:* rmw"
+      - "c 189:* rmw"
     command: bash -ic "colcon build && ros2 launch realsense2_camera rs_launch.py"
   
   aruco:
