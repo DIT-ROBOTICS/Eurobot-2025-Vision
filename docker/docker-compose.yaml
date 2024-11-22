@@ -2,7 +2,6 @@
 x-common-env: &common-env
   tty: true
   stdin_open: true
-  privileged: true
   stop_grace_period: 1s
 
 # Services
@@ -19,11 +18,9 @@ services:
     image: vision-main:realsense
     container_name: realsense
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
-      - /dev/bus/usb:/dev/bus/usb
+      - /dev:/dev
       - $PWD/../ws/realsense-pkg:/home/realsense/vision-ws/src/realsense-ros
     environment:
-      - DISPLAY=${DISPLAY}
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=42
     device_cgroup_rules:
@@ -59,9 +56,37 @@ services:
     image: vision-main:gui
     container_name: gui
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
+      # X11 socket
+      # - /tmp/.X11-unix:/tmp/.X11-unix
+      # Wayland socket
+      - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
     environment:
       - DISPLAY=${DISPLAY}
       - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
       - ROS_DOMAIN_ID=42
     command: bash -ic "rviz2"
+
+  pytorch-training:
+    build:
+      context: .
+      target: pytorch-training
+    <<: *common-env
+    network_mode: host
+    ipc: host
+    image: vision-main:pytorch-training
+    container_name: pytorch-training
+    volumes:
+      - $PWD/../train:/root/train
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    shm_size: 6gb
+    profiles: ['train']
+    command: bash
+      # bash -ic 'nvidia-smi && bash'
+    
+  
