@@ -159,4 +159,7 @@ RUN groupadd --gid $USER_GID $USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
     echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
 USER $USER
+
+# Install dependencies
+
 CMD [ "/bin/bash" ]

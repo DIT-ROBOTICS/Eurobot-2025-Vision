@@ -26,7 +26,7 @@ services:
     device_cgroup_rules:
       - "c 81:* rmw"
       - "c 189:* rmw"
-    command: bash -ic "colcon build && ros2 launch realsense2_camera rs_launch.py"
+    command: bash #bash -ic "colcon build && ros2 launch realsense2_camera rs_launch.py"
   
   aruco:
     build:
