@@ -1,0 +1,27 @@
+services:
+  aruco:
+    image: vision-main:aruco
+    container_name: aruco
+    volumes:
+      - $LOCAL_WORKSPACE_FOLDER/ws/aruco-pkg:/home/aruco/vision-ws/src/aruco-ros
+    command: bash
+
+  pytorch-training:
+    image: vision-main:pytorch-training
+    container_name: pytorch-training
+    volumes:
+      - $PWD/../train:/root/train
+    command: bash
+      # bash -ic 'nvidia-smi && bash'
+
+  gui:
+    image: vision-main:gui
+    container_name: gui
+    volumes:
+      # X11 socket
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      # Wayland socket
+      - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
+      # GUI config
+      - $LOCAL_WORKSPACE_FOLDER/ws/gui-config:/home/gui/.rviz2
+    command: bash -ic "rviz2 -d /home/gui/.rviz2/realsense.rviz"

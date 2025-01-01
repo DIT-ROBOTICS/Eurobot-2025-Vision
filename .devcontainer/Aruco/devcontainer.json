@@ -1,0 +1,16 @@
+{
+    "name": "Aruco",
+    "dockerComposeFile": [
+        "../../docker/compose.base.yml",
+        "../../docker/compose.module.yml",
+        "../../docker/compose.prod.yml"
+    ],
+    "service": "aruco",
+    "workspaceFolder": "/home/aruco/vision-ws",
+    "runServices": [
+        "realsense",
+        "aruco",
+        "gui"
+    ],
+    "shutdownAction": "stopCompose"
+}

@@ -1,0 +1,15 @@
+{
+    "name": "Realsense",
+    "dockerComposeFile": [
+        "../../docker/compose.base.yml",
+        "../../docker/compose.module.yml",
+        "../../docker/compose.prod.yml"
+    ],
+    "service": "realsense",
+    "workspaceFolder": "/home/realsense/vision-ws",
+    "runServices": [
+        "realsense",
+        "gui"
+    ],
+    "shutdownAction": "stopCompose"
+}
