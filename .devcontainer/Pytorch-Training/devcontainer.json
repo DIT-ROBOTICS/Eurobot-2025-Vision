@@ -1,0 +1,15 @@
+{
+    "name": "Pytorch-Training",
+    "dockerComposeFile": [
+        "../../docker/compose.base.yml",
+        "../../docker/compose.module.yml",
+        "../../docker/compose.prod.yml"
+    ],
+    "service": "pytorch-training",
+    "workspaceFolder": "/root/train",
+    "runServices": [
+        "pytorch-training",
+        "gui"
+    ],
+    "shutdownAction": "stopCompose"
+}
