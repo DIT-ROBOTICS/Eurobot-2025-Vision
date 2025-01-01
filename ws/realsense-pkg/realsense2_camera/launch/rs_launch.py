@@ -21,13 +21,13 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 
 
-configurable_parameters = [{'name': 'camera_name',                  'default': 'D435i', 'description': 'camera unique name'},
-                           {'name': 'camera_namespace',             'default': 'cam1', 'description': 'namespace for camera'},
-                           {'name': 'serial_no',                    'default': "_949122070603", 'description': 'choose device by serial number'},
+configurable_parameters = [{'name': 'camera_name',                  'default': '', 'description': 'camera unique name'},
+                           {'name': 'camera_namespace',             'default': '', 'description': 'namespace for camera'},
+                           {'name': 'serial_no',                    'default': "", 'description': 'choose device by serial number'},
                            {'name': 'usb_port_id',                  'default': "''", 'description': 'choose device by usb port id'},
                            {'name': 'device_type',                  'default': "''", 'description': 'choose device by type'},
                            {'name': 'config_file',                  'default': "''", 'description': 'yaml config file'},
-                           {'name': 'json_file_path',               'default': "/home/realsense/vision-ws/src/realsense-ros/visual_presets/HighAccuracyPreset.json", 'description': 'allows advanced configuration'},
+                           {'name': 'json_file_path',               'default': "", 'description': 'allows advanced configuration'},
                            {'name': 'initial_reset',                'default': 'false', 'description': "''"},
                            {'name': 'accelerate_gpu_with_glsl',     'default': "false", 'description': 'enable GPU acceleration with GLSL'},
                            {'name': 'rosbag_filename',              'default': "''", 'description': 'A realsense bagfile to run from as a device'},
@@ -66,7 +66,7 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'angular_velocity_cov',         'default': '0.01', 'description': "''"},
                            {'name': 'linear_accel_cov',             'default': '0.01', 'description': "''"},
                            {'name': 'diagnostics_period',           'default': '0.0', 'description': 'Rate of publishing diagnostics. 0=Disabled'},
-                           {'name': 'publish_tf',                   'default': 'true', 'description': '[bool] enable/disable publishing static & dynamic TF'},
+                           {'name': 'publish_tf',                   'default': 'false', 'description': '[bool] enable/disable publishing static & dynamic TF'},
                            {'name': 'tf_publish_rate',              'default': '10', 'description': '[double] rate in Hz for publishing dynamic TF'},
                            {'name': 'pointcloud.enable',            'default': 'true', 'description': ''},
                            {'name': 'pointcloud.stream_filter',     'default': '2', 'description': 'texture stream for pointcloud'},

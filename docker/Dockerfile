@@ -2,6 +2,7 @@ FROM ros:humble AS base
 LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
 LABEL org.opencontainers.image.vendor="DIT-Robotics"
 
+ENV TERM=xterm-256color
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     git \
     sudo \
@@ -134,8 +135,7 @@ RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
     echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
     chmod 0440 /etc/sudoers.d/$USER && \
-    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
-    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc
 USER $USER
 CMD [ "/bin/bash" ]
 
@@ -143,7 +143,6 @@ CMD [ "/bin/bash" ]
 FROM ultralytics/ultralytics:latest AS pytorch-training
 WORKDIR /root/train
 CMD [ "/bin/bash" ]
-
 
 # YOLO Libtorch Deployment Module
 FROM base AS yolo
