@@ -10,9 +10,13 @@ services:
     image: vision-main:pytorch-training
     container_name: pytorch-training
     volumes:
-      - $PWD/../train:/root/train
+      - $LOCAL_WORKSPACE_FOLDER/train:/root/train
     command: bash
       # bash -ic 'nvidia-smi && bash'
+  
+  # yolo:
+
+  # sima:
 
   gui:
     image: vision-main:gui

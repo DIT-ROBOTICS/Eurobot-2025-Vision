@@ -5,15 +5,6 @@ from cv_bridge import CvBridge
 import cv2
 import numpy as np
 
-# 計算透視變換矩陣 M
-M = cv2.getPerspectiveTransform(src_pts, dst_pts)
-H_left = np.array([[1.0, 0.0, 0.0],
-                     [0.0, 1.0, 0.0],
-                     [0.0, 0.0, 1.0]])
-H_right = np.array([[1.0, 0.0, 0.0],
-                        [0.0, 1.0, 0.0],
-                        [0.0, 0.0, 1.0]])
-
 class CameraMerger(Node):
     def __init__(self):
         super().__init__('camera_merger')
@@ -48,34 +39,21 @@ class CameraMerger(Node):
 
     def camera_1_callback(self, msg):
         self.camera_1_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        self.camera_1_image = self.transform_image(self.camera_1_image, H_left)
-        self.merge_images()
+        self.save_images()
 
     def camera_2_callback(self, msg):
         self.camera_2_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        self.merge_images()
+        self.save_images()
 
     def camera_3_callback(self, msg):
         self.camera_3_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        self.camera_3_image = self.transform_image(self.camera_3_image, H_right)
-        self.merge_images()
+        self.save_images()
+
+    def save_images(self):
+        cv2.imwrite('~/vision-ws/images/camera_1_image.png', self.camera_1_image)
+        cv2.imwrite('~/vision-ws/images/camera_2_image.png', self.camera_2_image)
+        cv2.imwrite('~/vision-ws/images/camera_3_image.png', self.camera_3_image)
     
-    def transform_image(self, image, H):
-        # 應用透視變換
-        return cv2.warpPerspective(image, H, (image.shape[1], image.shape[0]))
-
-    def merge_images(self):
-        if self.camera_1_image is not None and self.camera_2_image is not None and self.camera_3_image is not None:
-
-            # 垂直拼接影像
-            merged_image = np.vstack((self.camera_1_image, self.camera_2_image, self.camera_3_image))
-            
-            self.merge_image_publisher(merged_image)
-
-    def merge_image_publisher(self, merged_image):
-        merged_image_msg = self.bridge.cv2_to_imgmsg(merged_image, encoding='bgr8')
-        self.merged_image_pub.publish(merged_image_msg)
-
 def main(args=None):
     rclpy.init(args=args)
     camera_merger = CameraMerger()
