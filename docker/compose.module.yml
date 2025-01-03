@@ -5,19 +5,25 @@ services:
     volumes:
       - $LOCAL_WORKSPACE_FOLDER/ws/aruco-pkg:/home/aruco/vision-ws/src/aruco-ros
     command: bash
-
-  pytorch-training:
-    image: vision-main:pytorch-training
-    container_name: pytorch-training
-    volumes:
-      - $LOCAL_WORKSPACE_FOLDER/train:/root/train
-    command: bash
-      # bash -ic 'nvidia-smi && bash'
   
-  # yolo:
+  ultralytics-ros:
+    image: vision-main:ultralytics-ros-$PLATFORM
+    container_name: ultralytics-ros
+    volumes:
+      - $LOCAL_WORKSPACE_FOLDER/ws/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
+    command: bash
 
   # sima:
 
+  ultralytics-training:
+    image: ultralytics/ultralytics:latest
+    container_name: ultralytics-training
+    volumes:
+      - $LOCAL_WORKSPACE_FOLDER/train:/root/train
+    working_dir: /root/train
+    command: bash
+      # bash -ic 'nvidia-smi && bash'
+  
   gui:
     image: vision-main:gui
     container_name: gui

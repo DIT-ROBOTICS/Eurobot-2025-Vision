@@ -1,14 +1,14 @@
 {
-    "name": "Pytorch-Training",
+    "name": "Ultralytics-Training",
     "dockerComposeFile": [
         "../../docker/compose.base.yml",
         "../../docker/compose.module.yml",
         "../../docker/compose.prod.yml"
     ],
-    "service": "pytorch-training",
+    "service": "ultralytics-training",
     "workspaceFolder": "/root/train",
     "runServices": [
-        "pytorch-training",
+        "ultralytics-training",
         "gui"
     ],
     "shutdownAction": "stopCompose"

@@ -1,7 +1,6 @@
 FROM ros:humble AS base
 LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
 LABEL org.opencontainers.image.vendor="DIT-Robotics"
-
 ENV TERM=xterm-256color
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     git \
@@ -52,7 +51,7 @@ RUN cd /usr/src/librealsense \
     && make -j$(($(nproc)-1)) all \
     && make install 
 
-# RealSense Module
+###### RealSense Module ######
 FROM base AS realsense
 ARG USER
 ARG USER_UID=1000
@@ -63,7 +62,6 @@ COPY --from=librealsense-builder /usr/lib/python3/dist-packages/pyrealsense2 /us
 COPY --from=librealsense-builder /usr/src/librealsense/config/99-realsense-libusb.rules /etc/udev/rules.d/
 COPY --from=librealsense-builder /usr/src/librealsense/config/99-realsense-d4xx-mipi-dfu.rules /etc/udev/rules.d/
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib
-
 # Install dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \	
@@ -78,7 +76,6 @@ RUN apt-get update \
     python3-tqdm \
     python3-requests \
     && apt clean -y && rm -rf /var/lib/apt/lists/*
-
 # Add user and setup workspace
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
@@ -86,7 +83,6 @@ RUN groupadd --gid $USER_GID $USER && \
     chmod 0440 /etc/sudoers.d/$USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
     echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
-
 USER $USER
 RUN mkdir -p /home/$USER/vision-ws/src && \
     # Install ROS2 Realsense package
@@ -99,7 +95,7 @@ RUN mkdir -p /home/$USER/vision-ws/src && \
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
 
-# Aruco Module
+###### Aruco Module ######
 FROM base AS aruco 
 ARG USER
 ARG USER_UID=1000
@@ -122,7 +118,7 @@ RUN mkdir -p /home/$USER/vision-ws/src && \
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
 
-# GUI Module
+###### GUI Module ######
 FROM base AS gui
 ARG USER
 ARG USER_UID=1000
@@ -139,18 +135,24 @@ RUN groupadd --gid $USER_GID $USER && \
 USER $USER
 CMD [ "/bin/bash" ]
 
-# Pytorch Training Module
-FROM ultralytics/ultralytics:latest AS pytorch-training
-WORKDIR /root/train
-CMD [ "/bin/bash" ]
-
-# YOLO Libtorch Deployment Module
-FROM base AS yolo
+###### Ultralytics ROS Module - AMD64 ######
+FROM ultralytics/ultralytics:latest AS ultralytics-ros-amd64
+LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
+LABEL org.opencontainers.image.vendor="DIT-Robotics"
+ENV TERM=xterm-256color
 ARG USER
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
+# Copy binaries from ros humble base stage
+COPY --from=base /opt/ros/humble /opt/ros/humble
+COPY --from=base /usr/bin/python3 /usr/bin/python3
+COPY --from=base /usr/lib/python3.10 /usr/lib/python3.10
+
+# Install dependencies
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+    sudo \
     && apt clean -y && rm -rf /var/lib/apt/list/*
+# Add user and setup workspace
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
     echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
@@ -158,4 +160,31 @@ RUN groupadd --gid $USER_GID $USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
     echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
 USER $USER
+WORKDIR /home/$USER/vision-ws
+CMD [ "/bin/bash" ]
+
+###### Ultralytics ROS Module - Jetson ######
+FROM ultralytics/ultralytics:latest-jetson-jetpack6 AS ultralytics-ros-jetson
+LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
+LABEL org.opencontainers.image.vendor="DIT-Robotics"
+ENV TERM=xterm-256color
+ARG USER
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+# Copy binaries from ros humble base stage
+COPY --from=base /opt/ros/humble /opt/ros/humble
+COPY --from=base /usr/bin/python3 /usr/bin/python3
+# Install dependencies
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+    sudo \
+    && apt clean -y && rm -rf /var/lib/apt/list/*
+# Add user and setup workspace
+RUN groupadd --gid $USER_GID $USER && \
+    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
+    chmod 0440 /etc/sudoers.d/$USER && \
+    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
+    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+USER $USER
+WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
