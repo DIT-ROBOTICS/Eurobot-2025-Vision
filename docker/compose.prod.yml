@@ -27,7 +27,7 @@ services:
         USER: realsense
         LIBREALSENSE_VERSION: 2.56.2
     <<: *common-vars
-    profiles: ['base']
+    profiles: ['camera']
 
   aruco:
     build:
@@ -47,7 +47,7 @@ services:
     <<: 
       - *common-vars
       - *gpu-vars
-    profiles: ['test']
+    profiles: ['module']
 
   ultralytics-training:
     build:

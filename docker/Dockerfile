@@ -145,12 +145,13 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 # Copy binaries from ros humble base stage
 COPY --from=base /opt/ros/humble /opt/ros/humble
-COPY --from=base /usr/bin/python3 /usr/bin/python3
-COPY --from=base /usr/lib/python3.10 /usr/lib/python3.10
-
+COPY --from=base /usr/bin/ /usr/bin/
+COPY --from=base /usr/lib/ /usr/lib/
+COPY --from=base /usr/local/lib/ /usr/local/lib/
 # Install dependencies
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     sudo \
+    libblas3 liblapack3 \
     && apt clean -y && rm -rf /var/lib/apt/list/*
 # Add user and setup workspace
 RUN groupadd --gid $USER_GID $USER && \
@@ -173,10 +174,13 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 # Copy binaries from ros humble base stage
 COPY --from=base /opt/ros/humble /opt/ros/humble
-COPY --from=base /usr/bin/python3 /usr/bin/python3
+COPY --from=base /usr/bin/ /usr/bin/
+COPY --from=base /usr/lib/ /usr/lib/
+COPY --from=base /usr/local/lib/ /usr/local/lib/
 # Install dependencies
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     sudo \
+    libblas3 liblapack3 \
     && apt clean -y && rm -rf /var/lib/apt/list/*
 # Add user and setup workspace
 RUN groupadd --gid $USER_GID $USER && \
