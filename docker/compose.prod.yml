@@ -32,13 +32,13 @@ services:
       context: .
       target: pytorch-training
     <<: *common-vars
-    deploy:
-     resources:
-       reservations:
-         devices:
-           - driver: nvidia
-             count: 1
-             capabilities: [gpu]
+    # deploy:
+    #  resources:
+    #    reservations:
+    #      devices:
+    #        - driver: nvidia
+    #          count: 1
+    #          capabilities: [gpu]
     shm_size: 6gb
     profiles: ['train']
     
