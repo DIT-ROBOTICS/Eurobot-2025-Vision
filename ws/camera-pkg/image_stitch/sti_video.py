@@ -1,24 +1,31 @@
-from importClass.cam_class import MultiCamNode
+from image_stitch.importClass import MultiCamNode
+from image_stitch.importClass import VideoStitcher
 import rclpy
+import time
+from queue import Empty
+import cv2
 
 def main(args=None):
     rclpy.init(args=args)
-    subs = MultiCamNode()
-    subs.get_logger().info('MultiCam Stitching node started')
+    node = MultiCamNode()
+    stitcher = VideoStitcher()
+    node.get_logger().info('MultiCam Stitching node started')
 
-    while rclpy.ok():
-        rclpy.spin_once(subs, timeout_sec=0.1)
+    try:
+        while rclpy.ok():
+            rclpy.spin_once(node, timeout_sec=0.1)
+            images = node.get_images()
+            if images is None:
+                continue
+            stitched_img = stitcher.warp(images)
+            node.publish_stitched_image(stitched_img)
 
-        images = []
-        for cam, info in subs.camera_subscribers.items():
-            if not info["queue"].empty():
-                images.append(info["queue"].get())
+    except KeyboardInterrupt:
+        node.get_logger().info("Shutting down node.")
 
-        if len(images) == 3:
-            subs.publish_stitched_image(images)
-
-    subs.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

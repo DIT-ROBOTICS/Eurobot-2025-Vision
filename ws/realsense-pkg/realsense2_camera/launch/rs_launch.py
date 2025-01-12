@@ -34,7 +34,7 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'log_level',                    'default': 'info', 'description': 'debug log level [DEBUG|INFO|WARN|ERROR|FATAL]'},
                            {'name': 'output',                       'default': 'screen', 'description': 'pipe node output [screen|log]'},
                            {'name': 'enable_color',                 'default': 'true', 'description': 'enable color stream'},
-                           {'name': 'rgb_camera.color_profile',     'default': '1920,1080,30', 'description': 'color stream profile'},
+                           {'name': 'rgb_camera.color_profile',     'default': '848,480,60', 'description': 'color stream profile'},
                            {'name': 'rgb_camera.color_format',      'default': 'RGB8', 'description': 'color stream format'},
                            {'name': 'rgb_camera.enable_auto_exposure', 'default': 'true', 'description': 'enable/disable auto exposure for color image'},
                            {'name': 'enable_depth',                 'default': 'true', 'description': 'enable depth stream'},

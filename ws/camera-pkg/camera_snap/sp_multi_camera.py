@@ -56,13 +56,18 @@ class CameraMerger(Node):
         if all(img is not None for img in [self.camera_1_image, self.camera_2_image, self.camera_3_image]) and not all(self.images_saved):
             # Save images if not already saved
             if not self.images_saved[0]:
+                self.camera_1_image = cv2.rotate(self.camera_1_image, cv2.ROTATE_90_COUNTERCLOCKWISE)
                 cv2.imwrite(os.path.join(output_dir, 'camera_1_image.jpg'), self.camera_1_image)
                 self.images_saved[0] = True
             if not self.images_saved[1]:
+                self.camera_2_image = cv2.rotate(self.camera_2_image, cv2.ROTATE_90_COUNTERCLOCKWISE)
                 cv2.imwrite(os.path.join(output_dir, 'camera_2_image.jpg'), self.camera_2_image)
+                
                 self.images_saved[1] = True
             if not self.images_saved[2]:
+                self.camera_3_image = cv2.rotate(self.camera_3_image, cv2.ROTATE_90_COUNTERCLOCKWISE)
                 cv2.imwrite(os.path.join(output_dir, 'camera_3_image.jpg'), self.camera_3_image)
+                
                 self.images_saved[2] = True
 
         if all(self.images_saved):
