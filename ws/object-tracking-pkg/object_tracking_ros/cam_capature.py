@@ -32,7 +32,10 @@ class RealSenseListener(Node):
         self.depth_contour = None
 
         self.tracker = cv2.TrackerCSRT_create()
-        self.tracking = False
+        self.tracking = [False]
+
+        self.multitracker = cv2.legacy.MultiTracker_create()
+        self.multitracking = [False]
         
         self.bridge = CvBridge()
 
@@ -42,8 +45,6 @@ class RealSenseListener(Node):
             color_normalized_image = cv2.normalize(color_cv_image, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
             self.color_image = color_normalized_image
             print(f"dtype{color_cv_image.dtype}")
-
-            # ob.Track(self.color_image, self.tracker, self.tracking)
 
             cv2.imshow("Color", self.color_image)
             cv2.waitKey(1)
@@ -72,19 +73,8 @@ class RealSenseListener(Node):
             color_normalized_image = cv2.normalize(color_cv_image, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8UC1)
             self.color_image = color_normalized_image
 
-            if self.tracking == False:
-                area = cv2.selectROI('Select', self.color_image, False, False)
-                self.tracker.init(self.color_image, area)
-                self.tracking = True
-            
-            if self.tracking == True:
-                success, point = self.tracker.update(self.color_image)
-                if success:
-                    p1 = [int(point[0]), int(point[1])]
-                    p2 = [int(point[0] + point[2]), int(point[1] + point[3])]
-                    cv2.rectangle(self.color_image, p1, p2, (0,0,255), 3)
-
-            cv2.imshow('Track', self.color_image)
+            # ob.Track(self.color_image, self.tracker, self.tracking)
+            ob.MultiTrack(self.color_image, self.multitracker, self.multitracking)
 
         except Exception as e:
             self.get_logger().error(f"Error converting image: {e}")
