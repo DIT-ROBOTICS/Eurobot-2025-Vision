@@ -52,10 +52,16 @@ services:
   ultralytics-training:
     build:
       context: .
-      target: ultralytics-training
-    <<: 
-      - *common-vars
-      # - *gpu-vars
+      target: pytorch-training
+    <<: *common-vars
+    # deploy:
+    #  resources:
+    #    reservations:
+    #      devices:
+    #        - driver: nvidia
+    #          count: 1
+    #          capabilities: [gpu]
+    shm_size: 6gb
     profiles: ['train']
     
   gui:
