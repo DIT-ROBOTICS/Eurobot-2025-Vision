@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
 			'talker = ultralytics_ros.talker:main',
 			'listener = ultralytics_ros.listener:main',
+            'script = ultralytics_ros.script:main',
         ],
     },
 )
