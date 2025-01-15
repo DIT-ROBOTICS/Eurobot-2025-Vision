@@ -1,0 +1,73 @@
+x-common-vars: &common-vars
+  tty: true
+  stdin_open: true
+  network_mode: host
+  stop_grace_period: 1s
+  environment:
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    ROS_DOMAIN_ID: 42
+
+x-gpu-vars: &gpu-vars
+  ipc: host
+  shm_size: 6gb
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+
+services:
+  realsense:
+    build:
+      context: .
+      target: realsense  
+      args:
+        USER: realsense
+        LIBREALSENSE_VERSION: 2.56.2
+    <<: *common-vars
+    profiles: ['camera']
+
+  aruco:
+    build:
+      context: .
+      target: aruco 
+      args:
+        USER: aruco
+    <<: *common-vars
+    profiles: ['module']
+
+  ultralytics-ros:
+    build:
+      context: .
+      target: ultralytics-ros-$PLATFORM
+      args:
+        USER: ultralytics
+    <<: 
+      - *common-vars
+      - *gpu-vars
+    profiles: ['module']
+
+  ultralytics-training:
+    build:
+      context: .
+      target: ultralytics-training
+    <<: 
+      - *common-vars
+      - *gpu-vars
+    profiles: ['train']
+    
+  gui:
+    build:
+      context: .
+      target: gui
+      args:
+        USER: gui
+    <<: *common-vars
+    environment:
+      DISPLAY: $DISPLAY
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      ROS_DOMAIN_ID: 42
+    profiles: ['gui']
+  

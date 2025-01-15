@@ -1,26 +1,11 @@
 # -----------------------------------------------------------------------------
-# Base Stage: ros:humble
+# Base Stage: nvidia container
 # -----------------------------------------------------------------------------
-FROM ros:humble AS base
+FROM nvcr.io/nvidia/cuda:12.4.1-base-ubuntu22.04 AS base
 LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
 LABEL org.opencontainers.image.vendor="DIT-Robotics"
 ENV TERM=xterm-256color
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
-    git \
-    sudo \
-    curl \
-    wget \
-    usbutils \
-    v4l-utils \
-    net-tools \
-    iputils-ping \
-    apt-transport-https \
-    software-properties-common \
-    ros-humble-cv-bridge \
-    ros-humble-image-transport \
-    ros-humble-image-transport-plugins \    
-    ros-humble-rmw-cyclonedds-cpp \
-    && apt clean -y && rm -rf /var/lib/apt/lists/*
+RUN 
 
 # -----------------------------------------------------------------------------
 # Builder Stage:
