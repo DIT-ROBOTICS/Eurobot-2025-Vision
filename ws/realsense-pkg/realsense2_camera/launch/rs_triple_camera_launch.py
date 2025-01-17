@@ -48,7 +48,8 @@ local_parameters = [{'name': 'camera_name1',        'default': 'cam_left',      
                     {'name': 'config_file1',        'default': '/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/config/multi_cam_config.yaml', 'description': 'camera1 config file'},
                     {'name': 'config_file2',        'default': '/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/config/multi_cam_config.yaml', 'description': 'camera2 config file'},
                     {'name': 'config_file3',        'default': '/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/config/multi_cam_config.yaml', 'description': 'camera3 config file'},
-                    {'name': 'tf.translation1.x',    'default': '0.05',             'description': 'x'},
+                    # tf parameters for left & right cameras
+                    {'name': 'tf.translation1.x',    'default': '0.08',             'description': 'x'},
                     {'name': 'tf.translation1.y',    'default': '0.0',              'description': 'y'},
                     {'name': 'tf.translation1.z',    'default': '0.02966025404',    'description': 'z'},
                     {'name': 'tf.rotation1.yaw',     'default': '0.0',              'description': 'yaw'},
@@ -91,15 +92,28 @@ def launch_static_transform_publisher_node(context: LaunchContext, param_name_su
     )
     return [node]
 
+def launch_camera_base_transform_publisher_node(context: LaunchContext):
+    node = launch_ros.actions.Node(
+        name='camera_base_transform_publisher',
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=[
+            '0', '0.048', '1.44', '1.5707963268', '1.0471975512', '-1.5707963268',
+            'camera_base_link',
+            context.launch_configurations['camera_name2'] + '_link'
+        ]
+    )
+    return [node]
+
 def launch_map_transform_publisher_node(context: LaunchContext):
     node = launch_ros.actions.Node(
         name='map_transform_publisher',
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            '-0.225', '1.12', '1.44', '1.5707963268', '1.0471975512', '-1.5707963268',
+            '1.725', '2.127', '0', '0', '0', '1', '0',
             'map',
-            context.launch_configurations['camera_name2'] + '_link'
+            'camera_base_link'
         ]
     )
     return [node]
@@ -127,5 +141,6 @@ def generate_launch_description():
                        kwargs = {'param_name_suffix': '1'}),
         OpaqueFunction(function=launch_static_transform_publisher_node,
                        kwargs = {'param_name_suffix': '3'}),     
-        OpaqueFunction(function=launch_map_transform_publisher_node)                 
+        OpaqueFunction(function=launch_camera_base_transform_publisher_node),   
+        OpaqueFunction(function=launch_map_transform_publisher_node)              
     ])
