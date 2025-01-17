@@ -4,11 +4,11 @@ import numpy as np
 dictionary = cv2.aruco.getPredefinedDictionary(dict=cv2.aruco.DICT_4X4_50)
 
 marker_size = 6
-marker_id_range = range(1, 23)
+marker_id_range = range(0, 50)
 dictionary_list = []
 
 for marker_id in marker_id_range:
-    marker_image = cv2.aruco.generateImageMarker(dictionary, marker_id, marker_size)
+    marker_image = cv2.aruco.drawMarker(dictionary, marker_id, marker_size)
     hex_data = marker_image.tobytes().hex()
     odd_position_hex = hex_data[1::2] 
     odd_position_hex = odd_position_hex[6:-6]
