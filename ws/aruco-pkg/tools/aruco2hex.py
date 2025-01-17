@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 
-dictionary = cv2.aruco.getPredefinedDictionary(dict=cv2.aruco.DICT_4X4_50)
+dictionary = cv2.aruco.getPredefinedDictionary(dict=cv2.aruco.DICT_4X4_100)
 
 marker_size = 6
-marker_id_range = range(0, 50)
+marker_id_range = range(0, 100)
 dictionary_list = []
 
 for marker_id in marker_id_range:
