@@ -1,6 +1,5 @@
 import rclpy
 import cv2
-import numpy as np
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
@@ -13,7 +12,7 @@ class RealSenseListener(Node):
         
         self.color_subscription = self.create_subscription(
             Image,
-            '/realsense/cam/color/image_raw',
+            '/realsense/camera/color/image_raw',
             # self.color_callback,
             self.track_callback,
             10
@@ -21,7 +20,7 @@ class RealSenseListener(Node):
 
         self.depth_subscription = self.create_subscription(
             Image,
-            "/realsense/cam/depth/image_rect_raw",
+            "/realsense/camera/aligned_depth_to_color/image_raw",
             self.depth_callback,
             10
         )

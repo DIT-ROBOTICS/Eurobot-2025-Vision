@@ -21,7 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'main = object_tracking_ros.main:main',
-            'cam = object_tracking_ros.cam_capature:main',
+            'cam = object_tracking_ros.cam_capture:main',
             'tracker = object_tracking_ros.tracker:main'
         ],
     },

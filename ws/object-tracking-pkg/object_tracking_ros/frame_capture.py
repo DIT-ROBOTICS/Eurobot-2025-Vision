@@ -14,6 +14,7 @@ class FirstFrameCapture(Node):
         os.makedirs(self.image_dir, exist_ok=True)
         
         self.bridge = CvBridge()
+        
         self.color_frame = None
         self.depth_frame = None
         self.got_color_frame = False
@@ -22,20 +23,20 @@ class FirstFrameCapture(Node):
         # subscriber
         self.color_sub = self.create_subscription(
             Image,
-            '/realsense1/cam/color/image_raw',
+            '/realsense/camera/color/image_raw',
             self.color_callback,
             10
         )
         
         self.depth_sub = self.create_subscription(
             Image,
-            '/realsense1/cam/aligned_depth_to_color/image_raw',
+            '/realsense/camera/aligned_depth_to_color/image_raw',
             self.depth_callback,
             10
         )
 
     def color_callback(self, msg):
-        if not self.got_color_frame:
+        if self.got_color_frame is False:
             try:
                 color_frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
                 self.color_frame = color_frame
@@ -46,16 +47,13 @@ class FirstFrameCapture(Node):
                 self.get_logger().info(f'Has saved color frame: {color_path}')
                 
                 self.got_color_frame = True
-                
-                # check
-                if self.got_color_frame and self.got_depth_frame:
-                    rclpy.shutdown()
-                
+                print(self.got_color_frame)
+            
             except Exception as e:
                 self.get_logger().error(f'Error when processing color frame: {str(e)}')
 
     def depth_callback(self, msg):
-        if not self.got_depth_frame:
+        if self.got_depth_frame is False:
             try:
                 depth_frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='16UC1')
                 depth_frame_normalized = cv2.normalize(depth_frame, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
@@ -67,20 +65,7 @@ class FirstFrameCapture(Node):
                 self.get_logger().info(f'Has saved depth frame: {depth_path}')
                 
                 self.got_depth_frame = True
-                
-                # check
-                if self.got_color_frame and self.got_depth_frame:
-                    rclpy.shutdown()
+                print(self.got_depth_frame)
                 
             except Exception as e:
                 self.get_logger().error(f'Error when processing depth frame: {str(e)}')
-
-# def main():
-#     rclpy.init()
-#     node = FirstFrameCapture()
-#     rclpy.spin(node)
-#     node.destroy_node()
-#     rclpy.shutdown()
-
-# if __name__ == '__main__':
-#     main()
