@@ -51,6 +51,7 @@ services:
     <<: *common-vars
     environment:
       DISPLAY: $DISPLAY
+      WAYLAND_DISPLAY: $WAYLAND_DISPLAY
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
       ROS_DOMAIN_ID: 42
     profiles: ['gui']
