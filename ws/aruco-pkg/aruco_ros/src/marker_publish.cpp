@@ -61,7 +61,7 @@ class ArucoMarkerPublisher : public rclcpp::Node
 private:
   rclcpp::Node::SharedPtr subNode;
   // ArUco stuff
-  aruco::MarkerDetector mDetector_;
+  aruco::MarkerDetector mDetector_{"ARUCO_MIP_16h3", 1};
   aruco::CameraParameters camParam_;
   std::vector<aruco::Marker> markers_;
 
