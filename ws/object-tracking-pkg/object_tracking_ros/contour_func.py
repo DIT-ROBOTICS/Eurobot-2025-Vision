@@ -34,7 +34,7 @@ def Depth_Contour(depth_cv_image_path):
             for contour in contours:
                 # calculate all contours if too small then ignore
                 area = cv2.contourArea(contour)
-                if area > 3000:
+                if area > 3000 and area <7000:
                     # calculate rectangular
                     x, y, w, h = cv2.boundingRect(contour)
                     # draw
@@ -68,7 +68,7 @@ def Color_Contour(color_cv_image_path):
         if contours:
             for contour in contours:
                 area = cv2.contourArea(contour)
-                if area > 3000:
+                if area > 3000 and area < 7000:
                     x, y, w, h = cv2.boundingRect(contour)
                     # draw
                     cv2.rectangle(color_cv_image, (x, y), (x + w, y + h), (255, 255, 255), 2)
@@ -78,5 +78,33 @@ def Color_Contour(color_cv_image_path):
                     cv2.imshow("Color_with_Contours", color_cv_image)
                     cv2.waitKey(1)
     
+    except Exception as e:
+        print("Error")
+
+
+def ColorRecTrans(color_cv_image_path):
+    try:
+        color_cv_image = cv2.imread(color_cv_image_path)
+        area = (0, 0, 0, 0)
+
+        if color_cv_image is None:
+            print('Cannot receive color frame')
+            return
+        
+        gray_image = cv2.cvtColor(color_cv_image, cv2.COLOR_BGR2GRAY)
+        binary = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        kernel = np.ones((5,5), np.uint8)
+        binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            area = (0, 0, 0, 0)
+            for contour in contours:
+                area = cv2.contourArea(contour)
+                if area > 3000 and area < 7000:
+                    area = cv2.boundingRect(contour)
+                    break
+        
+        return area
+
     except Exception as e:
         print("Error")

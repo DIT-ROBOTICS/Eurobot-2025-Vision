@@ -73,7 +73,10 @@ class RealSenseListener(Node):
             self.color_image = color_normalized_image
 
             # ob.Track(self.color_image, self.tracker, self.tracking)
-            ob.MultiTrack(self.color_image, self.multitracker, self.multitracking)
+            # ob.MultiTrack(self.color_image, self.multitracker, self.multitracking)
+            bbox = ob.ColorRecTrans('src/object-tracking-ros/image/first_color_frame.png')
+            print(bbox)
+            ob.AutoTrack(self.color_image, self.tracker, self.tracking, bbox)
 
         except Exception as e:
             self.get_logger().error(f"Error converting image: {e}")
@@ -82,8 +85,6 @@ def main(args=None):
     rclpy.init(args=args)
 
     realsense_listener = RealSenseListener()
-
-    # realsense_listener.tracker, realsense_listener.tracking = ob.Select(realsense_listener.color_image, realsense_listener.tracker, realsense_listener.tracking)
 
     while rclpy.ok():
         rclpy.spin_once(realsense_listener)

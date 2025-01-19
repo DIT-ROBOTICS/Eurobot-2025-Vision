@@ -17,7 +17,7 @@ def Track(image, tracker, tracking):
             p2 = [int(point[0] + point[2]), int(point[1] + point[3])]
             cv2.rectangle(image, p1, p2, (0, 0, 255), 3)
 
-    cv2.imshow('Tracking', image)
+        cv2.imshow('Tracking', image)
 
     return
 
@@ -46,6 +46,30 @@ def MultiTrack(image, multitracker, multitracking):
                 cv2.rectangle(image, p1, p2, colors[a], 3)
                 a = a + 1
 
-    cv2.imshow('Tracking', image)
+        cv2.imshow('MultiTracking', image)
+
+    return
+
+def AutoTrack(image, autotracker, autotracking, bbox):
+    if bbox is None:
+        print('Cannot receive contour.')
+        return
+
+    if image is None:
+        print('Cannot receive frame.')
+        return
+    
+    if autotracking[0] == False:
+        autotracker.init(image, bbox)
+        autotracking[0] = True
+
+    if autotracking[0] == True:
+        success, point = autotracker.update(image)
+        if success:
+            p1 = [int(point[0]), int(point[1])]
+            p2 = [int(point[0] + point[2]), int(point[1] + point[3])]
+            cv2.rectangle(image, p1, p2, (0, 0, 255), 3)
+
+        cv2.imshow('AutoTracking', image)
 
     return
