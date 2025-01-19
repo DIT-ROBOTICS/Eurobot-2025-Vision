@@ -10,6 +10,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', ['launch/yolo_tf_launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -22,7 +23,9 @@ setup(
         'console_scripts': [
             'talker = yolo_pkg.talker:main',
             'listener = yolo_pkg.listener:main',
-            'script = yolo_pkg.script:main'
+            'script = yolo_pkg.script:main',
+            'yolo_node = yolo_pkg.yolo_node:main',
+            'tf_node= yolo_pkg.tf_node:main'
         ],
     },
 )

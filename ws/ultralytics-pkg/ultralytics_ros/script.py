@@ -10,7 +10,7 @@ class VisionNode(Node):
         super().__init__('vision_node')
 
         # YOLO模型加载
-        self.model = YOLO("~/vision-ws/src/ultralytics-ros/ultralytics_ros/weight/best.pt")
+        self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/best.pt")
 
         
         self.color_sub = self.create_subscription(

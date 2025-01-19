@@ -9,11 +9,11 @@ class VisionNode(Node):
     def __init__(self):
         super().__init__('vision_node')
 
-        # YOLO模型加载
+        # YOLO模型
         self.model = YOLO("/home/aruco/vision-ws/src/aruco-ros/yolo_pkg/weights/best.pt")
 
         
-        self.color_sub = self.create_subscription(Image,'/realsense/cam/color/image_raw',
+        self.color_sub = self.create_subscription(Image,'/realsense2/cam_mid/color/image_raw',
             self.color_callback,
             10
         )

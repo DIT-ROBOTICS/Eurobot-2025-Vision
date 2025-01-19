@@ -10,6 +10,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/launch', ['launch/yolo_tf_launch.py']),
     ],
     install_requires=['setuptools', 'ultralytics'],
     zip_safe=True,
@@ -20,9 +21,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-			'talker = ultralytics_ros.talker:main',
-			'listener = ultralytics_ros.listener:main',
             'script = ultralytics_ros.script:main',
+            'yolo_node = ultralytics_ros.yolo_node:main',
+            'tf_node= ultralytics_ros.tf_node:main'
         ],
     },
 )

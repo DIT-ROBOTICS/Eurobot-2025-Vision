@@ -136,33 +136,35 @@ USER $USER
 CMD [ "/bin/bash" ]
 
 ###### Ultralytics ROS Module - AMD64 ######
-FROM ultralytics/ultralytics:latest AS ultralytics-ros-amd64
-LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
-LABEL org.opencontainers.image.vendor="DIT-Robotics"
-ENV TERM=xterm-256color
+FROM base AS ultralytics-ros-amd64
 ARG USER
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
-# Copy binaries from ros humble base stage
-COPY --from=base /opt/ros/humble /opt/ros/humble
-COPY --from=base /usr/bin/ /usr/bin/
-COPY --from=base /usr/lib/ /usr/lib/
-COPY --from=base /usr/local/lib/ /usr/local/lib/
-# Install dependencies
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
-    sudo \
-    libblas3 liblapack3 \
-    && apt clean -y && rm -rf /var/lib/apt/list/*
-# Add user and setup workspace
+
+# 创建用户并配置 sudo 权限
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
     echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
     chmod 0440 /etc/sudoers.d/$USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
     echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+
+# 切换到普通用户
 USER $USER
+
+# 创建工作目录
+RUN mkdir -p /home/$USER/vision-ws/src
+
+# 更新系统并安装 Python 和依赖
+RUN sudo apt update && sudo apt upgrade -y && \
+    sudo apt-get install -y python3-pip && \
+    pip3 install --upgrade pip && \
+    pip3 install ultralytics numpy==1.25.0
+
+# 设置工作目录和默认命令
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
+
 
 ###### Ultralytics ROS Module - Jetson ######
 FROM ultralytics/ultralytics:latest-jetson-jetpack6 AS ultralytics-ros-jetson
