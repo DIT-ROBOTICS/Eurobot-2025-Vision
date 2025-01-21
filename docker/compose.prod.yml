@@ -25,7 +25,7 @@ services:
       target: realsense  
       args:
         USER: realsense
-        LIBREALSENSE_VERSION: 2.56.2
+        LIBREALSENSE_VERSION: $LIBREALSENSE_VERSION
     <<: *common-vars
     profiles: ['camera']
 
@@ -36,18 +36,18 @@ services:
       args:
         USER: aruco
     <<: *common-vars
-    profiles: ['module']
+    profiles: ['aruco']
 
   ultralytics-ros:
     build:
       context: .
-      target: ultralytics-ros-$PLATFORM
+      target: ultralytics-ros
       args:
         USER: ultralytics
     <<: 
       - *common-vars
       - *gpu-vars
-    profiles: ['module']
+    profiles: ['yolo']
 
   ultralytics-training:
     build:

@@ -7,7 +7,7 @@ services:
     command: bash
   
   ultralytics-ros:
-    image: vision-main:ultralytics-ros-$PLATFORM
+    image: vision-main:ultralytics-ros
     container_name: ultralytics-ros
     volumes:
       - $LOCAL_WORKSPACE_FOLDER/ws/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
@@ -23,12 +23,6 @@ services:
     working_dir: /root/train
     command: bash
       # bash -ic 'nvidia-smi && bash'
-  
-  ultralytics-base:
-    image: ultralytics-base
-    container_name: ultralytics-base
-    working_dir: /root
-    command: bash
   
   gui:
     image: vision-main:gui

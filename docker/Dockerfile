@@ -1,7 +1,10 @@
+ARG BASE_IMAGE=ros:humble
+ARG ARCH=linux/amd64
+ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.10-py3
 # -----------------------------------------------------------------------------
-# Base Stage: ros:humble
+# Base Stage: nvidia container
 # -----------------------------------------------------------------------------
-FROM ros:humble AS base
+FROM ${BASE_IMAGE} AS base
 LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
 LABEL org.opencontainers.image.vendor="DIT-Robotics"
 ENV TERM=xterm-256color
@@ -14,6 +17,7 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     v4l-utils \
     net-tools \
     iputils-ping \
+    python3-pip \
     apt-transport-https \
     software-properties-common \
     ros-humble-cv-bridge \
@@ -25,7 +29,6 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
 # -----------------------------------------------------------------------------
 # Builder Stage:
 #   - librealsense-builder
-#   - ultralytics-builder
 # -----------------------------------------------------------------------------
 FROM base AS librealsense-builder
 ARG LIBREALSENSE_VERSION
@@ -59,41 +62,13 @@ RUN cd /usr/src/librealsense \
     && make -j$(($(nproc)-1)) all \
     && make install 
 
-# Ultralytics YOLO 🚀, AGPL-3.0 license
-# Builds ultralytics/ultralytics:latest-cpu image on DockerHub https://hub.docker.com/r/ultralytics/ultralytics
-# Image is CPU-optimized for ONNX, OpenVINO and PyTorch YOLO11 deployments
-# Use official Python base image for reproducibility (3.11.10 for export and 3.12.6 for inference)
-FROM python:3.10.12-slim-bookworma as ultralytics-builder
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_BREAK_SYSTEM_PACKAGES=1
-ADD https://github.com/ultralytics/assets/releases/download/v0.0.0/Arial.ttf \
-    https://github.com/ultralytics/assets/releases/download/v0.0.0/Arial.Unicode.ttf \
-    /root/.config/Ultralytics/
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    python3-pip git zip unzip wget curl htop libgl1 libglib2.0-0 libpython3-dev gnupg g++ libusb-1.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-WORKDIR /ultralytics
-COPY . .
-RUN sed -i '/^\[http "https:\/\/github\.com\/"\]/,+1d' .git/config
-ADD https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt .
-RUN pip install uv
-RUN uv pip install --system -e ".[export]" --extra-index-url https://download.pytorch.org/whl/cpu --index-strategy unsafe-first-match
-RUN yolo export model=tmp/yolo11n.pt format=edgetpu imgsz=32
-RUN yolo export model=tmp/yolo11n.pt format=ncnn imgsz=32
-RUN uv pip install --system "paddlepaddle>=2.6.0" x2paddle
-RUN rm -rf tmp /root/.config/Ultralytics/persistent_cache.json
-
 # -----------------------------------------------------------------------------
-# Module Stage:
+# Release Stage:
 #   - Realsense
 #   - Aruco
+#   - Ultralytics ROS: AMD64:igpu, dgpu | Jetson
 #   - GUI
-#   - Ultralytics ROS 
 # -----------------------------------------------------------------------------
-
 ###### RealSense Module ######
 FROM base AS realsense
 ARG USER
@@ -161,6 +136,35 @@ RUN mkdir -p /home/$USER/vision-ws/src && \
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
 
+###### Ultralytics ROS Module - AMD64:igpu, dgpu | Jetson ######
+FROM --platform=${ARCH} ${NVIDIA_BASE_IMAGE} AS ultralytics-ros
+LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
+LABEL org.opencontainers.image.vendor="DIT-Robotics"
+ENV TERM=xterm-256color
+ARG USER
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+# Copy binaries from ros humble base stage
+COPY --from=base /opt/ros/humble /opt/ros/humble
+COPY --from=base /usr/bin/ /usr/bin/
+COPY --from=base /usr/lib/ /usr/lib/
+COPY --from=base /usr/local/lib/ /usr/local/lib/
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+    sudo \
+    libblas3 liblapack3 \
+    && apt clean -y && rm -rf /var/lib/apt/list/*
+# Add user and setup workspace
+RUN groupadd --gid $USER_GID $USER && \
+    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
+    chmod 0440 /etc/sudoers.d/$USER && \
+    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
+    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+USER $USER
+RUN pip install --no-cache-dir ultralytics
+WORKDIR /home/$USER/vision-ws
+CMD [ "/bin/bash" ]
+
 ###### GUI Module ######
 FROM base AS gui
 ARG USER
@@ -176,62 +180,4 @@ RUN groupadd --gid $USER_GID $USER && \
     chmod 0440 /etc/sudoers.d/$USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc
 USER $USER
-CMD [ "/bin/bash" ]
-
-###### Ultralytics ROS Module - AMD64 ######
-FROM ultralytics/ultralytics:latest AS ultralytics-ros-amd64
-LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
-LABEL org.opencontainers.image.vendor="DIT-Robotics"
-ENV TERM=xterm-256color
-ARG USER
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-# Copy binaries from ros humble base stage
-COPY --from=base /opt/ros/humble /opt/ros/humble
-COPY --from=base /usr/bin/ /usr/bin/
-COPY --from=base /usr/lib/ /usr/lib/
-COPY --from=base /usr/local/lib/ /usr/local/lib/
-# Install dependencies
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
-    sudo \
-    libblas3 liblapack3 \
-    && apt clean -y && rm -rf /var/lib/apt/list/*
-# Add user and setup workspace
-RUN groupadd --gid $USER_GID $USER && \
-    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
-    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
-    chmod 0440 /etc/sudoers.d/$USER && \
-    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
-    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
-USER $USER
-WORKDIR /home/$USER/vision-ws
-CMD [ "/bin/bash" ]
-
-###### Ultralytics ROS Module - Jetson ######
-FROM ultralytics/ultralytics:latest-jetson-jetpack6 AS ultralytics-ros-jetson
-LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
-LABEL org.opencontainers.image.vendor="DIT-Robotics"
-ENV TERM=xterm-256color
-ARG USER
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-# Copy binaries from ros humble base stage
-COPY --from=base /opt/ros/humble /opt/ros/humble
-COPY --from=base /usr/bin/ /usr/bin/
-COPY --from=base /usr/lib/ /usr/lib/
-COPY --from=base /usr/local/lib/ /usr/local/lib/
-# Install dependencies
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
-    sudo \
-    libblas3 liblapack3 \
-    && apt clean -y && rm -rf /var/lib/apt/list/*
-# Add user and setup workspace
-RUN groupadd --gid $USER_GID $USER && \
-    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
-    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
-    chmod 0440 /etc/sudoers.d/$USER && \
-    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
-    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
-USER $USER
-WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
