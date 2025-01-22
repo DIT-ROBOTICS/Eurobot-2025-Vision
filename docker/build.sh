@@ -6,15 +6,15 @@ set +a
 
 if [ "$PLATFORM" == "amd64" ]; then
   ARCH="linux/amd64"
-  NVIDIA_BASE_IMAGE="nvcr.io/nvidia/pytorch:24.10-py3"
+  NVIDIA_BASE_IMAGE="nvcr.io/nvidia/pytorch:24.07-py3"
 
 elif [ "$PLATFORM" == "arm64" ]; then
   ARCH="linux/arm64"
-  NVIDIA_BASE_IMAGE="nvcr.io/nvidia/pytorch:24.10-py3"
+  NVIDIA_BASE_IMAGE="nvcr.io/nvidia/pytorch:24.07-py3"
 
 elif [ "$PLATFORM" == "arm64-igpu" ]; then
   ARCH="linux/arm64"
-  NVIDIA_BASE_IMAGE="nvcr.io/nvidia/pytorch:24.10-py3-igpu"
+  NVIDIA_BASE_IMAGE="nvcr.io/nvidia/pytorch:24.07-py3-igpu"
 
 else
   echo "Unsupported PLATFORM value: $PLATFORM"

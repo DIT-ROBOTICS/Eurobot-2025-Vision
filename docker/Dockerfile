@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=ros:humble
-ARG ARCH=linux/amd64
-ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.10-py3
+ARG ARCH=linux/arm64
+ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3-igpu
 # -----------------------------------------------------------------------------
 # Base Stage: nvidia container
 # -----------------------------------------------------------------------------
@@ -71,6 +71,7 @@ RUN cd /usr/src/librealsense \
 # -----------------------------------------------------------------------------
 ###### RealSense Module ######
 FROM base AS realsense
+ARG REALSENSE_ROS_VERSION
 ARG USER
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -104,7 +105,7 @@ RUN groupadd --gid $USER_GID $USER && \
 USER $USER
 RUN mkdir -p /home/$USER/vision-ws/src && \
     # Install ROS2 Realsense package
-    git clone --branch ros2-master https://github.com/IntelRealSense/realsense-ros.git /home/$USER/vision-ws/src/realsense-ros && \
+    git clone --branch $REALSENSE_ROS_VERSION https://github.com/IntelRealSense/realsense-ros.git /home/$USER/vision-ws/src/realsense-ros && \
     rosdep update && \
     rosdep install -i --from-path /home/$USER/vision-ws/src --rosdistro humble -y && \
     cd /home/$USER/vision-ws && \

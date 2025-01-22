@@ -5,7 +5,7 @@ x-common-vars: &common-vars
   stop_grace_period: 1s
   environment:
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    ROS_DOMAIN_ID: 42
+    ROS_DOMAIN_ID: $ROS_DOMAIN_ID
 
 x-gpu-vars: &gpu-vars
   ipc: host
@@ -26,6 +26,7 @@ services:
       args:
         USER: realsense
         LIBREALSENSE_VERSION: $LIBREALSENSE_VERSION
+        REALSENSE_ROS_VERSION: $REALSENSE_ROS_VERSION
     <<: *common-vars
     profiles: ['camera']
 
