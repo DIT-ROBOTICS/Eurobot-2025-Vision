@@ -140,28 +140,18 @@ FROM base AS ultralytics-ros-amd64
 ARG USER
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
-
-# 创建用户并配置 sudo 权限
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
     echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
     chmod 0440 /etc/sudoers.d/$USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
     echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
-
-# 切换到普通用户
 USER $USER
-
-# 创建工作目录
 RUN mkdir -p /home/$USER/vision-ws/src
-
-# 更新系统并安装 Python 和依赖
 RUN sudo apt update && sudo apt upgrade -y && \
     sudo apt-get install -y python3-pip && \
     pip3 install --upgrade pip && \
     pip3 install ultralytics numpy==1.25.0
-
-# 设置工作目录和默认命令
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
 

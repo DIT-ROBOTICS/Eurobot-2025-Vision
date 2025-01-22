@@ -15,22 +15,29 @@ class YoloNode(Node):
         self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/best.pt")
 
         # 訂閱相機影像
-        self.color_sub = self.create_subscription(
-            Image,
-            '/realsense/camera/color/image_raw',
-            self.color_callback,
-            10
-        )
+        self.color_sub = self.create_subscription(Image,'/realsense/camera/color/image_raw',
+            self.color_callback,10)
+        self.depth_sub = self.create_subscription(Image,'/camera/depth/image_raw', 
+            self.depth_callback, 10)
         self.bbox_pub = self.create_publisher(Image, '/detected/bounding_boxes', 10)
         
-        self.color_msg = None
         # 發布檢測到的物件中心座標（相機座標系）
         self.center_pub = self.create_publisher(PointStamped, '/detected/cam_center_points', 10)
 
         # CvBridge
         self.bridge = CvBridge()
 
+        self.depth_image = None 
+        self.color_msg = None
+
         self.get_logger().info("YOLO Node initialized and ready.")
+
+    def depth_callback(self, msg):
+        # 儲存最新的深度影像
+        try:
+            self.depth_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+        except Exception as e:
+            self.get_logger().error(f"Failed to process depth image: {e}")
 
     def color_callback(self, msg):
         self.color_msg = msg
@@ -58,7 +65,7 @@ class YoloNode(Node):
                 # 計算邊界框中心座標
                 center_x = (x1 + x2) / 2
                 center_y = (y1 + y2) / 2
-                center_z = 0.0  # 深度相機
+                center_z = self.depth_image[center_y, center_x] if self.depth_image is not None else 0.0
 
                 # 創建相機框架的中心座標訊息
                 center_point = PointStamped()

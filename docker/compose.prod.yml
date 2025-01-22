@@ -5,7 +5,7 @@ x-common-vars: &common-vars
   stop_grace_period: 1s
   environment:
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    ROS_DOMAIN_ID: 43
+    ROS_DOMAIN_ID: 42
 
 # x-gpu-vars: &gpu-vars
   # ipc: host
@@ -74,6 +74,6 @@ services:
     environment:
       DISPLAY: $DISPLAY
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-      ROS_DOMAIN_ID: 43
+      ROS_DOMAIN_ID: 42
     profiles: ['gui']
   
