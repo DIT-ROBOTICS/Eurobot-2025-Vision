@@ -3,7 +3,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import PointStamped
 from cv_bridge import CvBridge
-from ultralytics import YOLO
+from ultralytics import YOLO    
 import numpy as np
 
 
@@ -12,18 +12,19 @@ class YoloNode(Node):
         super().__init__('yolo_node')
 
         # YOLO模型
-        self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/best.pt")
+        self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver2.pt")
 
         # 訂閱相機影像
-        self.color_sub = self.create_subscription(Image,'/realsense/camera/color/image_raw',
+        self.color_sub = self.create_subscription(Image,'/realsense2/cam_mid/color/image_raw',
             self.color_callback,10)
-        self.depth_sub = self.create_subscription(Image,'/camera/depth/image_raw', 
+        self.depth_sub = self.create_subscription(Image,'/realsense2/cam_mid/depth/image_rect_raw', 
             self.depth_callback, 10)
         self.bbox_pub = self.create_publisher(Image, '/detected/bounding_boxes', 10)
         
         # 發布檢測到的物件中心座標（相機座標系）
         self.center_pub = self.create_publisher(PointStamped, '/detected/cam_center_points', 10)
-
+        self.board_pub = self.create_publisher(PointStamped, '/detected/cam_center_points/board', 10)
+        self.can_pub = self.create_publisher(PointStamped, '/detected/cam_center_points/can', 10)
         # CvBridge
         self.bridge = CvBridge()
 
@@ -84,6 +85,10 @@ class YoloNode(Node):
 
                 # 發布中心座標
                 self.center_pub.publish(center_point)
+                if (label == 'can'):
+                    self.can_pub.publish(center_point)
+                if (label == 'board'):
+                    self.board_pub.publish(center_point)
         # 發布yolo辨識結果的影像
         results_img = results[0].plot()  
         self.bbox_pub.publish(self.bridge.cv2_to_imgmsg(results_img, encoding="bgr8"))
