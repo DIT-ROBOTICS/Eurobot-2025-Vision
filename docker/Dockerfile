@@ -1,4 +1,10 @@
-FROM ros:humble AS base
+ARG BASE_IMAGE=ros:humble
+ARG ARCH=linux/arm64
+ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3-igpu
+# -----------------------------------------------------------------------------
+# Base Stage: nvidia container
+# -----------------------------------------------------------------------------
+FROM ${BASE_IMAGE} AS base
 LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
 LABEL org.opencontainers.image.vendor="DIT-Robotics"
 ENV TERM=xterm-256color
@@ -11,6 +17,7 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     v4l-utils \
     net-tools \
     iputils-ping \
+    python3-pip \
     apt-transport-https \
     software-properties-common \
     ros-humble-cv-bridge \
@@ -19,6 +26,10 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     ros-humble-rmw-cyclonedds-cpp \
     && apt clean -y && rm -rf /var/lib/apt/lists/*
 
+# -----------------------------------------------------------------------------
+# Builder Stage:
+#   - librealsense-builder
+# -----------------------------------------------------------------------------
 FROM base AS librealsense-builder
 ARG LIBREALSENSE_VERSION
 ARG DEBIAN_FRONTEND=noninteractive
@@ -51,8 +62,16 @@ RUN cd /usr/src/librealsense \
     && make -j$(($(nproc)-1)) all \
     && make install 
 
+# -----------------------------------------------------------------------------
+# Release Stage:
+#   - Realsense
+#   - Aruco
+#   - Ultralytics ROS: AMD64:igpu, dgpu | Jetson
+#   - GUI
+# -----------------------------------------------------------------------------
 ###### RealSense Module ######
 FROM base AS realsense
+ARG REALSENSE_ROS_VERSION
 ARG USER
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -86,7 +105,7 @@ RUN groupadd --gid $USER_GID $USER && \
 USER $USER
 RUN mkdir -p /home/$USER/vision-ws/src && \
     # Install ROS2 Realsense package
-    git clone --branch ros2-master https://github.com/IntelRealSense/realsense-ros.git /home/$USER/vision-ws/src/realsense-ros && \
+    git clone --branch $REALSENSE_ROS_VERSION https://github.com/IntelRealSense/realsense-ros.git /home/$USER/vision-ws/src/realsense-ros && \
     rosdep update && \
     rosdep install -i --from-path /home/$USER/vision-ws/src --rosdistro humble -y && \
     cd /home/$USER/vision-ws && \
@@ -118,6 +137,35 @@ RUN mkdir -p /home/$USER/vision-ws/src && \
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
 
+###### Ultralytics ROS Module - AMD64:igpu, dgpu | Jetson ######
+FROM --platform=${ARCH} ${NVIDIA_BASE_IMAGE} AS ultralytics-ros
+LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
+LABEL org.opencontainers.image.vendor="DIT-Robotics"
+ENV TERM=xterm-256color
+ARG USER
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+# Copy binaries from ros humble base stage
+COPY --from=base /opt/ros/humble /opt/ros/humble
+COPY --from=base /usr/bin/ /usr/bin/
+COPY --from=base /usr/lib/ /usr/lib/
+COPY --from=base /usr/local/lib/ /usr/local/lib/
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
+    sudo \
+    libblas3 liblapack3 \
+    && apt clean -y && rm -rf /var/lib/apt/list/*
+# Add user and setup workspace
+RUN groupadd --gid $USER_GID $USER && \
+    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
+    chmod 0440 /etc/sudoers.d/$USER && \
+    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
+    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+USER $USER
+RUN pip install --no-cache-dir ultralytics
+WORKDIR /home/$USER/vision-ws
+CMD [ "/bin/bash" ]
+
 ###### GUI Module ######
 FROM base AS gui
 ARG USER
@@ -133,54 +181,4 @@ RUN groupadd --gid $USER_GID $USER && \
     chmod 0440 /etc/sudoers.d/$USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc
 USER $USER
-CMD [ "/bin/bash" ]
-
-###### Ultralytics ROS Module - AMD64 ######
-FROM base AS ultralytics-ros-amd64
-ARG USER
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-RUN groupadd --gid $USER_GID $USER && \
-    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
-    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
-    chmod 0440 /etc/sudoers.d/$USER && \
-    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
-    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
-USER $USER
-RUN mkdir -p /home/$USER/vision-ws/src
-RUN sudo apt update && sudo apt upgrade -y && \
-    sudo apt-get install -y python3-pip && \
-    pip3 install --upgrade pip && \
-    pip3 install ultralytics numpy==1.25.0
-WORKDIR /home/$USER/vision-ws
-CMD [ "/bin/bash" ]
-
-
-###### Ultralytics ROS Module - Jetson ######
-FROM ultralytics/ultralytics:latest-jetson-jetpack6 AS ultralytics-ros-jetson
-LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
-LABEL org.opencontainers.image.vendor="DIT-Robotics"
-ENV TERM=xterm-256color
-ARG USER
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-# Copy binaries from ros humble base stage
-COPY --from=base /opt/ros/humble /opt/ros/humble
-COPY --from=base /usr/bin/ /usr/bin/
-COPY --from=base /usr/lib/ /usr/lib/
-COPY --from=base /usr/local/lib/ /usr/local/lib/
-# Install dependencies
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
-    sudo \
-    libblas3 liblapack3 \
-    && apt clean -y && rm -rf /var/lib/apt/list/*
-# Add user and setup workspace
-RUN groupadd --gid $USER_GID $USER && \
-    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
-    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
-    chmod 0440 /etc/sudoers.d/$USER && \
-    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
-    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
-USER $USER
-WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]

@@ -1159,9 +1159,9 @@ void MarkerDetector_Impl::detect(const cv::Mat &input, std::vector<Marker> &dete
         {
           // deletes the one with smaller perimeter
           if (perimeter(detectedMarkers[i]) < perimeter(detectedMarkers[j]))
-            toRemove[i] = true;
+            toRemove[i] = false;
           else
-            toRemove[j] = true;
+            toRemove[j] = false;
         }
       }
     }

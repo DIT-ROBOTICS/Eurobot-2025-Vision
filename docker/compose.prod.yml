@@ -5,18 +5,18 @@ x-common-vars: &common-vars
   stop_grace_period: 1s
   environment:
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    ROS_DOMAIN_ID: 42
+    ROS_DOMAIN_ID: $ROS_DOMAIN_ID
 
-# x-gpu-vars: &gpu-vars
-  # ipc: host
-  # shm_size: 6gb
-  # deploy:
-  #   resources:
-  #     reservations:
-  #       devices:
-  #         - driver: nvidia
-  #           count: 1
-  #           capabilities: [gpu]
+x-gpu-vars: &gpu-vars
+  ipc: host
+  shm_size: 6gb
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
 
 services:
   realsense:
@@ -25,7 +25,8 @@ services:
       target: realsense  
       args:
         USER: realsense
-        LIBREALSENSE_VERSION: 2.56.2
+        LIBREALSENSE_VERSION: $LIBREALSENSE_VERSION
+        REALSENSE_ROS_VERSION: $REALSENSE_ROS_VERSION
     <<: *common-vars
     profiles: ['camera']
 
@@ -36,32 +37,26 @@ services:
       args:
         USER: aruco
     <<: *common-vars
-    profiles: ['module']
+    profiles: ['aruco']
 
   ultralytics-ros:
     build:
       context: .
-      target: ultralytics-ros-$PLATFORM
+      target: ultralytics-ros
       args:
         USER: ultralytics
     <<: 
       - *common-vars
-      # - *gpu-vars
-    profiles: ['module']
+      - *gpu-vars
+    profiles: ['yolo']
 
   ultralytics-training:
     build:
       context: .
-      target: pytorch-training
-    <<: *common-vars
-    # deploy:
-    #  resources:
-    #    reservations:
-    #      devices:
-    #        - driver: nvidia
-    #          count: 1
-    #          capabilities: [gpu]
-    shm_size: 6gb
+      target: ultralytics-training
+    <<: 
+      - *common-vars
+      - *gpu-vars
     profiles: ['train']
     
   gui:
@@ -73,7 +68,6 @@ services:
     <<: *common-vars
     environment:
       DISPLAY: $DISPLAY
-      WAYLAND_DISPLAY: $WAYLAND_DISPLAY
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
       ROS_DOMAIN_ID: 42
     profiles: ['gui']

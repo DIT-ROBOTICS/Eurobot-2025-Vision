@@ -53,6 +53,7 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include <tf2_ros/transform_broadcaster.h>
 
 using namespace std::chrono_literals;
 
@@ -61,7 +62,7 @@ class ArucoMarkerPublisher : public rclcpp::Node
 private:
   rclcpp::Node::SharedPtr subNode;
   // ArUco stuff
-  aruco::MarkerDetector mDetector_;
+  aruco::MarkerDetector mDetector_{"ARUCO_MIP_16h3", 1};
   aruco::CameraParameters camParam_;
   std::vector<aruco::Marker> markers_;
 
@@ -88,10 +89,13 @@ private:
   bool useCamInfo_;
   std_msgs::msg::UInt32MultiArray marker_list_msg_;
 
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+
 public:
   ArucoMarkerPublisher()
   : Node("marker_publisher"), useCamInfo_(true)
   {
+    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
   }
 
   bool setup()
@@ -198,6 +202,8 @@ public:
       mDetector_.detect(inImage_, markers_, camParam_, marker_size_, false);
 
       // marker array publish
+      //RCLCPP_INFO(this->get_logger(), "Detected %ld markers.", markers_.size());
+      publishMarkers = true;
       if (publishMarkers) {
         marker_msg_->markers.clear();
         marker_msg_->markers.resize(markers_.size());
@@ -229,8 +235,26 @@ public:
             transform = static_cast<tf2::Transform>(cameraToReference) * transform;
             tf2::toMsg(transform, marker_i.pose.pose);
             marker_i.header.frame_id = reference_frame_;
+
+            // Publish the marker pose as a TF transform
+            geometry_msgs::msg::TransformStamped marker_tf;
+            marker_tf.header.stamp = curr_stamp;
+            marker_tf.header.frame_id = reference_frame_;
+            marker_tf.child_frame_id = "marker_" + std::to_string(marker_i.id);
+            marker_tf.transform.translation.x = transform.getOrigin().x();
+            marker_tf.transform.translation.y = transform.getOrigin().y();
+            marker_tf.transform.translation.z = transform.getOrigin().z();
+            marker_tf.transform.rotation = tf2::toMsg(transform.getRotation());
+            if (!tf_broadcaster_) {
+              RCLCPP_ERROR(this->get_logger(), "TransformBroadcaster not initialized!");
+              return;
+            }
+            if(marker_tf.child_frame_id == "marker_6")
+              tf_broadcaster_->sendTransform(marker_tf);
           }
         }
+        //RCLCPP_INFO(this->get_logger(), "Detected %ld markers.", markers_.size());
+
 
         // publish marker array
         if (marker_msg_->markers.size() > 0) {

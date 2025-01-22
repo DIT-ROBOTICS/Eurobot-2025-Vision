@@ -4,10 +4,15 @@ services:
     container_name: aruco
     volumes:
       - $LOCAL_WORKSPACE_FOLDER/ws/aruco-pkg:/home/aruco/vision-ws/src/aruco-ros
-    command: bash
+    command: >
+      bash -ic "
+      colcon build --packages-up-to aruco aruco_msgs aruco_ros --parallel-workers 6;
+      source /home/aruco/vision-ws/install/local_setup.bash;
+      ros2 launch aruco_ros multicam_publisher.launch.py
+      "
   
   ultralytics-ros:
-    image: vision-main:ultralytics-ros-$PLATFORM
+    image: vision-main:ultralytics-ros
     container_name: ultralytics-ros
     volumes:
       - $LOCAL_WORKSPACE_FOLDER/ws/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
@@ -30,8 +35,9 @@ services:
     volumes:
       # X11 socket
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - $HOME/.Xauthority:/home/gui/.Xauthority
       # Wayland socket
-      - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
+      # - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
       # GUI config
       - $LOCAL_WORKSPACE_FOLDER/ws/gui-config:/home/gui/.rviz2
     command: bash -ic "rviz2 -d /home/gui/.rviz2/realsense.rviz"

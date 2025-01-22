@@ -25,8 +25,8 @@ def launch_setup(context, *args, **kwargs):
         package='aruco_ros',
         executable='double',
         parameters=[aruco_double_params],
-        remappings=[('/camera_info', '/stereo/' + eye + '/camera_info'),
-                    ('/image', '/stereo/' + eye + '/image_rect_color')],
+        remappings=[('/camera_info', '/realsense1/cam_left/color/camera_info'),
+                    ('/image', '/realsense1/cam_left/color/image_raw')],
     )
 
     return [aruco_double]
@@ -56,7 +56,7 @@ def generate_launch_description():
     )
 
     dct_normalization_arg = DeclareLaunchArgument(
-        'dct_normalization', default_value='true',
+        'dct_normalization', default_value='false',
         description='dct normalization. ',
         choices=['true', 'false'],
     )
