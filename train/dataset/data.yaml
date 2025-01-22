@@ -1,8 +1,0 @@
-
-train: /root/train/dataset/images/train
-val: /root/train/dataset/images/valid
-test: /root/train/dataset/images/test
-
-nc: 2
-names: ['board', 'can']
-
