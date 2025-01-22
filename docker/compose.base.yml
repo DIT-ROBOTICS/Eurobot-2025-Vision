@@ -5,14 +5,13 @@ services:
     volumes:
       - /dev:/dev
       - $LOCAL_WORKSPACE_FOLDER/ws/realsense-pkg:/home/realsense/vision-ws/src/realsense-ros
-      - $LOCAL_WORKSPACE_FOLDER/ws/pointcloud-pkg:/home/realsense/vision-ws/src/pointcloud-ros
       - $LOCAL_WORKSPACE_FOLDER/ws/camera-pkg:/home/realsense/vision-ws/src/camera-ros
     device_cgroup_rules:
       - "c 81:* rmw"
       - "c 189:* rmw"
-    command: bash
-      # bash -ic "
-      # colcon build --packages-select realsense2_camera;
-      # source /home/realsense/vision-ws/install/local_setup.bash;
-      # ros2 launch realsense2_camera rs_triple_camera_launch.py
-      # "
+    command: >
+      bash -ic "
+      colcon build --packages-select realsense2_camera;
+      source /home/realsense/vision-ws/install/local_setup.bash;
+      ros2 launch realsense2_camera rs_triple_camera_launch.py
+      "
