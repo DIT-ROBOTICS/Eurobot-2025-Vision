@@ -1,2 +1,5 @@
-./vscode
+.vscode/
 *_bag/
+*.jpg
+*.png
+train/dataset/

@@ -1,0 +1,15 @@
+{
+    "name": "Ultralytics-Training",
+    "dockerComposeFile": [
+        "../../docker/compose.base.yml",
+        "../../docker/compose.module.yml",
+        "../../docker/compose.prod.yml"
+    ],
+    "service": "ultralytics-training",
+    "workspaceFolder": "/root/train",
+    "runServices": [
+        "ultralytics-training",
+        "gui"
+    ],
+    "shutdownAction": "stopCompose"
+}

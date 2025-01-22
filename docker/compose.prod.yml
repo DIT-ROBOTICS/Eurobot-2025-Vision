@@ -7,6 +7,17 @@ x-common-vars: &common-vars
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
     ROS_DOMAIN_ID: 42
 
+# x-gpu-vars: &gpu-vars
+  # ipc: host
+  # shm_size: 6gb
+  # deploy:
+  #   resources:
+  #     reservations:
+  #       devices:
+  #         - driver: nvidia
+  #           count: 1
+  #           capabilities: [gpu]
+
 services:
   realsense:
     build:
@@ -16,7 +27,7 @@ services:
         USER: realsense
         LIBREALSENSE_VERSION: 2.56.2
     <<: *common-vars
-    profiles: ['base']
+    profiles: ['camera']
 
   aruco:
     build:
@@ -27,18 +38,29 @@ services:
     <<: *common-vars
     profiles: ['module']
 
-  pytorch-training:
+  ultralytics-ros:
+    build:
+      context: .
+      target: ultralytics-ros-$PLATFORM
+      args:
+        USER: ultralytics
+    <<: 
+      - *common-vars
+      # - *gpu-vars
+    profiles: ['module']
+
+  ultralytics-training:
     build:
       context: .
       target: pytorch-training
     <<: *common-vars
-    deploy:
-     resources:
-       reservations:
-         devices:
-           - driver: nvidia
-             count: 1
-             capabilities: [gpu]
+    # deploy:
+    #  resources:
+    #    reservations:
+    #      devices:
+    #        - driver: nvidia
+    #          count: 1
+    #          capabilities: [gpu]
     shm_size: 6gb
     profiles: ['train']
     
