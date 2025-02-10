@@ -5,6 +5,8 @@ from geometry_msgs.msg import PointStamped
 from cv_bridge import CvBridge
 from ultralytics import YOLO    
 import numpy as np
+import cv2
+import time 
 
 
 class YoloNode(Node):
@@ -15,9 +17,9 @@ class YoloNode(Node):
         self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver2.pt")
 
         # 訂閱相機影像
-        self.color_sub = self.create_subscription(Image,'/realsense2/cam_mid/color/image_raw',
+        self.color_sub = self.create_subscription(Image,'/realsense/cam2/color/image_raw',
             self.color_callback,10)
-        self.depth_sub = self.create_subscription(Image,'/realsense2/cam_mid/depth/image_rect_raw', 
+        self.depth_sub = self.create_subscription(Image,'/realsense/cam2/depth/image_rect_raw', 
             self.depth_callback, 10)
         self.bbox_pub = self.create_publisher(Image, '/detected/bounding_boxes', 10)
         
@@ -27,9 +29,13 @@ class YoloNode(Node):
         self.can_pub = self.create_publisher(PointStamped, '/detected/cam_center_points/can', 10)
         # CvBridge
         self.bridge = CvBridge()
-
+        
         self.depth_image = None 
         self.color_msg = None
+
+        # 用於 FPS 計算
+        self.frame_count = 0
+        self.start_time = time.time()
 
         self.get_logger().info("YOLO Node initialized and ready.")
 
@@ -41,10 +47,30 @@ class YoloNode(Node):
             self.get_logger().error(f"Failed to process depth image: {e}")
 
     def color_callback(self, msg):
+        # 記錄開始時間（計算延遲）
+        start_time = time.time()
+
+        # 記錄 ROS2 訊息時間戳記（轉換為秒）
+        ros_timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+        current_time = time.time()
+        latency = current_time - ros_timestamp  # 計算延遲
+
         self.color_msg = msg
 
         self.detect_objects()
 
+        # 計算 FPS
+        self.frame_count += 1
+        elapsed_time = time.time() - self.start_time
+        if elapsed_time > 0:
+            fps = self.frame_count / elapsed_time
+        else:
+            fps = 0.0
+        
+        # 記錄處理時間
+        processing_time = time.time() - start_time
+        self.get_logger().info(f"FPS: {fps:.2f}, Latency: {latency:.4f} sec, Processing Time: {processing_time:.4f} sec")
+        
     def detect_objects(self):
         if self.color_msg is None:
             self.get_logger().warning("No image message received yet.")
@@ -66,21 +92,24 @@ class YoloNode(Node):
                 # 計算邊界框中心座標
                 center_x = (x1 + x2) / 2
                 center_y = (y1 + y2) / 2
-                center_z = self.depth_image[center_y, center_x] if self.depth_image is not None else 0.0
-
+                center_z = self.depth_image[int(center_y), int(center_x)] if self.depth_image is not None else 0.0
+                f_x = 609.68
+                f_y = 608.42
+                c_x = 425.38
+                c_y = 238.43
                 # 創建相機框架的中心座標訊息
                 center_point = PointStamped()
                 center_point.header.frame_id = 'cam_mid_link'  # 相機的座標框架
                 center_point.header.stamp = self.get_clock().now().to_msg()
-                center_point.point.x = center_x
-                center_point.point.y = center_y
-                center_point.point.z = center_z
+                center_point.point.x = (center_z * (center_x - c_x) / f_x) / 1000 
+                center_point.point.y = (center_z * (center_y - c_y) / f_y) / 1000
+                center_point.point.z = center_z/1000
 
                 self.get_logger().info(
                     f"Detected object: x1={x1}, y1={y1}, x2={x2}, y2={y2}, "
                     f"Centerpoints of camera coordinates: x={center_x:.2f}, y={center_y:.2f}, z={center_z:.2f}"
                     f"confidence={confidence:.2f}, label={label}"
-                    
+                    f"after trans: x={center_point.point.x:.2f}, y={center_point.point.y:.2f}, z={center_point.point.z:.2f}"
                 )
 
                 # 發布中心座標

@@ -7,16 +7,16 @@ x-common-vars: &common-vars
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
     ROS_DOMAIN_ID: $ROS_DOMAIN_ID
 
-x-gpu-vars: &gpu-vars
-  ipc: host
-  shm_size: 6gb
-  deploy:
-    resources:
-      reservations:
-        devices:
-          - driver: nvidia
-            count: 1
-            capabilities: [gpu]
+# x-gpu-vars: &gpu-vars
+#   ipc: host
+#   shm_size: 6gb
+#   deploy:
+#     resources:
+#       reservations:
+#         devices:
+#           - driver: nvidia
+#             count: 1
+#             capabilities: [gpu]
 
 services:
   realsense:
@@ -47,7 +47,7 @@ services:
         USER: ultralytics
     <<: 
       - *common-vars
-      - *gpu-vars
+      # - *gpu-vars
     profiles: ['yolo']
 
   ultralytics-training:
@@ -56,7 +56,7 @@ services:
       target: ultralytics-training
     <<: 
       - *common-vars
-      - *gpu-vars
+      # - *gpu-vars
     profiles: ['train']
     
   gui:

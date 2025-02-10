@@ -32,7 +32,7 @@ class TFNode(Node):
 
             # 發布轉換後的結果
             self.global_pub.publish(transformed_point)
-
+        
         except Exception as e:
             self.get_logger().error(f"Transform failed: {str(e)}")
 

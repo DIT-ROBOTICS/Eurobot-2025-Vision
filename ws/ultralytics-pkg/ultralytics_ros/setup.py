@@ -23,7 +23,8 @@ setup(
         'console_scripts': [
             'script = ultralytics_ros.script:main',
             'yolo_node = ultralytics_ros.yolo_node:main',
-            'tf_node= ultralytics_ros.tf_node:main'
+            'tf_node= ultralytics_ros.tf_node:main',
+            'get= ultralytics_ros.get:main'
         ],
     },
 )
