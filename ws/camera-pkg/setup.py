@@ -24,6 +24,7 @@ setup(
             'camera_merger_node = camera_snap.sp_multi_camera:main',
             'image_stitcher_node = image_stitch.sti_video:main',
             'get_node = image_stitch.get:main',
+            'photo_node = photo_pkg.photo:main',
         ],
     },
 )
