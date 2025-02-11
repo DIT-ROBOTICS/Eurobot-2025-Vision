@@ -55,9 +55,12 @@ RUN cd /usr/src/librealsense \
     -DCMAKE_C_FLAGS_RELEASE="${CMAKE_C_FLAGS_RELEASE} -s" \
     -DCMAKE_CXX_FLAGS_RELEASE="${CMAKE_CXX_FLAGS_RELEASE} -s" \
     -DCMAKE_INSTALL_PREFIX=/opt/librealsense \
-    -DBUILD_GRAPHICAL_EXAMPLES=OFF \
+    -DFORCE_LIBUVC=true \
+    -DFORCE_RSUSB_BACKEND=true \
     -DBUILD_PYTHON_BINDINGS:bool=true \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_EXAMPLES=OFF \
+    -DBUILD_GRAPHICAL_EXAMPLES=OFF \
     && make -j$(($(nproc)-1)) all \
     && make install 
 
