@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=ros:humble
-ARG ARCH=linux/amd64
-ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3
+ARG ARCH=linux/arm64
+ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3-igpu
 # -----------------------------------------------------------------------------
 # Base Stage: nvidia container
 # -----------------------------------------------------------------------------
@@ -55,12 +55,9 @@ RUN cd /usr/src/librealsense \
     -DCMAKE_C_FLAGS_RELEASE="${CMAKE_C_FLAGS_RELEASE} -s" \
     -DCMAKE_CXX_FLAGS_RELEASE="${CMAKE_CXX_FLAGS_RELEASE} -s" \
     -DCMAKE_INSTALL_PREFIX=/opt/librealsense \
-    -DFORCE_LIBUVC=true \
-    -DFORCE_RSUSB_BACKEND=ON \
+    -DBUILD_GRAPHICAL_EXAMPLES=OFF \
     -DBUILD_PYTHON_BINDINGS:bool=true \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_EXAMPLES=OFF \
-    -DBUILD_GRAPHICAL_EXAMPLES=OFF \
     && make -j$(($(nproc)-1)) all \
     && make install 
 
