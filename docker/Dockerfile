@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=ros:humble
-ARG ARCH=linux/arm64
-ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3-igpu
+ARG ARCH=linux/amd64
+ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3
 # -----------------------------------------------------------------------------
 # Base Stage: nvidia container
 # -----------------------------------------------------------------------------
@@ -41,7 +41,6 @@ RUN apt update && apt install -y \
     python3-dev \
     ca-certificates \
     libssl-dev libusb-1.0-0-dev libudev-dev pkg-config libgtk-3-dev \
-    libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \
     && apt clean -y && rm -rf /var/lib/apt/lists/*  
 WORKDIR /usr/src
 RUN curl https://codeload.github.com/IntelRealSense/librealsense/tar.gz/refs/tags/v$LIBREALSENSE_VERSION -o librealsense.tar.gz && \
@@ -51,14 +50,17 @@ RUN curl https://codeload.github.com/IntelRealSense/librealsense/tar.gz/refs/tag
 # Build librealsense from source
 RUN cd /usr/src/librealsense \
     && mkdir build && cd build \
-    && cmake \
+    && cmake ../ \
     -DPYTHON_EXECUTABLE=$(which python3) \
     -DCMAKE_C_FLAGS_RELEASE="${CMAKE_C_FLAGS_RELEASE} -s" \
     -DCMAKE_CXX_FLAGS_RELEASE="${CMAKE_CXX_FLAGS_RELEASE} -s" \
-    -DCMAKE_INSTALL_PREFIX=/opt/librealsense \    
-    -DBUILD_GRAPHICAL_EXAMPLES=OFF \
+    -DCMAKE_INSTALL_PREFIX=/opt/librealsense \
+    -DFORCE_LIBUVC=true \
+    -DFORCE_RSUSB_BACKEND=ON \
     -DBUILD_PYTHON_BINDINGS:bool=true \
-    -DCMAKE_BUILD_TYPE=Release ../ \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_EXAMPLES=OFF \
+    -DBUILD_GRAPHICAL_EXAMPLES=OFF \
     && make -j$(($(nproc)-1)) all \
     && make install 
 
@@ -87,13 +89,13 @@ RUN apt-get update \
     libusb-1.0-0 \
     udev \
     ca-certificates \
-    ros-humble-librealsense2 \
     ros-humble-diagnostic-updater \
     ros-humble-xacro \
     ros-humble-launch-pytest \
     ros-humble-sensor-msgs-py \
     python3-tqdm \
     python3-requests \
+    libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \
     && apt clean -y && rm -rf /var/lib/apt/lists/*
 # Add user and setup workspace
 RUN groupadd --gid $USER_GID $USER && \
@@ -106,11 +108,12 @@ USER $USER
 RUN mkdir -p /home/$USER/vision-ws/src && \
     # Install ROS2 Realsense package
     git clone --branch $REALSENSE_ROS_VERSION https://github.com/IntelRealSense/realsense-ros.git /home/$USER/vision-ws/src/realsense-ros && \
+    sudo apt install python3-rosdep -y && \
     rosdep update && \
-    rosdep install -i --from-path /home/$USER/vision-ws/src --rosdistro humble -y && \
+    rosdep install -i --from-path /home/$USER/vision-ws/src --rosdistro humble --skip-keys=librealsense2 -y && \
     cd /home/$USER/vision-ws && \
     /bin/bash -c "source /opt/ros/humble/setup.bash && \
-                colcon build --symlink-install"
+                  colcon build --symlink-install"
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
 
