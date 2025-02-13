@@ -69,6 +69,6 @@ services:
     environment:
       DISPLAY: $DISPLAY
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-      ROS_DOMAIN_ID: 42
+      ROS_DOMAIN_ID: 22
     profiles: ['gui']
   

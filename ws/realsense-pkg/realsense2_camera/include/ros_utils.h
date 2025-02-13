@@ -33,7 +33,6 @@ namespace realsense2_camera
     const stream_index_pair INFRA2{RS2_STREAM_INFRARED, 2};
     const stream_index_pair GYRO{RS2_STREAM_GYRO, 0};
     const stream_index_pair ACCEL{RS2_STREAM_ACCEL, 0};
-    const stream_index_pair MOTION{RS2_STREAM_MOTION, 0};
 
     bool isValidCharInName(char c);
 
@@ -43,6 +42,6 @@ namespace realsense2_camera
     const rmw_qos_profile_t qos_string_to_qos(std::string str);
     const std::string list_available_qos_strings();
     rs2_format string_to_rs2_format(std::string str);
-    std::string vectorToJsonString(const std::vector<uint8_t>& vec);
+
 }
 

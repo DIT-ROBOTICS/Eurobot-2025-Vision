@@ -480,26 +480,7 @@ void BaseRealSenseNode::imu_callback(rs2::frame frame)
                 frame.get_profile().stream_index(),
                 rs2_timestamp_domain_to_string(frame.get_frame_timestamp_domain()));
 
-    stream_index_pair stream_index;
-    
-    if(stream == GYRO.first)
-    {
-        stream_index = GYRO;
-    }
-    else if(stream == ACCEL.first)
-    {
-        stream_index = ACCEL;
-    }
-    else if(stream == MOTION.first)
-    {
-        stream_index = MOTION;
-    }
-    else 
-    {
-        ROS_ERROR("Unknown IMU stream type.");
-        return;
-    }
-
+    auto stream_index = (stream == GYRO.first)?GYRO:ACCEL;
     rclcpp::Time t(frameSystemTimeSec(frame));
 
     if(_imu_publishers.find(stream_index) == _imu_publishers.end())
@@ -514,41 +495,19 @@ void BaseRealSenseNode::imu_callback(rs2::frame frame)
         ImuMessage_AddDefaultValues(imu_msg);
         imu_msg.header.frame_id = OPTICAL_FRAME_ID(stream_index);
 
-        if (MOTION == stream_index)
+        auto crnt_reading = *(reinterpret_cast<const float3*>(frame.get_data()));
+        if (GYRO == stream_index)
         {
-            auto combined_motion_data = frame.as<rs2::motion_frame>().get_combined_motion_data();
-
-            imu_msg.linear_acceleration.x = combined_motion_data.linear_acceleration.x;
-            imu_msg.linear_acceleration.y = combined_motion_data.linear_acceleration.y;
-            imu_msg.linear_acceleration.z = combined_motion_data.linear_acceleration.z;
-
-            imu_msg.angular_velocity.x = combined_motion_data.angular_velocity.x;
-            imu_msg.angular_velocity.y = combined_motion_data.angular_velocity.y;
-            imu_msg.angular_velocity.z = combined_motion_data.angular_velocity.z;
-
-            imu_msg.orientation.x = combined_motion_data.orientation.x;
-            imu_msg.orientation.y = combined_motion_data.orientation.y;
-            imu_msg.orientation.z = combined_motion_data.orientation.z;
-            imu_msg.orientation.w = combined_motion_data.orientation.w;
-
+            imu_msg.angular_velocity.x = crnt_reading.x;
+            imu_msg.angular_velocity.y = crnt_reading.y;
+            imu_msg.angular_velocity.z = crnt_reading.z;
         }
-        else
+        else if (ACCEL == stream_index)
         {
-            auto motion_data = frame.as<rs2::motion_frame>().get_motion_data();
-            if (GYRO == stream_index)
-            {
-                imu_msg.angular_velocity.x = motion_data.x;
-                imu_msg.angular_velocity.y = motion_data.y;
-                imu_msg.angular_velocity.z = motion_data.z;
-            }
-            else // ACCEL == stream_index
-            {
-                imu_msg.linear_acceleration.x = motion_data.x;
-                imu_msg.linear_acceleration.y = motion_data.y;
-                imu_msg.linear_acceleration.z = motion_data.z;
-            }
+            imu_msg.linear_acceleration.x = crnt_reading.x;
+            imu_msg.linear_acceleration.y = crnt_reading.y;
+            imu_msg.linear_acceleration.z = crnt_reading.z;
         }
-
         imu_msg.header.stamp = t;
         _imu_publishers[stream_index]->publish(imu_msg);
         ROS_DEBUG("Publish %s stream", ros_stream_to_string(frame.get_profile().stream_type()).c_str());

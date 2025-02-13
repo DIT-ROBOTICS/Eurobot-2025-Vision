@@ -35,7 +35,6 @@ void BaseRealSenseNode::setup()
     monitoringProfileChanges();
     updateSensors();
     publishServices();
-    publishActions();
 }
 
 void BaseRealSenseNode::monitoringProfileChanges()
@@ -295,14 +294,8 @@ void BaseRealSenseNode::startPublishers(const std::vector<stream_profile>& profi
                 rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(qos), qos));
             // Publish Intrinsics:
             info_topic_name << "~/" << stream_name << "/imu_info";
-
-            // IMU Info will have latched QoS, and it will publish its data only once during the ROS Node lifetime.
-            // intra-process do not support latched QoS, so we need to disable intra-process for this topic
-            rclcpp::PublisherOptionsWithAllocator<std::allocator<void>> options;
-            options.use_intra_process_comm = rclcpp::IntraProcessSetting::Disable;
             _imu_info_publishers[sip] = _node.create_publisher<IMUInfo>(info_topic_name.str(),
-                                                                        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_latched), rmw_qos_profile_latched),
-                                                                        std::move(options));
+                                        rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(info_qos), info_qos));
             IMUInfo info_msg = getImuInfo(profile);
             _imu_info_publishers[sip]->publish(info_msg);
         }
@@ -505,72 +498,11 @@ void BaseRealSenseNode::publishServices()
 {
     // adding "~/" to the service name will add node namespace and node name to the service
     // see "Private Namespace Substitution Character" section on https://design.ros2.org/articles/topic_and_service_names.html
-    _reset_srv = _node.create_service<std_srvs::srv::Empty>(
-            "~/hw_reset",
-            [&](const std_srvs::srv::Empty::Request::SharedPtr req,
-                        std_srvs::srv::Empty::Response::SharedPtr res)
-                        {handleHWReset(req, res);});
-
     _device_info_srv = _node.create_service<realsense2_camera_msgs::srv::DeviceInfo>(
             "~/device_info",
             [&](const realsense2_camera_msgs::srv::DeviceInfo::Request::SharedPtr req,
                         realsense2_camera_msgs::srv::DeviceInfo::Response::SharedPtr res)
                         {getDeviceInfo(req, res);});
-
-    _calib_config_read_srv = _node.create_service<realsense2_camera_msgs::srv::CalibConfigRead>(
-            "~/calib_config_read",
-            [&](const realsense2_camera_msgs::srv::CalibConfigRead::Request::SharedPtr req,
-                        realsense2_camera_msgs::srv::CalibConfigRead::Response::SharedPtr res)
-                        {CalibConfigReadService(req, res);});
-
-    _calib_config_write_srv = _node.create_service<realsense2_camera_msgs::srv::CalibConfigWrite>(
-            "~/calib_config_write",
-            [&](const realsense2_camera_msgs::srv::CalibConfigWrite::Request::SharedPtr req,
-                        realsense2_camera_msgs::srv::CalibConfigWrite::Response::SharedPtr res)
-                        {CalibConfigWriteService(req, res);});
-
-}
-
-void BaseRealSenseNode::publishActions()
-{
-
-    using namespace std::placeholders;
-    _triggered_calibration_action_server = rclcpp_action::create_server<TriggeredCalibration>(
-      _node.get_node_base_interface(),
-      _node.get_node_clock_interface(),
-      _node.get_node_logging_interface(),
-      _node.get_node_waitables_interface(),
-      "~/triggered_calibration",
-      std::bind(&BaseRealSenseNode::TriggeredCalibrationHandleGoal, this, _1, _2),
-      std::bind(&BaseRealSenseNode::TriggeredCalibrationHandleCancel, this, _1),
-      std::bind(&BaseRealSenseNode::TriggeredCalibrationHandleAccepted, this, _1));
-
-}
-
-void BaseRealSenseNode::handleHWReset(const std_srvs::srv::Empty::Request::SharedPtr req,
-                                const std_srvs::srv::Empty::Response::SharedPtr res)
-{
-    (void)req;
-    (void)res;
-    ROS_INFO_STREAM("Reset requested through service call");
-    if (_dev)
-    {
-        try
-        {
-            for(auto&& sensor : _available_ros_sensors)
-            {
-                std::string module_name(rs2_to_ros(sensor->get_info(RS2_CAMERA_INFO_NAME)));
-                ROS_INFO_STREAM("Stopping Sensor: " << module_name);
-                sensor->stop();
-            }
-            ROS_INFO("Resetting device...");
-            _dev.hardware_reset();
-        }
-        catch(const std::exception& ex)
-        {
-            ROS_WARN_STREAM("An exception has been thrown: " << __FILE__ << ":" << __LINE__ << ":" << ex.what());
-        }
-    }
 }
 
 void BaseRealSenseNode::getDeviceInfo(const realsense2_camera_msgs::srv::DeviceInfo::Request::SharedPtr,
@@ -591,33 +523,4 @@ void BaseRealSenseNode::getDeviceInfo(const realsense2_camera_msgs::srv::DeviceI
 
     res->sensors = sensors_names.str().substr(0, sensors_names.str().size()-1);
     res->physical_port = _dev.supports(RS2_CAMERA_INFO_PHYSICAL_PORT) ? _dev.get_info(RS2_CAMERA_INFO_PHYSICAL_PORT) : "";
-}
-
-void BaseRealSenseNode::CalibConfigReadService(const realsense2_camera_msgs::srv::CalibConfigRead::Request::SharedPtr req,
-    realsense2_camera_msgs::srv::CalibConfigRead::Response::SharedPtr res){
-    try
-    {
-        (void)req; // silence unused parameter warning
-        res->calib_config = _dev.as<rs2::auto_calibrated_device>().get_calibration_config();
-        res->success = true;
-    }
-    catch (const std::exception &e)
-    {
-        res->success = false;
-        res->error_message = std::string("Exception occurred: ") + e.what();
-    }
-}
-
-void BaseRealSenseNode::CalibConfigWriteService(const realsense2_camera_msgs::srv::CalibConfigWrite::Request::SharedPtr req,
-    realsense2_camera_msgs::srv::CalibConfigWrite::Response::SharedPtr res){
-    try
-    {
-        _dev.as<rs2::auto_calibrated_device>().set_calibration_config(req->calib_config);
-        res->success = true;
-    }
-    catch (const std::exception &e)
-    {
-        res->success = false;
-        res->error_message = std::string("Exception occurred: ") + e.what();
-    }
 }

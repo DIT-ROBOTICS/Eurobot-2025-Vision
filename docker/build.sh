@@ -28,11 +28,11 @@ echo -e "Supported PLATFORM  \033[33m$ARCH\033[0m"
 echo -e "NVIDIA_BASE_IMAGE   \033[32m$NVIDIA_BASE_IMAGE\033[0m"
 
 if [ "$CACHE" == false ]; then
-  docker compose build --no-cache --parallel
   echo -e "Build \033[31m--no-cache\033[0m"
+  docker compose build --no-cache --parallel
   docker compose up -d
 else
-  docker compose up -d
   echo -e "Build \033[32m--cache\033[0m"
+  docker compose up -d
 fi
 
