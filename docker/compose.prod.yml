@@ -7,16 +7,16 @@ x-common-vars: &common-vars
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
     ROS_DOMAIN_ID: $ROS_DOMAIN_ID
 
-# x-gpu-vars: &gpu-vars
-#   ipc: host
-#   shm_size: 6gb
-#   deploy:
-#     resources:
-#       reservations:
-#         devices:
-#           - driver: nvidia
-#             count: 1
-#             capabilities: [gpu]
+x-gpu-vars: &gpu-vars
+  ipc: host
+  shm_size: 6gb
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
 
 services:
   realsense:
@@ -69,6 +69,6 @@ services:
     environment:
       DISPLAY: $DISPLAY
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-      ROS_DOMAIN_ID: 22
+      ROS_DOMAIN_ID: $ROS_DOMAIN_ID
     profiles: ['gui']
   
