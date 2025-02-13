@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=ros:humble
-ARG ARCH=linux/arm64
-ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3-igpu
+ARG ARCH=linux/amd64
+ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3
 # -----------------------------------------------------------------------------
 # Base Stage: nvidia container
 # -----------------------------------------------------------------------------
