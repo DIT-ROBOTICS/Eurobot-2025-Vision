@@ -1,10 +1,10 @@
 ARG BASE_IMAGE=ros:humble
-ARG ARCH=linux/amd64
-ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3
+ARG ARCH
+ARG NVIDIA_BASE_IMAGE
 # -----------------------------------------------------------------------------
 # Base Stage: nvidia container
 # -----------------------------------------------------------------------------
-FROM ${BASE_IMAGE} AS base
+FROM --platform=${ARCH} ${BASE_IMAGE} AS base
 LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
 LABEL org.opencontainers.image.vendor="DIT-Robotics"
 ENV TERM=xterm-256color
@@ -50,17 +50,14 @@ RUN curl https://codeload.github.com/IntelRealSense/librealsense/tar.gz/refs/tag
 # Build librealsense from source
 RUN cd /usr/src/librealsense \
     && mkdir build && cd build \
-    && cmake ../ \
+    && cmake \
     -DPYTHON_EXECUTABLE=$(which python3) \
     -DCMAKE_C_FLAGS_RELEASE="${CMAKE_C_FLAGS_RELEASE} -s" \
     -DCMAKE_CXX_FLAGS_RELEASE="${CMAKE_CXX_FLAGS_RELEASE} -s" \
-    -DCMAKE_INSTALL_PREFIX=/opt/librealsense \
-    -DFORCE_LIBUVC=true \
-    -DFORCE_RSUSB_BACKEND=true \
-    -DBUILD_PYTHON_BINDINGS:bool=true \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_EXAMPLES=OFF \
+    -DCMAKE_INSTALL_PREFIX=/opt/librealsense \    
     -DBUILD_GRAPHICAL_EXAMPLES=OFF \
+    -DBUILD_PYTHON_BINDINGS:bool=true \
+    -DCMAKE_BUILD_TYPE=Release ../ \
     && make -j$(($(nproc)-1)) all \
     && make install 
 
