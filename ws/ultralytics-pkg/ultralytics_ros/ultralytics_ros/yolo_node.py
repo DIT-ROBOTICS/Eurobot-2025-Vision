@@ -14,7 +14,7 @@ class YoloNode(Node):
         super().__init__('yolo_node')
 
         # YOLO模型
-        self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver2.pt")
+        self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver3_platform.pt")
 
         # 訂閱相機影像
         self.color_sub = self.create_subscription(Image,'/realsense/cam2/color/image_raw',
@@ -25,8 +25,6 @@ class YoloNode(Node):
         
         # 發布檢測到的物件中心座標（相機座標系）
         self.center_pub = self.create_publisher(PointStamped, '/detected/cam_center_points', 10)
-        self.board_pub = self.create_publisher(PointStamped, '/detected/cam_center_points/board', 10)
-        self.can_pub = self.create_publisher(PointStamped, '/detected/cam_center_points/can', 10)
         # CvBridge
         self.bridge = CvBridge()
         
@@ -47,29 +45,30 @@ class YoloNode(Node):
             self.get_logger().error(f"Failed to process depth image: {e}")
 
     def color_callback(self, msg):
-        # 記錄開始時間（計算延遲）
-        start_time = time.time()
-
-        # 記錄 ROS2 訊息時間戳記（轉換為秒）
-        ros_timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
-        current_time = time.time()
-        latency = current_time - ros_timestamp  # 計算延遲
-
         self.color_msg = msg
 
         self.detect_objects()
 
-        # 計算 FPS
-        self.frame_count += 1
-        elapsed_time = time.time() - self.start_time
-        if elapsed_time > 0:
-            fps = self.frame_count / elapsed_time
-        else:
-            fps = 0.0
-        
-        # 記錄處理時間
-        processing_time = time.time() - start_time
-        self.get_logger().info(f"FPS: {fps:.2f}, Latency: {latency:.4f} sec, Processing Time: {processing_time:.4f} sec")
+        # # 記錄開始時間（計算延遲）
+        # start_time = time.time()
+
+        # # 記錄 ROS2 訊息時間戳記（轉換為秒）
+        # ros_timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+        # current_time = time.time()
+        # latency = current_time - ros_timestamp  # 計算延遲
+
+
+        # # 計算 FPS
+        # self.frame_count += 1
+        # elapsed_time = time.time() - self.start_time
+        # fps=0.0
+        # if elapsed_time >= 1.0:  # 每秒重置一次
+        #     fps = self.frame_count / elapsed_time
+        #     self.frame_count = 0
+        #     self.start_time = time.time()
+        # # 記錄處理時間
+        # processing_time = time.time() - start_time
+        # self.get_logger().info(f"FPS: {fps:.2f}, Latency: {latency:.4f} sec, Processing Time: {processing_time:.4f} sec")
         
     def detect_objects(self):
         if self.color_msg is None:
@@ -85,43 +84,51 @@ class YoloNode(Node):
         for object in results:
             boxes = object.boxes
             for box in boxes:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])  # 邊界框座標
-                confidence = box.conf[0].item()  # 置信度
-                label = box.cls[0].item()  # 類別標籤
 
-                # 計算邊界框中心座標
-                center_x = (x1 + x2) / 2
-                center_y = (y1 + y2) / 2
-                center_z = self.depth_image[int(center_y), int(center_x)] if self.depth_image is not None else 0.0
-                f_x = 609.68
+                f_x = 609.68 #內參
                 f_y = 608.42
                 c_x = 425.38
                 c_y = 238.43
-                # 創建相機框架的中心座標訊息
-                center_point = PointStamped()
-                center_point.header.frame_id = 'cam_mid_link'  # 相機的座標框架
-                center_point.header.stamp = self.get_clock().now().to_msg()
-                center_point.point.x = (center_z * (center_x - c_x) / f_x) / 1000 
-                center_point.point.y = (center_z * (center_y - c_y) / f_y) / 1000
-                center_point.point.z = center_z/1000
 
-                self.get_logger().info(
-                    f"Detected object: x1={x1}, y1={y1}, x2={x2}, y2={y2}, "
-                    f"Centerpoints of camera coordinates: x={center_x:.2f}, y={center_y:.2f}, z={center_z:.2f}"
-                    f"confidence={confidence:.2f}, label={label}"
-                    f"after trans: x={center_point.point.x:.2f}, y={center_point.point.y:.2f}, z={center_point.point.z:.2f}"
-                )
+                x1, y1, x2, y2 = map(int, box.xyxy[0])  # 邊界框座標
+                confidence = box.conf[0].item()  
+                label = box.cls[0].item()  
+
+                center_x = (x1 + x2) / 2
+                center_y = (y1 + y2) / 2
+
+                point1 = self.switch_to_cam_coor(x1,y1)
+                point2 = self.switch_to_cam_coor(x2,y2)
+                center_point = self.switch_to_cam_coor(center_x,center_y)
+
+                print(f"Detected object: x1={x1}, y1={y1}, x2={x2}, y2={y2}, \n")
+                print(f"confidence={confidence:.2f}, label={label}\n")
+                print(f"cam coordinate: x={center_point.point.x:.2f}, y={center_point.point.y:.2f}, z={center_point.point.z:.2f}\n")
 
                 # 發布中心座標
                 self.center_pub.publish(center_point)
-                if (label == 'can'):
-                    self.can_pub.publish(center_point)
-                if (label == 'board'):
-                    self.board_pub.publish(center_point)
         # 發布yolo辨識結果的影像
         results_img = results[0].plot()  
         self.bbox_pub.publish(self.bridge.cv2_to_imgmsg(results_img, encoding="bgr8"))
 
+    def switch_to_cam_coor(self,x,y):
+        f_x = 609.68 #內參
+        f_y = 608.42
+        c_x = 425.38
+        c_y = 238.43
+
+        if self.depth_image is not None:
+            height, width = self.depth_image.shape
+            z = self.depth_image[int(y), int(x)]
+        else:
+            z = 0.0
+        point = PointStamped()
+        point.header.frame_id = 'cam_mid_link'  # 相機的座標框架
+        point.header.stamp = self.get_clock().now().to_msg()
+        point.point.x = (z * (x - c_x) / f_x) / 1000 
+        point.point.y = (z * (y - c_y) / f_y) / 1000
+        point.point.z = z/1000
+        return point
 
 def main(args=None):
     rclpy.init(args=args)

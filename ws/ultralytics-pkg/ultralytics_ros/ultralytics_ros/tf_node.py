@@ -14,7 +14,7 @@ class TFNode(Node):
 
         # 訂閱中心點座標
         self.center_sub = self.create_subscription(PointStamped, '/detected/cam_center_points', self.center_callback, 10)
-
+    
         # 發布全局座標
         self.global_pub = self.create_publisher(PointStamped, '/detected/global_center_points', 10)
         self.get_logger().info("TF Node initialized and ready.")
