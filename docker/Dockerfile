@@ -19,11 +19,16 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     iputils-ping \
     python3-pip \
     apt-transport-https \
-    software-properties-common \
-    ros-humble-cv-bridge \
-    ros-humble-image-transport \
-    ros-humble-image-transport-plugins \    
+    software-properties-common \  
+    ros-humble-launch-pytest \
     ros-humble-rmw-fastrtps-cpp \
+    # Camera packages
+    ros-humble-cv-bridge \
+    ros-humble-sensor-msgs \
+    ros-humble-sensor-msgs-py \
+    ros-humble-realsense2-camera-msgs \
+    ros-humble-image-transport \
+    ros-humble-image-transport-plugins \   
     && apt clean -y && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------------------------------
@@ -88,8 +93,6 @@ RUN apt-get update \
     ca-certificates \
     ros-humble-diagnostic-updater \
     ros-humble-xacro \
-    ros-humble-launch-pytest \
-    ros-humble-sensor-msgs-py \
     python3-tqdm \
     python3-requests \
     libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \

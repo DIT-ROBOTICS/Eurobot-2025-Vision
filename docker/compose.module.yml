@@ -37,7 +37,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - $HOME/.Xauthority:/home/gui/.Xauthority
       # Wayland socket
-      - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
+      # - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
       # GUI config
       - $LOCAL_WORKSPACE_FOLDER/ws/gui-config:/home/gui/.rviz2
     command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765
