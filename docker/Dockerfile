@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=ros:humble
-ARG ARCH
-ARG NVIDIA_BASE_IMAGE
+ARG ARCH=linux/amd64
+ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3
 # -----------------------------------------------------------------------------
 # Base Stage: nvidia container
 # -----------------------------------------------------------------------------
@@ -23,7 +23,7 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     ros-humble-cv-bridge \
     ros-humble-image-transport \
     ros-humble-image-transport-plugins \    
-    ros-humble-rmw-cyclonedds-cpp \
+    ros-humble-rmw-fastrtps-cpp \
     && apt clean -y && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------------------------------
@@ -174,6 +174,7 @@ ARG USER_GID=$USER_UID
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     ros-humble-rqt* \
     ros-humble-rviz2 \
+    ros-humble-foxglove-bridge \
     && apt clean -y && rm -rf /var/lib/apt/list/*
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
@@ -181,4 +182,5 @@ RUN groupadd --gid $USER_GID $USER && \
     chmod 0440 /etc/sudoers.d/$USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc
 USER $USER
+WORKDIR /home/$USER
 CMD [ "/bin/bash" ]
