@@ -4,7 +4,7 @@ x-common-vars: &common-vars
   network_mode: host
   stop_grace_period: 1s
   environment:
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
     ROS_DOMAIN_ID: $ROS_DOMAIN_ID
 
 # x-gpu-vars: &gpu-vars
@@ -68,7 +68,7 @@ services:
     <<: *common-vars
     environment:
       DISPLAY: $DISPLAY
-      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-      ROS_DOMAIN_ID: 22
+      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+      ROS_DOMAIN_ID: $ROS_DOMAIN_ID
     profiles: ['gui']
   

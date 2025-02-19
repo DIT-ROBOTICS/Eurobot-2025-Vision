@@ -4,7 +4,7 @@ ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3
 # -----------------------------------------------------------------------------
 # Base Stage: nvidia container
 # -----------------------------------------------------------------------------
-FROM ${BASE_IMAGE} AS base
+FROM --platform=${ARCH} ${BASE_IMAGE} AS base
 LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
 LABEL org.opencontainers.image.vendor="DIT-Robotics"
 ENV TERM=xterm-256color
@@ -19,11 +19,16 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     iputils-ping \
     python3-pip \
     apt-transport-https \
-    software-properties-common \
+    software-properties-common \  
+    ros-humble-launch-pytest \
+    ros-humble-rmw-fastrtps-cpp \
+    # Camera packages
     ros-humble-cv-bridge \
+    ros-humble-sensor-msgs \
+    ros-humble-sensor-msgs-py \
+    ros-humble-realsense2-camera-msgs \
     ros-humble-image-transport \
-    ros-humble-image-transport-plugins \    
-    ros-humble-rmw-cyclonedds-cpp \
+    ros-humble-image-transport-plugins \   
     && apt clean -y && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------------------------------------------------------
@@ -41,7 +46,6 @@ RUN apt update && apt install -y \
     python3-dev \
     ca-certificates \
     libssl-dev libusb-1.0-0-dev libudev-dev pkg-config libgtk-3-dev \
-    libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \
     && apt clean -y && rm -rf /var/lib/apt/lists/*  
 WORKDIR /usr/src
 RUN curl https://codeload.github.com/IntelRealSense/librealsense/tar.gz/refs/tags/v$LIBREALSENSE_VERSION -o librealsense.tar.gz && \
@@ -87,13 +91,11 @@ RUN apt-get update \
     libusb-1.0-0 \
     udev \
     ca-certificates \
-    ros-humble-librealsense2 \
     ros-humble-diagnostic-updater \
     ros-humble-xacro \
-    ros-humble-launch-pytest \
-    ros-humble-sensor-msgs-py \
     python3-tqdm \
     python3-requests \
+    libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \
     && apt clean -y && rm -rf /var/lib/apt/lists/*
 # Add user and setup workspace
 RUN groupadd --gid $USER_GID $USER && \
@@ -106,11 +108,12 @@ USER $USER
 RUN mkdir -p /home/$USER/vision-ws/src && \
     # Install ROS2 Realsense package
     git clone --branch $REALSENSE_ROS_VERSION https://github.com/IntelRealSense/realsense-ros.git /home/$USER/vision-ws/src/realsense-ros && \
+    sudo apt install python3-rosdep -y && \
     rosdep update && \
-    rosdep install -i --from-path /home/$USER/vision-ws/src --rosdistro humble -y && \
+    rosdep install -i --from-path /home/$USER/vision-ws/src --rosdistro humble --skip-keys=librealsense2 -y && \
     cd /home/$USER/vision-ws && \
     /bin/bash -c "source /opt/ros/humble/setup.bash && \
-                colcon build --symlink-install"
+                  colcon build --symlink-install"
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
 
@@ -174,6 +177,7 @@ ARG USER_GID=$USER_UID
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     ros-humble-rqt* \
     ros-humble-rviz2 \
+    ros-humble-foxglove-bridge \
     && apt clean -y && rm -rf /var/lib/apt/list/*
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
@@ -181,4 +185,5 @@ RUN groupadd --gid $USER_GID $USER && \
     chmod 0440 /etc/sudoers.d/$USER && \
     echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc
 USER $USER
+WORKDIR /home/$USER
 CMD [ "/bin/bash" ]

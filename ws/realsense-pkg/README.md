@@ -58,7 +58,7 @@
 
 <details>
    <summary>
-     Moving from <a href="https://github.com/IntelRealSense/realsense-ros/tree/ros2-legacy">ros2-legacy</a> to ros2-master
+     Moving from <a href="https://github.com/IntelRealSense/realsense-ros/tree/ros2-legacy">ros2-legacy</a> to ros2-development
   </summary>
 
 * Changed Parameters:
@@ -66,7 +66,7 @@
     - For video streams: **\<module>.profile** replaces **\<stream>_width**, **\<stream>_height**, **\<stream>_fps**
         - **ROS2-legacy (Old)**:
           - ros2 launch realsense2_camera rs_launch.py depth_width:=640 depth_height:=480 depth_fps:=30.0 infra1_width:=640 infra1_height:=480 infra1_fps:=30.0
-        - **ROS2-master (New)**:
+        - **ROS2-development (New)**:
           - ros2 launch realsense2_camera rs_launch.py depth_module.profile:=640x480x30
     - Removed paramets **\<stream>_frame_id**, **\<stream>_optical_frame_id**. frame_ids are now defined by camera_name
     - **"filters"** is removed. All filters (or post-processing blocks) are enabled/disabled using **"\<filter>.enable"**
@@ -113,7 +113,7 @@
     - For example, for Humble distro: ```sudo apt install ros-humble-librealsense2*```
 
 - #### Option 3: Build from source
-  - Download the latest [Intel&reg; RealSense&trade; SDK 2.0](https://github.com/IntelRealSense/librealsense)
+  - Download the latest [Intel&reg; RealSense&trade; SDK 2.0](https://github.com/IntelRealSense/librealsense/releases/tag/v2.53.1)
   - Follow the instructions under [Linux Installation](https://github.com/IntelRealSense/librealsense/blob/master/doc/installation.md)
 
 </details>
@@ -138,7 +138,7 @@
   
   - Clone the latest ROS2 Intel&reg; RealSense&trade;  wrapper from [here](https://github.com/IntelRealSense/realsense-ros.git) into '~/ros2_ws/src/'
       ```bashrc
-      git clone https://github.com/IntelRealSense/realsense-ros.git -b ros2-master
+      git clone https://github.com/IntelRealSense/realsense-ros.git -b ros2-development
       cd ~/ros2_ws
       ```
   
