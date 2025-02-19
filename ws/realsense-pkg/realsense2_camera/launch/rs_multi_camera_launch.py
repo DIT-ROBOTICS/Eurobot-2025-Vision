@@ -33,12 +33,12 @@ import pathlib
 sys.path.append(str(pathlib.Path(__file__).parent.absolute()))
 import rs_launch
 
-local_parameters = [{'name': 'camera_name1',        'default': 'D435',          'description': 'camera1 unique name'},
-                    {'name': 'camera_name2',        'default': 'D435',          'description': 'camera2 unique name'},
-                    {'name': 'camera_namespace1',   'default': 'cam_left',      'description': 'camera1 namespace'},
-                    {'name': 'camera_namespace2',   'default': 'can_mid',       'description': 'camera2 namespace'},
-                    {'name': 'serial_no1',          'default': '_215322073247', 'description': 'camera1 serial number'},
-                    {'name': 'serial_no2',          'default': '_215222079970', 'description': 'camera2 serial number'},
+local_parameters = [{'name': 'camera_name1',        'default': '',          'description': 'camera1 unique name'},
+                    {'name': 'camera_name2',        'default': '',          'description': 'camera2 unique name'},
+                    {'name': 'camera_namespace1',   'default': '',      'description': 'camera1 namespace'},
+                    {'name': 'camera_namespace2',   'default': '',       'description': 'camera2 namespace'},
+                    {'name': 'serial_no1',          'default': '', 'description': 'camera1 serial number'},
+                    {'name': 'serial_no2',          'default': '', 'description': 'camera2 serial number'},
                     {'name': 'enable_color1',           'default': 'true', 'description': 'enable color stream'},
                     {'name': 'enable_color2',           'default': 'true', 'description': 'enable color stream'},
                     {'name': 'enable_depth1',           'default': 'true', 'description': 'enable depth stream'},

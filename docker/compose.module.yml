@@ -16,7 +16,12 @@ services:
     container_name: ultralytics-ros
     volumes:
       - $LOCAL_WORKSPACE_FOLDER/ws/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
-    command: bash
+    command: >
+      bash -ic "
+      colcon build --base-paths /home/ultralytics/vision-ws;
+      source /home/ultralytics/vision-ws/install/local_setup.bash;
+      ros2 launch ultralytics_ros yolo_tf_launch.py
+      "
 
   # sima:
 
@@ -40,4 +45,4 @@ services:
       # - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
       # GUI config
       - $LOCAL_WORKSPACE_FOLDER/ws/gui-config:/home/gui/.rviz2
-    command: bash -ic "rviz2 -d /home/gui/.rviz2/realsense.rviz"
+    command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765
