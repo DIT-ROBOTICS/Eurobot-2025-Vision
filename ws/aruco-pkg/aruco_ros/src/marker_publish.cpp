@@ -249,7 +249,7 @@ public:
               RCLCPP_ERROR(this->get_logger(), "TransformBroadcaster not initialized!");
               return;
             }
-            if(marker_tf.child_frame_id == "marker_6")
+            //if(marker_tf.child_frame_id == "marker_6")
               tf_broadcaster_->sendTransform(marker_tf);
           }
         }
