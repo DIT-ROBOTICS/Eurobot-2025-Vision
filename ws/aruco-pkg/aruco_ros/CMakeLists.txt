@@ -84,6 +84,19 @@ target_include_directories(marker_publisher
 ament_target_dependencies(marker_publisher ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(marker_publisher ${OpenCV_LIBRARIES})
 
+add_executable(multicam_marker src/multicam_marker.cpp
+                                src/aruco_ros_utils.cpp)
+target_include_directories(multicam_marker
+  PUBLIC
+  include)
+
+target_include_directories(multicam_marker
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+ament_target_dependencies(multicam_marker ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(multicam_marker ${OpenCV_LIBRARIES})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
 

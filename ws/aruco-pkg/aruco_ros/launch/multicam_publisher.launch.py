@@ -23,7 +23,7 @@ def generate_launch_description():
 
     # IncludeLaunchDescription for each side
     package_name = 'aruco_ros'  # Replace with your package name
-    launch_file_name = 'marker_publisher.launch.py'  # Original launch file name
+    launch_file_name = 'single.launch.py'  # Original launch file name
 
     # Create a list to store included launches
     include_launches = []
@@ -39,7 +39,7 @@ def generate_launch_description():
                     )
                 ),
                 launch_arguments={
-                    'side': TextSubstitution(text=side),
+                    'eye': TextSubstitution(text=side),
                     'marker_size': LaunchConfiguration('marker_size'),
                     'reference_frame': LaunchConfiguration('reference_frame'),
                 }.items(),
