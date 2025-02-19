@@ -16,7 +16,12 @@ services:
     container_name: ultralytics-ros
     volumes:
       - $LOCAL_WORKSPACE_FOLDER/ws/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
-    command: bash
+    command: >
+      bash -ic "
+      colcon build --base-paths /home/ultralytics/vision-ws;
+      source /home/ultralytics/vision-ws/install/local_setup.bash;
+      ros2 launch ultralytics_ros yolo_tf_launch.py
+      "
 
   # sima:
 

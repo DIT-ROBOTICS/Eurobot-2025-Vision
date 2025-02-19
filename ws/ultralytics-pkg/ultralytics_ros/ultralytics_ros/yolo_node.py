@@ -17,9 +17,9 @@ class YoloNode(Node):
         self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver3_platform.pt")
 
         # 訂閱相機影像
-        self.color_sub = self.create_subscription(Image,'/realsense/cam2/color/image_raw',
+        self.color_sub = self.create_subscription(Image,'/realsense2/cam_mid/color/image_raw',
             self.color_callback,10)
-        self.depth_sub = self.create_subscription(Image,'/realsense/cam2/depth/image_rect_raw', 
+        self.depth_sub = self.create_subscription(Image,'/realsense2/cam_mid/color/image_raw/compressedDepth', 
             self.depth_callback, 10)
         self.bbox_pub = self.create_publisher(Image, '/detected/bounding_boxes', 10)
         
