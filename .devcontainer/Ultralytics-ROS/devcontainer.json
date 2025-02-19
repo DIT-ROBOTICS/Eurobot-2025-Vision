@@ -1,0 +1,16 @@
+{
+    "name": "UltraLytics-ROS",
+    "dockerComposeFile": [
+        "../../docker/compose.base.yml",
+        "../../docker/compose.module.yml",
+        "../../docker/compose.prod.yml"
+    ],
+    "service": "ultralytics-ros",
+    "workspaceFolder": "/home/ultralytics/vision-ws",
+    "runServices": [
+        "realsense",
+        "ultralytics-ros",
+        "gui"
+    ],
+    "shutdownAction": "stopCompose"
+}
