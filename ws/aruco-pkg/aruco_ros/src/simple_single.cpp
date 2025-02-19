@@ -64,7 +64,7 @@ private:
   aruco::CameraParameters camParam;
   tf2::Stamped<tf2::Transform> rightToLeft;
   bool useRectifiedImages;
-  aruco::MarkerDetector mDetector;
+  aruco::MarkerDetector mDetector{"ARUCO_MIP_16h3", 1};
   std::vector<aruco::Marker> markers;
   rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub;
   bool cam_info_received;
@@ -126,7 +126,7 @@ public:
     }
 
     // Print parameters of ArUco marker detector:
-    RCLCPP_INFO_STREAM(this->get_logger(), "Threshold method: " << thresh_method);
+    //RCLCPP_INFO_STREAM(this->get_logger(), "Threshold method: " << thresh_method);
 
     // Declare node parameters
     this->declare_parameter<double>("marker_size", 0.05);
@@ -137,24 +137,41 @@ public:
     this->declare_parameter<bool>("image_is_rectified", true);
     this->declare_parameter<float>("min_marker_size", 0.02);
     this->declare_parameter<std::string>("detection_mode", "");
+    this->declare_parameter<std::string>("corner_refinement", "");
 
     float min_marker_size;  // percentage of image area
     this->get_parameter_or<float>("min_marker_size", min_marker_size, 0.02);
+    RCLCPP_INFO_STREAM(this->get_logger(), "Marker size min: " << min_marker_size << " of image area");
 
     std::string detection_mode;
-    this->get_parameter_or<std::string>("detection_mode", detection_mode, "DM_FAST");
+    this->get_parameter_or<std::string>("detection_mode", detection_mode, "DM_NORMAL");
     if (detection_mode == "DM_FAST") {
-      mDetector.setDetectionMode(aruco::DM_FAST, min_marker_size);
+      mDetector.setDetectionMode(aruco::DetectionMode::DM_FAST, min_marker_size);
+      RCLCPP_INFO_STREAM(this->get_logger(), "Detection mode: " << "DM_FAST");
     } else if (detection_mode == "DM_VIDEO_FAST") {
-      mDetector.setDetectionMode(aruco::DM_VIDEO_FAST, min_marker_size);
+      mDetector.setDetectionMode(aruco::DetectionMode::DM_VIDEO_FAST, min_marker_size);
+      RCLCPP_INFO_STREAM(this->get_logger(), "Detection mode: " << "DM_VIDEO_FAST");
     } else {
       // Aruco version 2 mode
-      mDetector.setDetectionMode(aruco::DM_NORMAL, min_marker_size);
+      mDetector.setDetectionMode(aruco::DetectionMode::DM_NORMAL, min_marker_size);
+      RCLCPP_INFO_STREAM(this->get_logger(), "Detection mode: " << "DM_NORMAL");
     }
+    //mDetector.setDetectionMode(aruco::DetectionMode::DM_FAST,min_marker_size);
+    RCLCPP_INFO_STREAM(this->get_logger(), "Threshold method: " << mDetector.getParameters().thresMethod);
 
-    RCLCPP_INFO_STREAM(
-      this->get_logger(), "Marker size min: " << min_marker_size << " of image area");
-    RCLCPP_INFO_STREAM(this->get_logger(), "Detection mode: " << detection_mode);
+    std::string corner_refinement;
+    this->get_parameter_or<std::string>("corner_refinement", corner_refinement, "CORNER_NONE");
+    if (corner_refinement == "LINES") {
+      mDetector.getParameters().cornerRefinementM = aruco::CornerRefinementMethod::CORNER_LINES;
+      RCLCPP_INFO_STREAM(this->get_logger(), "Corner refinement: " << "LINES");
+    } else if (corner_refinement == "SUBPIX") {
+      mDetector.getParameters().cornerRefinementM = aruco::CornerRefinementMethod::CORNER_SUBPIX;
+      RCLCPP_INFO_STREAM(this->get_logger(), "Corner refinement: " << "SUBPIX");
+    } else {
+      mDetector.getParameters().cornerRefinementM = aruco::CornerRefinementMethod::CORNER_NONE;
+      RCLCPP_INFO_STREAM(this->get_logger(), "Corner refinement: " << "NONE");
+    }
+    //mDetector.getParameters().cornerRefinementM = aruco::CornerRefinementMethod::CORNER_LINES;
 
     image_sub = it_->subscribe("/image", 1, &ArucoSimple::image_callback, this);
     cam_info_sub = this->create_subscription<sensor_msgs::msg::CameraInfo>(
