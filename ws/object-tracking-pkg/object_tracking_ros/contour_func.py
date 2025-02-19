@@ -50,7 +50,7 @@ def Depth_Contour(depth_cv_image_path):
         # return depth_rec
 
     except Exception as e:
-        print("Error")
+        print(f"Error: {e}")
 
 def Color_Contour(color_cv_image_path):
     try:
@@ -79,13 +79,12 @@ def Color_Contour(color_cv_image_path):
                     cv2.waitKey(1)
     
     except Exception as e:
-        print("Error")
-
+        print(f"Error: {e}")
 
 def ColorRecTrans(color_cv_image_path):
     try:
         color_cv_image = cv2.imread(color_cv_image_path)
-        area = (0, 0, 0, 0)
+        bbox = (0, 0, 0, 0)
 
         if color_cv_image is None:
             print('Cannot receive color frame')
@@ -97,14 +96,68 @@ def ColorRecTrans(color_cv_image_path):
         binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
         contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if contours:
-            area = (0, 0, 0, 0)
             for contour in contours:
                 area = cv2.contourArea(contour)
-                if area > 3000 and area < 7000:
-                    area = cv2.boundingRect(contour)
+                if area > 3000:
+                    bbox = cv2.boundingRect(contour)
                     break
         
-        return area
+        return bbox
 
     except Exception as e:
-        print("Error")
+        print(f"Error: {e}")
+
+def DepthRecTrans(depth_cv_image_path):
+    try:
+        depth_cv_image = cv2.imread(depth_cv_image_path, cv2.IMREAD_GRAYSCALE)
+        bbox = (0, 0, 0, 0)
+
+        if depth_cv_image is None:
+            print('Cannot receive depth frame')
+            return
+        
+        binary = cv2.adaptiveThreshold(depth_cv_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        kernel = np.ones((5,5), np.uint8)
+        binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            for contour in contours:
+                area = cv2.contourArea(contour)
+                if area > 3000:
+                    bbox = cv2.boundingRect(contour)
+                    break
+        
+        return bbox
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+def ColorMultiRecTrans(color_cv_image_path):
+    try:
+        color_cv_image = cv2.imread(color_cv_image_path)
+        bbox_list = [(0, 0, 0, 0), (0, 0, 0, 0), (0, 0, 0, 0), (0, 0, 0, 0)]
+        count = 0
+
+        if color_cv_image is None:
+            print('Cannot receive color frame')
+            return
+        
+        gray_image = cv2.cvtColor(color_cv_image, cv2.COLOR_BGR2GRAY)
+        binary = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        kernel = np.ones((5,5), np.uint8)
+        binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            for contour in contours:
+                area = cv2.contourArea(contour)
+                if count == 3:
+                    count = 0
+                    break
+                if area > 3000:
+                    bbox_list[count] = cv2.boundingRect(contour)
+                    count = count + 1
+        
+        return bbox_list
+
+    except Exception as e:
+        print(f"Error: {e}")
