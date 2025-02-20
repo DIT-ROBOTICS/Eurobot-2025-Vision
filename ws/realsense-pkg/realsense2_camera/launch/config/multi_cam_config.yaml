@@ -3,15 +3,15 @@ enable_color: true
 enable_depth: true
 align_depth.enable: true
 # pointcloud
-pointcloud.enable: true
+pointcloud.enable: false
 pointcloud.stream_filter: 2
 pointcloud.stream_index_filter: 0
 pointcloud.ordered_pc: false
 pointclooud.allow_no_texture_points: false
 # camera settings 
-rgb_camera.profile: 848x480x60
-depth_camera.profile: 848x480x60
-rgb_camera.format: RGB8
+rgb_camera.profile: 640x360x60
+depth_camera.profile: 640x360x60
+rgb_camera.format: BGR8
 depth_camera.format: Z16
 rgb_camera.enable_auto_exposure: false
 depth_camera.enable_auto_exposure: false
@@ -25,4 +25,4 @@ temporal_filter.enable: true
 
 enable_sync: true
 publish_tf: true
-tf_publish_rate: 1.0
+tf_publish_rate: 30

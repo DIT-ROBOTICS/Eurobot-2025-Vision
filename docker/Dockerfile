@@ -21,6 +21,8 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     apt-transport-https \
     software-properties-common \  
     ros-humble-launch-pytest \
+    # DDS
+    ros-humble-rmw-cyclonedds-cpp \
     ros-humble-rmw-fastrtps-cpp \
     # Camera packages
     ros-humble-cv-bridge \

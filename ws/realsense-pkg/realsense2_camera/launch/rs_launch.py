@@ -32,7 +32,7 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'accelerate_gpu_with_glsl',     'default': "false", 'description': 'enable GPU acceleration with GLSL'},
                            {'name': 'rosbag_filename',              'default': "''", 'description': 'A realsense bagfile to run from as a device'},
                            {'name': 'log_level',                    'default': 'info', 'description': 'debug log level [DEBUG|INFO|WARN|ERROR|FATAL]'},
-                           {'name': 'output',                       'default': 'screen', 'description': 'pipe node output [screen|log]'},
+                           {'name': 'output',                       'default': 'log', 'description': 'pipe node output [screen|log]'},
                            # Color
                            {'name': 'enable_color',                 'default': 'true', 'description': 'enable color stream'},
                            {'name': 'rgb_camera.color_profile',     'default': '640,360,30', 'description': 'color stream profile'},
@@ -71,9 +71,9 @@ configurable_parameters = [{'name': 'camera_name',                  'default': '
                            {'name': 'linear_accel_cov',             'default': '0.01', 'description': "''"},
                            {'name': 'diagnostics_period',           'default': '0.0', 'description': 'Rate of publishing diagnostics. 0=Disabled'},
                            # TF 
-                           {'name': 'publish_tf',                   'default': 'false', 'description': '[bool] enable/disable publishing static & dynamic TF'},
-                           {'name': 'tf_publish_rate',              'default': '10', 'description': '[double] rate in Hz for publishing dynamic TF'},
-                           {'name': 'pointcloud.enable',            'default': 'false', 'description': ''},
+                           {'name': 'publish_tf',                   'default': 'true', 'description': '[bool] enable/disable publishing static & dynamic TF'},
+                           {'name': 'tf_publish_rate',              'default': '30', 'description': '[double] rate in Hz for publishing dynamic TF'},
+                           {'name': 'pointcloud.enable',            'default': 'true', 'description': ''},
                            {'name': 'pointcloud.stream_filter',     'default': '2', 'description': 'texture stream for pointcloud'},
                            {'name': 'pointcloud.stream_index_filter','default': '0', 'description': 'texture stream index for pointcloud'},
                            {'name': 'pointcloud.ordered_pc',        'default': 'false', 'description': ''},

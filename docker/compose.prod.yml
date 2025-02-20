@@ -1,10 +1,11 @@
 x-common-vars: &common-vars
   tty: true
   stdin_open: true
+  ipc: host
   network_mode: host
   stop_grace_period: 1s
   environment:
-    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+    RMW_IMPLEMENTATION: rmw_fastrtps_cpp # rmw_cyclonedds_cpp | rmw_fastrtps_cpp
     ROS_DOMAIN_ID: $ROS_DOMAIN_ID
 
 x-gpu-vars: &gpu-vars
