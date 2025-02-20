@@ -142,9 +142,6 @@ CMD [ "/bin/bash" ]
 
 ###### Ultralytics ROS Module - AMD64:igpu, dgpu | Jetson ######
 FROM --platform=${ARCH} ${NVIDIA_BASE_IMAGE} AS ultralytics-ros
-LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
-LABEL org.opencontainers.image.vendor="DIT-Robotics"
-ENV TERM=xterm-256color
 ARG USER
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
