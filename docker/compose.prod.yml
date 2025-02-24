@@ -5,9 +5,9 @@ x-common-vars: &common-vars
   network_mode: host
   stop_grace_period: 1s
   environment:
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp # rmw_cyclonedds_cpp | rmw_fastrtps_cpp
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp 
     ROS_DOMAIN_ID: $ROS_DOMAIN_ID
-    CYCLONEDDS_URI: $CYCLONEDDS_URI
+    CYCLONEDDS_URI: /tmp/cycloneDDS.xml
 
 x-gpu-vars: &gpu-vars
   ipc: host
@@ -73,6 +73,6 @@ services:
       DISPLAY: $DISPLAY
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
       ROS_DOMAIN_ID: $ROS_DOMAIN_ID
-      CYCLONEDDS_URI: $CYCLONEDDS_URI
+      CYCLONEDDS_URI: /tmp/cycloneDDS.xml
     profiles: ['gui']
   

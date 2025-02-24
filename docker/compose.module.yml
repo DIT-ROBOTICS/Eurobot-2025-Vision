@@ -45,5 +45,5 @@ services:
       # - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
       # GUI config
       - $LOCAL_WORKSPACE_FOLDER/ws/gui-config:/home/gui/.rviz2
-      - $LOCAL_WORKSPACE_FOLDER/dds-uri/cycloneDDS.xml:/home/realsense/vision-ws/cycloneDDS.xml
-    command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765
+      - $LOCAL_WORKSPACE_FOLDER/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
+    command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml address:=localhost port:=8765
