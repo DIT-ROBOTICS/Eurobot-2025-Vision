@@ -7,7 +7,8 @@
   <Domain Id="any">
     <General>
       <Interfaces>
-        <NetworkInterface autodetermine="true" priority="default"/>
+        <NetworkInterface name="wlp1s0"/>
+        <NetworkInterface name="enp2s0"/>
       </Interfaces>
       <AllowMulticast>true</AllowMulticast>
       <MaxMessageSize>65500B</MaxMessageSize>
@@ -16,6 +17,6 @@
     <Discovery>
       <EnableTopicDiscoveryEndpoints>true</EnableTopicDiscoveryEndpoints>
     </Discovery>
-
+    
   </Domain>
 </CycloneDDS>
