@@ -189,7 +189,7 @@ class YoloNode(Node):
 
     def depth_callback(self, msg):
         try:
-            self.depth_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+            self.depth_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='32FC1')
         except Exception as e:
             self.get_logger().error(f"Failed to process depth image: {e}")
 
@@ -209,10 +209,12 @@ class YoloNode(Node):
         results = self.model(cv_image)
 
         # 初始化 PoseArray
-        pose_array = PoseArray()
-        pose_array.header.frame_id = 'cam_mid_color_optical_frame'
-        pose_array.header.stamp = self.get_clock().now().to_msg()
-
+        pose_array_platform = PoseArray()
+        pose_array_column = PoseArray()
+        pose_array_platform.header.frame_id = 'cam_mid_color_optical_frame'
+        pose_array_platform.header.stamp = self.get_clock().now().to_msg()
+        pose_array_column.header.frame_id = 'cam_mid_color_optical_frame'
+        pose_array_column.header.stamp = self.get_clock().now().to_msg()
         for object in results:
             boxes = object.boxes
             for box in boxes:
@@ -220,20 +222,28 @@ class YoloNode(Node):
                 confidence = box.conf[0].item()  
                 label = box.cls[0].item()  
 
-                center_x = (x1 + x2) / 2
-                center_y = (y1 + y2) / 2
+                pose1 = self.switch_to_cam_pose(x1, y1)
+                pose2 = self.switch_to_cam_pose(x2, y2)
+                print(f"Detected object: x1={x1}, y1={y1}, x2={x2}, y2={y2}, \n")
+                print(f"confidence={confidence:.2f}, label={label}\n")
+                if(confidence >=0.50):
+                    if(label==0):
+                        pose_array_platform.poses.append(pose1)
+                        pose_array_platform.poses.append(pose2)
+                    elif(label==1):
+                        pose_array_column.append(pose1)
+                        pose_array_column.append(pose1)
 
-                # 轉換為相機座標系
-                pose = self.switch_to_cam_pose(center_x, center_y)
-                pose_array.poses.append(pose)
+                    if pose_array_platform and hasattr(pose_array_platform, 'poses'):
+                        print(f"PoseArray_platform has {len(pose_array_platform.poses)} objects")
+                    else:
+                        print("PoseArray_platform is None or invalid")
 
-        # 發布 PoseArray
-        self.center_pub.publish(pose_array)
-        if label == 0:
-            self.center_pub_platform.publish(pose_array)
-        else:
-            self.center_pub_column.publish(pose_array)
-        pose_array.poses.clear()
+
+        self.center_pub_platform.publish(pose_array_platform)
+        self.center_pub_column.publish(pose_array_column)
+        pose_array_column.poses.clear()
+        pose_array_platform.poses.clear()
 
     def switch_to_cam_pose(self, x, y):
         f_x = 609.68  # 內參
@@ -241,12 +251,16 @@ class YoloNode(Node):
         c_x = 425.38
         c_y = 238.43
 
-        z = self.depth_image[int(y), int(x)] if self.depth_image is not None else 2000
+        z = self.depth_image[int(y), int(x)] if self.depth_image is not None else 0
 
         pose = Pose()
         pose.position.x = (z * (x - c_x) / f_x) / 1000 
         pose.position.y = (z * (y - c_y) / f_y) / 1000
         pose.position.z = z / 1000
+        pose.orientation.x = 0.0
+        pose.orientation.y = 0.0
+        pose.orientation.z = 0.0
+        pose.orientation.w = 1.0
         return pose
 
 def main(args=None):

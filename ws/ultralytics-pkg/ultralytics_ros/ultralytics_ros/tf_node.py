@@ -107,13 +107,39 @@ class TFNode(Node):
         self.get_logger().info("TF Node initialized and ready.")
 
     def pose_callback_platform(self, msg):
-        self.process_pose_array(msg, self.global_pub_platform)
+        transformed_pose_array = PoseArray()
+        transformed_pose_array.header.frame_id = "map"
+        transformed_pose_array.header.stamp = self.get_clock().now().to_msg()
+
+        for pose in msg.poses:
+            try:
+                # 將 Pose 轉換到 map frame
+                transformed_pose = self.transform_pose(msg.header.frame_id, "map", pose)
+                if transformed_pose:
+                    transformed_pose_array.poses.append(transformed_pose)
+            except Exception as e:
+                self.get_logger().error(f"Transform failed: {str(e)}")
+
+        print(f"transformed array has {len(transformed_pose_array.poses)} {'object' if len(transformed_pose_array.poses) == 1 else 'objects'}")
+
+        final_pose_array = PoseArray()
+        final_pose_array.header.frame_id = "map"
+        final_pose_array.header.stamp = self.get_clock().now().to_msg()
+
+        for i in range(0, len(transformed_pose_array.poses) - 1, 2):
+            finalpose = Pose()
+            finalpose.position.x = (transformed_pose_array.poses[i].position.x + transformed_pose_array.poses[i+1].position.x) / 2
+            finalpose.position.y = (transformed_pose_array.poses[i].position.y + transformed_pose_array.poses[i+1].position.y) / 2
+            finalpose.position.z = (transformed_pose_array.poses[i].position.z + transformed_pose_array.poses[i+1].position.z) / 2  
+
+            finalpose.orientation = transformed_pose_array.poses[i].orientation
+            final_pose_array.poses.append(finalpose)  
+        if len(final_pose_array.poses) > 0:
+            self.global_pub_platform.publish(final_pose_array)  
+
+
 
     def pose_callback_column(self, msg):
-        self.process_pose_array(msg, self.global_pub_column)
-
-    def process_pose_array(self, msg, publisher):
-        """ 轉換 PoseArray 的座標系 """
         transformed_pose_array = PoseArray()
         transformed_pose_array.header.frame_id = "map"
         transformed_pose_array.header.stamp = self.get_clock().now().to_msg()
@@ -128,22 +154,36 @@ class TFNode(Node):
             except Exception as e:
                 self.get_logger().error(f"Transform failed: {str(e)}")
 
-        if transformed_pose_array.poses:
-            publisher.publish(transformed_pose_array)
+        final_pose_array = PoseArray()
+        final_pose_array.header.frame_id = "map"
+        final_pose_array.header.stamp = self.get_clock().now().to_msg()
+
+        for i in range(0, len(transformed_pose_array.poses) - 1, 2):
+            finalpose = Pose()
+            finalpose.position.x = (transformed_pose_array.poses[i].position.x + transformed_pose_array.poses[i+1].position.x) / 2
+            finalpose.position.y = (transformed_pose_array.poses[i].position.y + transformed_pose_array.poses[i+1].position.y) / 2
+            finalpose.position.z = (transformed_pose_array.poses[i].position.z + transformed_pose_array.poses[i+1].position.z) / 2  
+
+            finalpose.orientation = transformed_pose_array.poses[i].orientation
+            final_pose_array.poses.append(finalpose)  
+        if len(final_pose_array.poses) > 0:
+            self.global_pub_column.publish(final_pose_array) 
+
+        
 
     def transform_pose(self, from_frame, to_frame, pose):
         try:
-            transform = self.tf_buffer.lookup_transform(to_frame, from_frame, rclpy.time.Time())
+            transform = self.tf_buffer.lookup_transform(to_frame, from_frame, rclpy.time.Time(),rclpy.duration.Duration(seconds=1.0))
             
             transformed_pose = Pose()
             transformed_pose.position.x = (
-                pose.position.x * transform.transform.translation.x
+                pose.position.x + transform.transform.translation.x
             )
             transformed_pose.position.y = (
-                pose.position.y * transform.transform.translation.y
+                pose.position.y + transform.transform.translation.y
             )
             transformed_pose.position.z = (
-                pose.position.z * transform.transform.translation.z
+                pose.position.z + transform.transform.translation.z
             )
 
             transformed_pose.orientation = pose.orientation  # 保持原始方向（假設無旋轉）
