@@ -1,0 +1,6 @@
+[submodule "GroundTruth"]
+	path = GroundTruth
+	url = https://github.com/DIT-ROBOTICS/VisuaLocalization-GroundTruth
+[submodule "VisionOnboard"]
+	path = VisionOnboard
+	url = git@github.com:DIT-ROBOTICS/Eurobot-2025-VisionOnBoard.git
