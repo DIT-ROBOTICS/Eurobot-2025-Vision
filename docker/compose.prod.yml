@@ -1,22 +1,24 @@
 x-common-vars: &common-vars
   tty: true
   stdin_open: true
+  ipc: host
   network_mode: host
   stop_grace_period: 1s
   environment:
-    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp 
     ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+    CYCLONEDDS_URI: /tmp/cycloneDDS.xml
 
-# x-gpu-vars: &gpu-vars
-#   ipc: host
-#   shm_size: 6gb
-#   deploy:
-#     resources:
-#       reservations:
-#         devices:
-#           - driver: nvidia
-#             count: 1
-#             capabilities: [gpu]
+x-gpu-vars: &gpu-vars
+  ipc: host
+  shm_size: 6gb
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
 
 services:
   realsense:
@@ -27,6 +29,7 @@ services:
         USER: realsense
         LIBREALSENSE_VERSION: $LIBREALSENSE_VERSION
         REALSENSE_ROS_VERSION: $REALSENSE_ROS_VERSION
+    privileged: true
     <<: *common-vars
     profiles: ['camera']
 
@@ -47,7 +50,7 @@ services:
         USER: ultralytics
     <<: 
       - *common-vars
-      # - *gpu-vars
+      - *gpu-vars
     profiles: ['yolo']
 
   ultralytics-training:
@@ -56,7 +59,7 @@ services:
       target: ultralytics-training
     <<: 
       - *common-vars
-      # - *gpu-vars
+      - *gpu-vars
     profiles: ['train']
     
   gui:
@@ -66,9 +69,10 @@ services:
       args:
         USER: gui
     <<: *common-vars
-    environment:
-      DISPLAY: $DISPLAY
-      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
-      ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+    # environment:
+    #   DISPLAY: $DISPLAY
+    #   RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    #   ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+    #   CYCLONEDDS_URI: /tmp/cycloneDDS.xml
     profiles: ['gui']
   
