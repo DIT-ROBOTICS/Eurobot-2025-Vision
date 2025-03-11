@@ -8,8 +8,7 @@
     <General>
       <Interfaces>
         <NetworkInterface name="wlo1"/>
-        <!-- <NetworkInterface name="wlp1s0"/>
-        <NetworkInterface name="enp2s0"/> -->
+        <NetworkInterface name="enp44s0"/>
       </Interfaces>
       <AllowMulticast>true</AllowMulticast>
       <MaxMessageSize>65500B</MaxMessageSize>
