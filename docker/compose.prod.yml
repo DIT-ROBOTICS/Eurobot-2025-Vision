@@ -50,7 +50,7 @@ services:
         USER: ultralytics
     <<: 
       - *common-vars
-      # - *gpu-vars
+      - *gpu-vars
     profiles: ['yolo']
 
   ultralytics-training:
@@ -59,7 +59,7 @@ services:
       target: ultralytics-training
     <<: 
       - *common-vars
-      # - *gpu-vars
+      - *gpu-vars
     profiles: ['train']
     
   gui:
@@ -69,10 +69,10 @@ services:
       args:
         USER: gui
     <<: *common-vars
-    environment:
-      DISPLAY: $DISPLAY
-      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-      ROS_DOMAIN_ID: $ROS_DOMAIN_ID
-      CYCLONEDDS_URI: /tmp/cycloneDDS.xml
+    # environment:
+    #   DISPLAY: $DISPLAY
+    #   RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    #   ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+    #   CYCLONEDDS_URI: /tmp/cycloneDDS.xml
     profiles: ['gui']
   

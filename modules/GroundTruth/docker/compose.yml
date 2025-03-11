@@ -1,0 +1,63 @@
+name : vision-groundtruth
+
+x-common-vars: &common-vars
+  tty: true
+  stdin_open: true
+  ipc: host
+  network_mode: host
+  stop_grace_period: 1s
+  environment:
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp # rmw_cyclonedds_cpp | rmw_fastrtps_cpp
+    ROS_DOMAIN_ID: 60
+services:
+    ceiling-cam:
+        build:
+            context: .
+            target: ceiling-cam
+            args:
+                USER: ceiling-cam
+        <<: *common-vars
+        image: vision-main:ceiling-cam
+        container_name: ceiling-cam
+        privileged: true
+        volumes:
+            - /dev:/dev
+            # X11 socket
+            - /tmp/.X11-unix:/tmp/.X11-unix
+            - $HOME/.Xauthority:/home/gui/.Xauthority
+            # Wayland socket
+            - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
+            # GUI configuration
+            - $PWD/../rtspcam-pkg:/home/ceiling-cam/vision-ws/src/rtsp_ros
+        device_cgroup_rules:
+            - "c 81:* rmw"
+        environment:
+            DISPLAY: $DISPLAY
+            RMW_IMPLEMENTATION: rmw_cyclonedds_cpp # rmw_cyclonedds_cpp | rmw_fastrtps_cpp
+            ROS_DOMAIN_ID: 60
+        command: >
+            bash -c "
+            source /opt/ros/humble/setup.bash && \
+            colcon build && \
+            source /home/ceiling-cam/vision-ws/install/setup.bash && \
+            ros2 launch rtsp_ros rtsp_cam.launch.py
+            "
+    groundtruth:
+        build:
+            context: .
+            target: aruco 
+            args:
+                USER: groundtruth
+        <<: *common-vars
+        image: vision-main:groundtruth
+        container_name: groundtruth
+        volumes:
+            - $PWD/../groundtruth-pkg:/home/groundtruth/vision-ws/src/aruco-ros
+        command: >
+            bash -c "
+            source /opt/ros/humble/setup.bash && \
+            colcon build && \
+            source /home/groundtruth/vision-ws/install/setup.bash && \
+            ros2 launch aruco_ros single.launch.py
+            "
+            

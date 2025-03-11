@@ -3,7 +3,7 @@ services:
     image: vision-main:aruco
     container_name: aruco
     volumes:
-      - $LOCAL_WORKSPACE_FOLDER/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
+      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
       - $LOCAL_WORKSPACE_FOLDER/packages/aruco-pkg:/home/aruco/vision-ws/src/aruco-ros
     command: >
       bash -ic "
@@ -16,6 +16,7 @@ services:
     image: vision-main:ultralytics-ros
     container_name: ultralytics-ros
     volumes:
+      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
       - $LOCAL_WORKSPACE_FOLDER/packages/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
     command: >
       bash -ic "
@@ -28,7 +29,7 @@ services:
     image: ultralytics/ultralytics:latest
     container_name: ultralytics-training
     volumes:
-      - $LOCAL_WORKSPACE_FOLDER/train:/root/train
+      - $LOCAL_WORKSPACE_FOLDER/dataset:/root/train
     working_dir: /root/train
     command: bash
       # bash -ic 'nvidia-smi && bash'
@@ -44,5 +45,5 @@ services:
       # - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
       # GUI config
       - $LOCAL_WORKSPACE_FOLDER/packages/gui-config:/home/gui/.rviz2
-      - $LOCAL_WORKSPACE_FOLDER/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
+      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
     command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml address:=localhost port:=8765

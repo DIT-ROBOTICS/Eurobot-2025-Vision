@@ -1,0 +1,60 @@
+x-common-vars: &common-vars
+  tty: true
+  stdin_open: true
+  ipc: host
+  network_mode: host
+  stop_grace_period: 1s
+  environment:
+    RMW_IMPLEMENTATION: $RMW_IMPLEMENTATION
+    ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+services:
+    onboard-realsense:
+        build:
+            context: .
+            target: realsense  
+            args:
+                USER: realsense
+                LIBREALSENSE_VERSION: $LIBREALSENSE_VERSION
+                REALSENSE_ROS_VERSION: $REALSENSE_ROS_VERSION
+        <<: *common-vars
+        image: vision-main:onboard-realsense
+        container_name: onboard-realsense
+        privileged: true
+        volumes:
+        - /dev:/dev
+        - $LOCAL_WORKSPACE_FOLDER/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
+        - $LOCAL_WORKSPACE_FOLDER/packages/realsense-pkg:/home/realsense/vision-ws/src/realsense-ros
+        - $LOCAL_WORKSPACE_FOLDER/packages/camera-pkg:/home/realsense/vision-ws/src/camera-ros
+        device_cgroup_rules:
+        - "c 81:* rmw"
+        - "c 189:* rmw"
+        command: bash
+        profiles: ['camera']
+
+    avoidance:
+        build:
+            context: .
+            target: aruco 
+            args:
+                USER: groundtruth
+        <<: *common-vars
+        image: vision-main:groundtruth
+        container_name: groundtruth
+        volumes:
+            - $PWD/../groundtruth-pkg:/home/groundtruth/vision-ws/src/aruco-ros
+        command: bash 
+        profiles: ['avoid']
+
+    feedback:
+        build:
+            context: .
+            target: aruco 
+            args:
+                USER: groundtruth
+        <<: *common-vars
+        image: vision-main:groundtruth
+        container_name: groundtruth
+        volumes:
+            - $PWD/../groundtruth-pkg:/home/groundtruth/vision-ws/src/aruco-ros
+        command: bash
+        profiles: ['feedback']
