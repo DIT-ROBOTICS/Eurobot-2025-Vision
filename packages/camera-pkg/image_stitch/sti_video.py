@@ -1,9 +1,7 @@
 from image_stitch.importClass import MultiCamNode
 from image_stitch.importClass import VideoStitcher
+from rclpy.executors import MultiThreadedExecutor
 import rclpy
-import time
-from queue import Empty
-import cv2
 
 def main(args=None):
     rclpy.init(args=args)
@@ -14,10 +12,10 @@ def main(args=None):
     try:
         while rclpy.ok():
             rclpy.spin_once(node, timeout_sec=0.1)
-            images = node.get_images()
-            if images is None:
+            synced_images = node.get_queue_images()
+            if synced_images is None:
                 continue
-            stitched_img = stitcher.warp(images)
+            stitched_img = stitcher.warp(synced_images)
             node.publish_stitched_image(stitched_img)
 
     except KeyboardInterrupt:
