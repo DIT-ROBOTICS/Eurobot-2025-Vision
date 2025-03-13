@@ -7,22 +7,22 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 import time 
+from tf2_ros import Buffer, TransformListener
+import tf2_geometry_msgs
 
 class YoloNode(Node):
     def __init__(self):
         super().__init__('yolo_node')
 
         # YOLO模型
-        self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver4.pt")
+        self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver5.pt")
 
         # 訂閱相機影像
         self.color_sub = self.create_subscription(Image, '/realsense2/cam_mid/color/image_raw', self.color_callback, 10)
         self.depth_sub = self.create_subscription(Image, '/realsense2/cam_mid/aligned_depth_to_color/image_raw', self.depth_callback, 10)
-        
-        # 發布檢測到的物件座標（PoseArray 格式）
-        self.center_pub = self.create_publisher(PoseArray, '/detected/cam_pose_array', 10)
         self.center_pub_platform = self.create_publisher(PoseArray, '/detected/cam_pose_array/platform', 10)
         self.center_pub_column = self.create_publisher(PoseArray, '/detected/cam_pose_array/column', 10)
+        self.bbox_pub = self.create_publisher(Image, '/detected/bounding_boxes', 10)
 
 
         # CvBridge
@@ -41,9 +41,6 @@ class YoloNode(Node):
 
     def color_callback(self, msg):
         self.color_msg = msg
-        self.detect_objects()
-        
-    def detect_objects(self):
         if self.color_msg is None:
             self.get_logger().warning("No image message received yet.")
             return
@@ -53,7 +50,8 @@ class YoloNode(Node):
 
         # 使用 YOLO 進行物件偵測
         results = self.model(cv_image)
-
+        results_img = results[0].plot()
+        self.bbox_pub.publish(self.bridge.cv2_to_imgmsg(results_img, encoding="bgr8"))
         # 初始化 PoseArray
         pose_array_platform = PoseArray()
         pose_array_column = PoseArray()
@@ -64,33 +62,31 @@ class YoloNode(Node):
         for object in results:
             boxes = object.boxes
             for box in boxes:
+                
                 x1, y1, x2, y2 = map(int, box.xyxy[0])  # 邊界框座標
                 confidence = box.conf[0].item()  
                 label = box.cls[0].item()  
 
                 pose1 = self.switch_to_cam_pose(x1, y1)
                 pose2 = self.switch_to_cam_pose(x2, y2)
+                posem = self.switch_to_cam_pose((x1+x2)/2,(y1+y2)/2)
                 print(f"Detected object: x1={x1}, y1={y1}, x2={x2}, y2={y2}, \n")
                 print(f"confidence={confidence:.2f}, label={label}\n")
                 if(confidence >=0.70):
                     if(label==0):
                         pose_array_platform.poses.append(pose1)
                         pose_array_platform.poses.append(pose2)
+                        pose_array_platform.poses.append(posem)
                     elif(label==1):
                         pose_array_column.poses.append(pose1)
                         pose_array_column.poses.append(pose1)
-                    # if pose_array_platform and hasattr(pose_array_platform, 'poses'):
-                    #     print(f"PoseArray_platform has {len(pose_array_platform.poses)} objects")
-                    # else:
-                    #     print("PoseArray_platform is None or invalid")
-
+                        pose_array_column.poses.append(posem)
 
         self.center_pub_platform.publish(pose_array_platform)
         self.center_pub_column.publish(pose_array_column)
+
         pose_array_column.poses.clear()
         pose_array_platform.poses.clear()
-
-
 
     def switch_to_cam_pose(self, x, y):
         f_x = 457.26  # 內參

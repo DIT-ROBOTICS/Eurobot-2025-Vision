@@ -25,7 +25,7 @@ services:
   # sima:
 
   ultralytics-training:
-    image: ultralytics/ultralytics:latest
+    image: ultralytics/ultralytics:8.3.84-jetson-jetpack6
     container_name: ultralytics-training
     volumes:
       - $LOCAL_WORKSPACE_FOLDER/train:/root/train

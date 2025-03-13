@@ -25,6 +25,9 @@ setup(
             'yolo_node = ultralytics_ros.yolo_node:main',
             'tf_node= ultralytics_ros.tf_node:main',
             'yolo_node_nopub = ultralytics_ros.yolo_node_nopub:main',
+            'detect_node= ultralytics_ros.detect_node:main',
+            'yolo_multi_node = ultralytics_ros.yolo_multi_node:main',
+
         ],
     },
 )

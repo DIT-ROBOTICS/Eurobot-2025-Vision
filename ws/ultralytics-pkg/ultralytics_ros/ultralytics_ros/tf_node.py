@@ -36,11 +36,11 @@ class TFNode(Node):
         final_pose_array.header.frame_id = "map"
         final_pose_array.header.stamp = self.get_clock().now().to_msg()
 
-        for i in range(0, len(transformed_pose_array.poses) - 1, 2):
+        for i in range(0, len(transformed_pose_array.poses) - 1, 3):
             finalpose = Pose()
             finalpose.position.x = (transformed_pose_array.poses[i].position.x + transformed_pose_array.poses[i+1].position.x) / 2
             finalpose.position.y = (transformed_pose_array.poses[i].position.y + transformed_pose_array.poses[i+1].position.y) / 2
-            finalpose.position.z = (transformed_pose_array.poses[i].position.z + transformed_pose_array.poses[i+1].position.z) / 2  
+            finalpose.position.z = (transformed_pose_array.poses[i+2].position.z )
             length = (transformed_pose_array.poses[i].position.x - transformed_pose_array.poses[i+1].position.x)*100
             height = (transformed_pose_array.poses[i].position.y - transformed_pose_array.poses[i+1].position.y)*100
 
@@ -66,6 +66,7 @@ class TFNode(Node):
             finalpose.orientation.z = math.sin(angle / 2)
             finalpose.orientation.w = math.cos(angle / 2)
             final_pose_array.poses.append(finalpose)  
+            print(f"pose_array has{len(final_pose_array.poses)} object")
         if len(final_pose_array.poses) > 0:
             self.global_pub_platform.publish(final_pose_array)  
 
@@ -89,11 +90,11 @@ class TFNode(Node):
         final_pose_array.header.frame_id = "map"
         final_pose_array.header.stamp = self.get_clock().now().to_msg()
 
-        for i in range(0, len(transformed_pose_array.poses) - 1, 2):
+        for i in range(0, len(transformed_pose_array.poses) - 1, 3):
             finalpose = Pose()
             finalpose.position.x = (transformed_pose_array.poses[i].position.x + transformed_pose_array.poses[i+1].position.x) / 2
             finalpose.position.y = (transformed_pose_array.poses[i].position.y + transformed_pose_array.poses[i+1].position.y) / 2
-            finalpose.position.z = (transformed_pose_array.poses[i].position.z + transformed_pose_array.poses[i+1].position.z) / 2  
+            finalpose.position.z = (transformed_pose_array.poses[i+2].position.z)  
             finalpose.orientation.x = 0.0
             finalpose.orientation.y = 0.0
             finalpose.orientation.z = 0.0
