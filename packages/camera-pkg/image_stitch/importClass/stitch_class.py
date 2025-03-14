@@ -1,4 +1,3 @@
-from rclpy.node import Node
 import numpy as np 
 import cv2
 
@@ -15,25 +14,36 @@ inv_homography = [
         ])
 ]
 
-class VideoStitcher(Node):
+class VideoStitcher():
     def __init__(self):
-        super().__init__('video_stitcher')
         self.coord_cache = {}
+        self.image_shape_cache = {}
 
     def warp(self, images):
-        # Expand the canvas to fit all images
-        height, width = images[0].shape[:2]
-        canvas = np.zeros((height, width * 3, 3), dtype=np.uint8)
-        canvas[:, 1 * width:2 * width] = images[0]
+        cache_key = tuple(images[0].shape) + (images[0].dtype,)
+        
+        if cache_key in self.image_shape_cache:
+            image_shape, dtype = self.image_shape_cache[cache_key]
+        else:
+            image_shape = images[0].shape
+            dtype = images[0].dtype 
+            self.image_shape_cache[cache_key] = (image_shape, dtype)
+
+        if len(image_shape) == 3:
+            canvas = np.zeros((image_shape[0], image_shape[1]*3, image_shape[2]), dtype=dtype)
+        else: 
+            canvas = np.zeros((image_shape[0], image_shape[1]*3), dtype=dtype)
+        canvas[:, 1 * image_shape[1]:2 * image_shape[1]] = images[0]
        
         for i, inv_H in enumerate(inv_homography):
-            canvas = self.warp_logic(canvas, images[i + 1], inv_H, i)
+            canvas = self.warp_logic(canvas, images[i + 1], inv_H, i, image_shape[0], image_shape[1])
         
         return canvas
 
-    def warp_logic(self, ref_img, src_img, inv_H, index):
-        h_dst, w_dst = 640, 1080
-        h_src, w_src = 640, 360
+    def warp_logic(self, ref_img, src_img, inv_H, index, height, width):
+
+        h_dst, w_dst = height, width*3
+        h_src, w_src = height, width
 
         cache_key = (h_dst, w_dst, inv_H.tobytes())
 
@@ -48,11 +58,11 @@ class VideoStitcher(Node):
 
             x_src = mapped_coords[0, :].reshape(h_dst, w_dst).astype(np.float32)
             y_src = mapped_coords[1, :].reshape(h_dst, w_dst).astype(np.float32)
-    
+
             self.coord_cache[cache_key] = (x_src, y_src)
         else:
             x_src, y_src = self.coord_cache[cache_key]
-        
+            
         remapped_img = cv2.remap(src_img, x_src, y_src, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_TRANSPARENT)
         
         if index == 0:

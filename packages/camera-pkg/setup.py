@@ -1,17 +1,18 @@
 from setuptools import find_packages, setup
 
-package_name = 'camera-ros'
+package_name = 'camera_ros'
 
 setup(
     name=package_name,
     version='0.0.0',
     packages=find_packages(),
     data_files=[
+        ('share/' + package_name + '/launch', ['launch/image_stitch.launch.py']),
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools', 'opencv-python', 'cv_bridge', 'rclpy', 'stitching', 'numpy'],
+    install_requires=['setuptools', 'opencv-python', 'cv_bridge', 'rclpy', 'numpy'],
     zip_safe=True,
     maintainer='ohin',
     maintainer_email='ohin.kyuu@gmail.com',
