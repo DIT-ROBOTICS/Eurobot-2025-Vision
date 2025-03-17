@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from geometry_msgs.msg import PoseArray, Pose
+from geometry_msgs.msg import PoseArray, Pose, PoseStamped
 from cv_bridge import CvBridge
 from ultralytics import YOLO    
 import numpy as np
@@ -9,30 +9,28 @@ import cv2
 import time 
 from tf2_ros import Buffer, TransformListener
 import tf2_geometry_msgs
+import math
+
 
 class YoloNode(Node):
     def __init__(self):
         super().__init__('yolo_node')
 
-        # YOLO模型
-        self.model = YOLO("/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver5.pt")
-
-        # 訂閱相機影像
-        self.color_sub = self.create_subscription(Image, '/realsense2/cam_mid/color/image_raw', self.color_callback, 10)
-        self.depth_sub = self.create_subscription(Image, '/realsense2/cam_mid/aligned_depth_to_color/image_raw', self.depth_callback, 10)
-        self.center_pub_platform = self.create_publisher(PoseArray, '/detected/cam_pose_array/platform', 10)
-        self.center_pub_column = self.create_publisher(PoseArray, '/detected/cam_pose_array/column', 10)
-        self.bbox_pub = self.create_publisher(Image, '/detected/bounding_boxes', 10)
-
-
-        # CvBridge
+        self.from_frame_id = self.get_parameter("from_frame_id").value
+        self.to_frame_id = self.get_parameter("to_frame_id").value
+        self.model = YOLO(model_path)
+        self.get_logger().info(f"Loaded YOLO model from {model_path}")
+        self.color_sub = self.create_subscription(Image, color_topic, self.color_callback, 10)
+        self.depth_sub = self.create_subscription(Image, depth_topic, self.depth_callback, 10)
+        self.center_pub_platform = self.create_publisher(PoseArray, platform_pose_topic, 10)
+        self.center_pub_column = self.create_publisher(PoseArray, column_pose_topic, 10)
+        self.bbox_pub = self.create_publisher(Image, bbox_topic, 10)
         self.bridge = CvBridge()
-        
         self.depth_image = None 
         self.color_msg = None
-
         self.get_logger().info("YOLO Node initialized and ready.")
-
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
     def depth_callback(self, msg):
         try:
             self.depth_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='16UC1')
@@ -55,9 +53,11 @@ class YoloNode(Node):
         # 初始化 PoseArray
         pose_array_platform = PoseArray()
         pose_array_column = PoseArray()
-        pose_array_platform.header.frame_id = 'cam_mid_color_optical_frame'
+        global_poses_platform = PoseArray()
+        global_poses_column = PoseArray()
+        pose_array_platform.header.frame_id = self.from_frame_id
         pose_array_platform.header.stamp = self.get_clock().now().to_msg()
-        pose_array_column.header.frame_id = 'cam_mid_color_optical_frame'
+        pose_array_column.header.frame_id = self.from_frame_id
         pose_array_column.header.stamp = self.get_clock().now().to_msg()
         for object in results:
             boxes = object.boxes
@@ -67,34 +67,81 @@ class YoloNode(Node):
                 confidence = box.conf[0].item()  
                 label = box.cls[0].item()  
 
-                pose1 = self.switch_to_cam_pose(x1, y1)
-                pose2 = self.switch_to_cam_pose(x2, y2)
-                posem = self.switch_to_cam_pose((x1+x2)/2,(y1+y2)/2)
-                print(f"Detected object: x1={x1}, y1={y1}, x2={x2}, y2={y2}, \n")
-                print(f"confidence={confidence:.2f}, label={label}\n")
                 if(confidence >=0.70):
+                    pose1 = self.switch_to_cam_pose(x1, y1)
+                    pose2 = self.switch_to_cam_pose(x2, y2)
+                    posem = self.switch_to_cam_pose((x1+x2)/2,(y1+y2)/2)
                     if(label==0):
-                        pose_array_platform.poses.append(pose1)
-                        pose_array_platform.poses.append(pose2)
-                        pose_array_platform.poses.append(posem)
-                    elif(label==1):
-                        pose_array_column.poses.append(pose1)
-                        pose_array_column.poses.append(pose1)
-                        pose_array_column.poses.append(posem)
+                        try:
+                            global_pose1 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose1)
+                            global_pose2 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose2)
+                            global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
+                        except Exception as e:
+                            self.get_logger().error(f"Transform failed: {str(e)}")
+                        # global_pose1 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose1)
+                        # global_pose2 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose2)
+                        # global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
+                        if(global_pose1 is not None):
+                            finalpose = Pose()
+                            finalpose.position.x = (global_pose1.position.x + global_pose2.position.x)/2
+                            finalpose.position.y = (global_pose1.position.y + global_pose2.position.y)/2
+                            finalpose.position.z = global_posem.position.z
+                            length = (global_pose1.position.x - global_pose2.position.x)*100
+                            height = (global_pose1.position.y - global_pose2.position.y)*100
+                            if(length<=10):
+                                length=10.00001
+                            elif(length>41.231056):
+                                length=41.231056
+                            if(height<=10):
+                                height=10.00001
+                            elif(height>41.231056):
+                                height=41.231056
 
+                            if (length>=height):
+                                angle = math.acos(height/41.231056)+1.3258176
+                            else:
+                                angle = math.acos(length/41.231056)+0.2449786
+                            print(f"angle = {angle}")
+                            finalpose.orientation.x = 0.0
+                            finalpose.orientation.y = 0.0
+                            finalpose.orientation.z = math.sin(angle / 2)
+                            finalpose.orientation.w = math.cos(angle / 2)
+                            pose_array_platform.poses.append(finalpose)  
+
+                    elif(label==1):
+                        try:
+                            global_pose1 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose1)
+                            global_pose2 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose2)
+                            global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
+                        except Exception as e:
+                            self.get_logger().error(f"Transform failed: {str(e)}")
+                        # global_pose1 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose1)
+                        # global_pose2 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose2)
+                        # global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
+                        if(global_pose1 is not None):
+                            finalpose = Pose()
+                            finalpose.position.x = (global_pose1.position.x + global_pose2.position.x)/2
+                            finalpose.position.y = (global_pose1.position.y + global_pose2.position.y)/2
+                            finalpose.position.z = global_posem.position.z
+                            finalpose.orientation.x = 0.0
+                            finalpose.orientation.y = 0.0
+                            finalpose.orientation.z = 0.0
+                            finalpose.orientation.w = 1.0
+                            pose_array_column.poses.append(finalpose)
         self.center_pub_platform.publish(pose_array_platform)
         self.center_pub_column.publish(pose_array_column)
 
         pose_array_column.poses.clear()
         pose_array_platform.poses.clear()
 
-    def switch_to_cam_pose(self, x, y):
+    def switch_to_cam_pose(self, x, y): 
         f_x = 457.26  # 內參
         f_y = 456.26
         c_x = 326.35
         c_y = 177.61
 
-        z = self.depth_image[int(y), int(x)] if self.depth_image is not None else 0
+        z = self.depth_image[int(y-1), int(x-1)] if self.depth_image is not None else 0
+
 
         pose = Pose()
         pose.position.x = (z * (x - c_x) / f_x) / 1000 
@@ -105,6 +152,30 @@ class YoloNode(Node):
         pose.orientation.z = 0.0
         pose.orientation.w = 1.0
         return pose
+
+    def transform_pose(self, from_frame, to_frame, pose):
+        try:
+            pose_stamped = PoseStamped()
+            pose_stamped.header.frame_id = from_frame
+            pose_stamped.header.stamp = rclpy.time.Time(seconds=0).to_msg()
+            pose_stamped.pose = pose
+
+            # if not self.tf_buffer.can_transform(to_frame, from_frame, rclpy.time.Time(), timeout=rclpy.duration.Duration(seconds=2.0)):
+            #     self.get_logger().error(f"TF transform from {from_frame} to {to_frame} is not available.")
+            #     return None
+
+            try:
+                transformed_pose_stamped = self.tf_buffer.transform(pose_stamped, to_frame, timeout=rclpy.duration.Duration(seconds=2.0))
+                return transformed_pose_stamped.pose
+            except Exception as e:
+                self.get_logger().error(f"TF transform failed: {str(e)}")
+                return None
+
+            
+            return transformed_pose_stamped.pose
+        except Exception as e:
+            self.get_logger().error(f"Pose transform failed: {str(e)}")
+            return None
 
 def main(args=None):
     rclpy.init(args=args)
