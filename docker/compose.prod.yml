@@ -1,11 +1,13 @@
 x-common-vars: &common-vars
   tty: true
   stdin_open: true
+  ipc: host
   network_mode: host
   stop_grace_period: 1s
   environment:
-    RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp 
     ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+    CYCLONEDDS_URI: /tmp/cycloneDDS.xml
 
 x-gpu-vars: &gpu-vars
   ipc: host
@@ -27,6 +29,7 @@ services:
         USER: realsense
         LIBREALSENSE_VERSION: $LIBREALSENSE_VERSION
         REALSENSE_ROS_VERSION: $REALSENSE_ROS_VERSION
+    privileged: true
     <<: *common-vars
     profiles: ['camera']
 
@@ -66,9 +69,10 @@ services:
       args:
         USER: gui
     <<: *common-vars
-    environment:
-      DISPLAY: $DISPLAY
-      RMW_IMPLEMENTATION: rmw_fastrtps_cpp
-      ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+    # environment:
+    #   DISPLAY: $DISPLAY
+    #   RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+    #   ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+    #   CYCLONEDDS_URI: /tmp/cycloneDDS.xml
     profiles: ['gui']
   

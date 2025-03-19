@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=ros:humble
-ARG ARCH=linux/arm64
-ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3-igpu
+ARG ARCH=linux/amd64
+ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3
 # -----------------------------------------------------------------------------
 # Base Stage: nvidia container
 # -----------------------------------------------------------------------------
@@ -21,6 +21,8 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \
     apt-transport-https \
     software-properties-common \  
     ros-humble-launch-pytest \
+    # DDS
+    ros-humble-rmw-cyclonedds-cpp \
     ros-humble-rmw-fastrtps-cpp \
     # Camera packages
     ros-humble-cv-bridge \
@@ -142,9 +144,6 @@ CMD [ "/bin/bash" ]
 
 ###### Ultralytics ROS Module - AMD64:igpu, dgpu | Jetson ######
 FROM --platform=${ARCH} ${NVIDIA_BASE_IMAGE} AS ultralytics-ros
-LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
-LABEL org.opencontainers.image.vendor="DIT-Robotics"
-ENV TERM=xterm-256color
 ARG USER
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID

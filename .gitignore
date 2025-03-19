@@ -2,4 +2,4 @@
 *_bag/
 *.jpg
 *.png
-train/dataset/
+dataset/

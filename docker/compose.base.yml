@@ -4,8 +4,9 @@ services:
     container_name: realsense
     volumes:
       - /dev:/dev
-      - $LOCAL_WORKSPACE_FOLDER/ws/realsense-pkg:/home/realsense/vision-ws/src/realsense-ros
-      - $LOCAL_WORKSPACE_FOLDER/ws/camera-pkg:/home/realsense/vision-ws/src/camera-ros
+      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
+      - $LOCAL_WORKSPACE_FOLDER/packages/realsense-pkg:/home/realsense/vision-ws/src/realsense-ros
+      - $LOCAL_WORKSPACE_FOLDER/packages/camera-pkg:/home/realsense/vision-ws/src/camera-ros
     device_cgroup_rules:
       - "c 81:* rmw"
       - "c 189:* rmw"
