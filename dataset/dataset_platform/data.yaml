@@ -1,0 +1,8 @@
+train: /root/train/dataset_platform/train/images
+val: /root/train/dataset_platform/valid/images
+test: /root/train/dataset_platform/test/images
+
+nc: 1
+names: ['board']
+
+rect: True

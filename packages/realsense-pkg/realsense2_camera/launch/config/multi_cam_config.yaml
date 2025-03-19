@@ -1,0 +1,28 @@
+# rgbd enable
+enable_color: true
+enable_depth: true
+align_depth.enable: true
+# pointcloud
+pointcloud.enable: false
+pointcloud.stream_filter: 2
+pointcloud.stream_index_filter: 0
+pointcloud.ordered_pc: false
+pointclooud.allow_no_texture_points: false
+# camera settings 
+rgb_camera.profile: 640x360x60
+depth_camera.profile: 640x360x60
+rgb_camera.format: BGR8
+depth_camera.format: Z16
+rgb_camera.enable_auto_exposure: false
+depth_camera.enable_auto_exposure: false
+rgb_camera.exposure: 166
+depth_camera.exposure: 8500
+json_file_path: "/home/realsense/vision-ws/src/realsense-ros/visual_presets/HighAccuracyPreset.json"
+# filters
+decimation_filter.enable: true
+spatial_filter.enable: true
+temporal_filter.enable: true
+
+enable_sync: true
+publish_tf: true
+tf_publish_rate: 1.0
