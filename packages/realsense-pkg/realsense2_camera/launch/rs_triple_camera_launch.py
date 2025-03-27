@@ -99,7 +99,7 @@ def launch_camera_base_transform_publisher_node(context: LaunchContext):
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            '0', '0.048', '1.44', '1.5707963268', '1.0471975512', '-1.5707963268',
+            '0', '0.048', '1.63', '1.5707963268', '1.0471975512', '-1.5707963268',
             'camera_base_link',
             context.launch_configurations['camera_name2'] + '_link'
         ]
