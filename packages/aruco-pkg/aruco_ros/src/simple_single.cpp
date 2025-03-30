@@ -316,7 +316,7 @@ public:
             // publish rviz marker representing the ArUco marker patch
             visualization_msgs::msg::Marker visMarker;
             visMarker.header = stampedTransform.header;
-            visMarker.id = 1;
+            visMarker.id = marker_id;
             visMarker.type = visualization_msgs::msg::Marker::CUBE;
             visMarker.action = visualization_msgs::msg::Marker::ADD;
             visMarker.pose = poseMsg.pose;
