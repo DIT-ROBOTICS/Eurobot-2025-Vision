@@ -9,7 +9,7 @@ services:
       bash -ic "
       colcon build --parallel-workers 6;
       source /home/aruco/vision-ws/install/local_setup.bash;
-      ros2 launch aruco_ros multicam_publisher.launch.py
+      ros2 launch aruco_ros CB_ALL.launch.py;
       "
   
   ultralytics-ros:
@@ -44,5 +44,6 @@ services:
       # Wayland socket
       # - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
       # GUI config
-      - $LOCAL_WORKSPACE_FOLDER/ws/gui-config:/home/gui/.rviz2
+      - $LOCAL_WORKSPACE_FOLDER/packages/gui-config:/home/gui/.rviz2
+      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
     command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml address:=localhost port:=8765

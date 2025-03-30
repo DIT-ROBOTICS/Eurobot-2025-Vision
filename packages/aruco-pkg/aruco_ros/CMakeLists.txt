@@ -22,6 +22,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     aruco_msgs
     sensor_msgs
     visualization_msgs
+    message_filters
 )
 find_package(ament_cmake REQUIRED)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -84,6 +85,45 @@ target_include_directories(marker_publisher
 ament_target_dependencies(marker_publisher ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(marker_publisher ${OpenCV_LIBRARIES})
 
+add_executable(sima_detect src/sima_detect.cpp
+                                src/aruco_ros_utils.cpp)
+target_include_directories(sima_detect
+  PUBLIC
+  include)
+
+target_include_directories(sima_detect
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+ament_target_dependencies(sima_detect ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(sima_detect ${OpenCV_LIBRARIES})
+
+add_executable(position_processor src/position_processor.cpp
+                                src/aruco_ros_utils.cpp)
+target_include_directories(position_processor
+  PUBLIC
+  include)
+
+target_include_directories(position_processor
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+ament_target_dependencies(position_processor ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(position_processor ${OpenCV_LIBRARIES})
+
+add_executable(sima_pose_array src/sima_pose_array.cpp
+                                src/aruco_ros_utils.cpp)
+target_include_directories(sima_pose_array
+  PUBLIC
+  include)
+
+target_include_directories(sima_pose_array
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+ament_target_dependencies(sima_pose_array ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(sima_pose_array ${OpenCV_LIBRARIES})
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -103,7 +143,7 @@ install(TARGETS aruco_ros_utils
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
-install(TARGETS marker_publisher single double
+install(TARGETS marker_publisher single double position_processor sima_detect sima_pose_array
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY include/
@@ -111,7 +151,7 @@ install(DIRECTORY include/
         FILES_MATCHING PATTERN "*.h"
 )
 
-foreach(dir etc launch)
+foreach(dir launch)
     install(DIRECTORY ${dir}/
             DESTINATION share/${PROJECT_NAME}/${dir})
 endforeach()

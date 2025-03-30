@@ -26,7 +26,7 @@
  or implied, of Rafael Muñoz Salinas.
  ********************************/
 /**
- * @file simple_single.cpp
+ * @file sima_detect.cpp
  * @author Bence Magyar
  * @date June 2012
  * @version 0.1
@@ -65,7 +65,7 @@
    aruco::CameraParameters camParam;
    tf2::Stamped<tf2::Transform> rightToLeft;
    bool useRectifiedImages;
-   aruco::MarkerDetector mDetector{"ARUCO_MIP_16h3", 1}; //ARUCO_MIP_16h3
+   aruco::MarkerDetector mDetector{"TAG16h5", 1}; //ARUCO_MIP_16h3
    std::vector<aruco::Marker> markers;
    rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub;
    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr timer_set_sub;
@@ -74,11 +74,11 @@
    image_transport::Publisher image_pub;
    image_transport::Publisher debug_pub;
    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub;
-   rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr transform_pub;
+   /*rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr transform_pub;
    rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr position_pub;
-   // rviz visualization marker
+   // rviz visualization marker*/
    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub;
-   rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr pixel_pub;
+   /*rclcpp::Publisher<geometry_msgs::msg::PointStamped>::SharedPtr pixel_pub;*/
    std::string marker_frame;
    std::string camera_frame;
    std::string reference_frame;
@@ -103,7 +103,7 @@
  
  public:
    ArucoSimple()
-   : Node("single"), cam_info_received(false), timestamp_reset_done(false)
+   : Node("sima"), cam_info_received(false), timestamp_reset_done(false)
    {
    }
    bool setup()
@@ -195,11 +195,11 @@
      image_pub = it_->advertise(this->get_name() + std::string("/result"), 1);
      debug_pub = it_->advertise(this->get_name() + std::string("/debug"), 1);
      pose_pub = subNode->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 100);
-     transform_pub =
+     /*transform_pub =
        subNode->create_publisher<geometry_msgs::msg::TransformStamped>("transform", 100);
-     position_pub = subNode->create_publisher<geometry_msgs::msg::Vector3Stamped>("position", 100);
+     position_pub = subNode->create_publisher<geometry_msgs::msg::Vector3Stamped>("position", 100);*/
      marker_pub = subNode->create_publisher<visualization_msgs::msg::Marker>("marker", 10);
-     pixel_pub = subNode->create_publisher<geometry_msgs::msg::PointStamped>("pixel", 10);
+     /*pixel_pub = subNode->create_publisher<geometry_msgs::msg::PointStamped>("pixel", 10);*/
  
      this->get_parameter_or<double>("marker_size", marker_size, 0.05);
      this->get_parameter_or<int>("marker_id", marker_id, 300);
@@ -261,10 +261,10 @@
      if ((image_pub.getNumSubscribers() == 0) &&
        (debug_pub.getNumSubscribers() == 0) &&
        (pose_pub->get_subscription_count() == 0) &&
-       (transform_pub->get_subscription_count() == 0) &&
-       (position_pub->get_subscription_count() == 0) &&
-       (marker_pub->get_subscription_count() == 0) &&
-       (pixel_pub->get_subscription_count() == 0))
+       /*(transform_pub->get_subscription_count() == 0) &&
+       (position_pub->get_subscription_count() == 0) &&*/
+       (marker_pub->get_subscription_count() == 0) /*&&
+       (pixel_pub->get_subscription_count() == 0)*/)
      {
        RCLCPP_DEBUG(this->get_logger(), "No subscribers, not looking for ArUco markers");
        return;
@@ -340,9 +340,9 @@
              poseMsg.pose.orientation = stampedTransform.transform.rotation;
              pose_pub->publish(poseMsg);
  
-             transform_pub->publish(stampedTransform);
+             //transform_pub->publish(stampedTransform);
  
-             geometry_msgs::msg::Vector3Stamped positionMsg;
+             /*geometry_msgs::msg::Vector3Stamped positionMsg;
              positionMsg.header = stampedTransform.header;
              positionMsg.vector = stampedTransform.transform.translation;
              position_pub->publish(positionMsg);
@@ -352,7 +352,7 @@
              pixelMsg.point.x = markers[i].getCenter().x;
              pixelMsg.point.y = markers[i].getCenter().y;
              pixelMsg.point.z = 0;
-             pixel_pub->publish(pixelMsg);
+             pixel_pub->publish(pixelMsg);*/
  
              // publish rviz marker representing the ArUco marker patch
              visualization_msgs::msg::Marker visMarker;
