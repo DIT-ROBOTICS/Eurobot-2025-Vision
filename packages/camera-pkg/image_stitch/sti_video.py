@@ -1,7 +1,7 @@
 from image_stitch.importClass import MultiCamNode
 from image_stitch.importClass import VideoStitcher
-from rclpy.executors import MultiThreadedExecutor
 import rclpy
+import threading
 
 def main(args=None):
     rclpy.init(args=args)
@@ -10,8 +10,10 @@ def main(args=None):
     node.get_logger().info('MultiCam Stitching node started')
 
     try:
+        callback_thread = threading.Thread(target=rclpy.spin, args=(node,), daemon=True)
+        callback_thread.start()
+
         while rclpy.ok():
-            rclpy.spin_once(node, timeout_sec=0.1)
             synced_images = node.get_queue_images()
             if synced_images is None:
                 continue

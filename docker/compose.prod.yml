@@ -20,6 +20,10 @@ x-gpu-vars: &gpu-vars
             count: 1
             capabilities: [gpu]
 
+x-cpu-vars: &cpu-vars
+  cpuset: "0-7"
+  cpus: 7.5
+  cpu_shares: 1024
 services:
   realsense:
     build:
@@ -30,7 +34,9 @@ services:
         LIBREALSENSE_VERSION: $LIBREALSENSE_VERSION
         REALSENSE_ROS_VERSION: $REALSENSE_ROS_VERSION
     privileged: true
-    <<: *common-vars
+    <<: 
+      - *common-vars
+      - *cpu-vars
     profiles: ['camera']
 
   aruco:

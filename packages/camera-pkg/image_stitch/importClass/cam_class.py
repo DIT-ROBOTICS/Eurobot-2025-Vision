@@ -56,12 +56,14 @@ class MultiCamNode(Node):
 
     def terminal_log(self):
         current_time = time.time()
+        elapsed_time = current_time - self.log_time 
         self.fps += 1
 
-        if current_time - self.log_time >= 1:
+        if elapsed_time >= 1.0:
+            avg_fps = self.fps / elapsed_time
             self.get_logger().info(f"{'-' * 40}")
             self.get_logger().info(f"Publishing stitched image")
-            self.get_logger().info(f"Average FPS: {self.fps}")
+            self.get_logger().info(f"Average FPS: {avg_fps:.2f}")
             self.log_time = current_time
             self.fps = 0
     

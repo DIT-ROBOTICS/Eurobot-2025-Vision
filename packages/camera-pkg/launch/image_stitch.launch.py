@@ -14,7 +14,7 @@ def generate_launch_description():
                 'mid_topic': '/realsense2/cam_mid/color/image_raw',
                 'right_topic': '/realsense3/cam_right/color/image_raw',
                 'stitched_topic': '/realsense/stitched_image/color/image_raw',
-                'image_shape': '360x640x3',
+                'image_shape': '360x640x30',
                 'encoding': 'bgr8',
                 'data_type': 'uint8'
             }],
