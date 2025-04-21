@@ -22,6 +22,7 @@ setup(
     entry_points={
         'console_scripts': [
             'camera_snap_node = camera_snap.sp_camera:main',
+            'camera_snap_depth_node = camera_snap.sp_depth:main',
             'camera_multisnap_node = camera_snap.sp_multi_camera:main',
             'image_stitcher_node = image_stitch.sti_video:main',
             'get_node = image_stitch.get:main',

@@ -10,11 +10,11 @@ services:
     device_cgroup_rules:
       - "c 81:* rmw"
       - "c 189:* rmw"
+      # sleep 5;
+      # ros2 launch camera_ros image_stitch.launch.py;
     command: >
       bash -ic "
-      colcon build --packages-select realsense2_camera camera_ros;
+      colcon build --packages-select realsense2_camera;
       source /home/realsense/vision-ws/install/local_setup.bash;
-      ros2 launch realsense2_camera rs_triple_camera_launch.py &
-      sleep 5;
-      ros2 launch camera_ros image_stitch.launch.py;
+      ros2 launch realsense2_camera rs_triple_camera_launch.py;
       "
