@@ -11,7 +11,7 @@ x-common-vars: &common-vars
 
 x-gpu-vars: &gpu-vars
   ipc: host
-  shm_size: 6gb
+  shm_size: 8gb
   deploy:
     resources:
       reservations:
@@ -56,7 +56,7 @@ services:
   ultralytics-training:
     build:
       context: .
-      target: ultralytics-training
+      target: ultralytics-ros
     <<: 
       - *common-vars
       - *gpu-vars
