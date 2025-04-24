@@ -7,7 +7,7 @@ x-common-vars: &common-vars
   environment:
     RMW_IMPLEMENTATION: rmw_cyclonedds_cpp 
     ROS_DOMAIN_ID: $ROS_DOMAIN_ID
-    CYCLONEDDS_URI: /tmp/cycloneDDS.xml
+    CYCLONEDDS_URI: /tmp/dds.xml
 
 x-gpu-vars: &gpu-vars
   ipc: host
@@ -20,11 +20,16 @@ x-gpu-vars: &gpu-vars
             count: 1
             capabilities: [gpu]
 
-x-cpu-vars: &cpu-vars
-  cpuset: "0-7"
-  cpus: 7.5
-  cpu_shares: 1024
 services:
+  center:
+    build:
+      context: .
+      target: center
+      args:
+        USER: center
+    <<: *common-vars
+    profiles: ['center']
+    
   realsense:
     build:
       context: .
@@ -34,9 +39,10 @@ services:
         LIBREALSENSE_VERSION: $LIBREALSENSE_VERSION
         REALSENSE_ROS_VERSION: $REALSENSE_ROS_VERSION
     privileged: true
-    <<: 
-      - *common-vars
-      - *cpu-vars
+    <<: *common-vars
+    cpuset: "0-9"
+    cpus: 8.5
+    cpu_shares: 1024
     profiles: ['camera']
 
   aruco:
@@ -46,6 +52,9 @@ services:
       args:
         USER: aruco
     <<: *common-vars
+    cpuset: "10-15"
+    cpus: 5.5
+    cpu_shares: 1024
     profiles: ['aruco']
 
   ultralytics-ros:
@@ -77,8 +86,5 @@ services:
     <<: *common-vars
     # environment:
     #   DISPLAY: $DISPLAY
-    #   RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
-    #   ROS_DOMAIN_ID: $ROS_DOMAIN_ID
-    #   CYCLONEDDS_URI: /tmp/cycloneDDS.xml
     profiles: ['gui']
   

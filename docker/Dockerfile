@@ -71,11 +71,12 @@ RUN cd /usr/src/librealsense \
 # -----------------------------------------------------------------------------
 # Release Stage:
 #   - Realsense
+#   - Center
 #   - Aruco
 #   - Ultralytics ROS: AMD64:igpu, dgpu | Jetson
 #   - GUI
 # -----------------------------------------------------------------------------
-###### RealSense Module ######
+###### Camera Base Module ######
 FROM base AS realsense
 ARG REALSENSE_ROS_VERSION
 ARG USER
@@ -116,6 +117,26 @@ RUN mkdir -p /home/$USER/vision-ws/src && \
     cd /home/$USER/vision-ws && \
     /bin/bash -c "source /opt/ros/humble/setup.bash && \
                   colcon build --symlink-install"
+WORKDIR /home/$USER/vision-ws
+CMD [ "/bin/bash" ]
+
+###### Center Base Module ######
+FROM base AS center 
+ARG USER
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+RUN groupadd --gid $USER_GID $USER && \
+    useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER && \
+    chmod 0440 /etc/sudoers.d/$USER && \
+    echo "source /opt/ros/humble/setup.bash" >> /home/$USER/.bashrc && \
+    echo "source /home/$USER/vision-ws/install/local_setup.bash" >> /home/$USER/.bashrc
+USER $USER
+RUN mkdir -p /home/$USER/vision-ws/src && \
+    rosdep update && \
+    rosdep install -i --from-path /home/$USER/vision-ws/src --rosdistro humble -y && \
+    cd /home/$USER/vision-ws && \
+    /bin/bash -c "source /opt/ros/humble/setup.bash"
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
 
