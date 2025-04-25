@@ -123,7 +123,7 @@ CMD [ "/bin/bash" ]
 ###### Center Base Module ######
 FROM base AS center 
 ARG USER
-ARG USER_UID=1000
+ARG USER_UID=1002
 ARG USER_GID=$USER_UID
 RUN groupadd --gid $USER_GID $USER && \
     useradd --uid $USER_UID --gid $USER_GID -ms /bin/bash $USER && \
