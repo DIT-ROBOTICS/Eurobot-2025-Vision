@@ -8,11 +8,14 @@
     <General>
       <Interfaces>
         <NetworkInterface name="wlp2s0"/>
-        <!-- <NetworkInterface name="enx00e04ca8a593"/> -->
+        <!-- <NetworkInterface name="enp2s0"/> -->
       </Interfaces>
       <AllowMulticast>false</AllowMulticast>
       <MaxMessageSize>65500B</MaxMessageSize>
     </General>
     
+    <!-- <Discovery>
+      <EnableTopicDiscoveryEndpoints>true</EnableTopicDiscoveryEndpoints>
+    </Discovery> -->
   </Domain>
 </CycloneDDS>

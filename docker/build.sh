@@ -27,11 +27,7 @@ esac
 
 sed -i "s|^ARG ARCH.*|ARG ARCH=$ARCH|" Dockerfile
 sed -i "s|^ARG NVIDIA_BASE_IMAGE.*|ARG NVIDIA_BASE_IMAGE=$NVIDIA_BASE_IMAGE|" Dockerfile
-sed -i "
-    0,/<NetworkInterface name=\"[^\"]*\"/ s//<NetworkInterface name=\"$WIFI_INTERFACE\"/
-    0,/<NetworkInterface name=\"[^\"]*\"/! {0,/<NetworkInterface name=\"[^\"]*\"/ s//<NetworkInterface name=\"$ETH_INTERFACE\"/}
-" ../config/dds-uri/cycloneDDS.xml
-
+sed -i "0,/<NetworkInterface name=\"[^\"]*\"/ s/<NetworkInterface name=\"[^\"]*\"/<NetworkInterface name=\"$WIFI_INTERFACE\"/" ../config/dds-uri/cycloneDDS.xml
 
 echo -e "Supported PLATFORM  \033[33m$ARCH\033[0m"
 echo -e "NVIDIA_BASE_IMAGE   \033[32m$NVIDIA_BASE_IMAGE\033[0m"
