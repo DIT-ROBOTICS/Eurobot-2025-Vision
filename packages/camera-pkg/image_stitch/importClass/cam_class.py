@@ -13,6 +13,7 @@ class MultiCamNode(Node):
         super().__init__('multi_cam_node')
         self.bridge = CvBridge()
         self.callback_group = ReentrantCallbackGroup()
+        
         self.fps = 0
         self.image_queue = []
         self.log_time = time.time()
