@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 
 # 顏色範圍：HSV 空間
-LOWER_COLOR = (10, 30, 100)
-UPPER_COLOR = (60, 200, 255)
+LOWER_COLOR = (0, 0, 100)
+UPPER_COLOR = (60, 255, 255)
 
 class CounterRecognition:
     def __init__(self):
@@ -47,5 +47,7 @@ class CounterRecognition:
                     (int(x0 + 100 * vx), int(y0 + 100 * vy)),
                     (0, 0, 255), 2
                 )
+                # Degree to radian
+                angle = angle * np.pi / 180
         return angle
         # return angle if angle is not None else 0.0

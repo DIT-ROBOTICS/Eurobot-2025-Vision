@@ -17,7 +17,7 @@ class YoloNode(Node):
     def __init__(self):
         super().__init__('yolo_node')
         self.counter_recognition = CounterRecognition()
-        self.declare_parameter("model_path", "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver5.pt")
+        self.declare_parameter("model_path", "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/best.pt")
         self.declare_parameter("color_topic", "/realsense/stitched_image/color/image_raw")
         self.declare_parameter("depth_topic", "/realsense/stitched_image/depth/image_raw")
         self.declare_parameter("bbox_topic", "/detected/bounding_boxes")
@@ -56,7 +56,6 @@ class YoloNode(Node):
         self.predict()
     def color_callback(self, msg):
         self.color_msg = msg
-        # print("check color")
         self.predict()
     def predict(self):
         if self.color_msg is not None and self.depth_msg is not None:
@@ -82,75 +81,48 @@ class YoloNode(Node):
                     (x,y)=((x1+x2)/2,(y1+y2)/2)
                     z = depth_image[int(y-1), int(x-1)] if depth_image is not None else 0
                     confidence = box.conf[0].item()  
-                    label = box.cls[0].item()  
+                    label_id = int(box.cls[0].item())
+                    label_name = self.model.names[label_id]
 
-                    if(confidence >=0.60):
+                    if(label_name =="platform" and confidence >= 0.40):
                         posem = self.switch_to_cam_pose(x,y,z)
-                        if(label==0):
-                            cropped_img = color_image[y1:y2, x1:x2]
-                            self.counter_recognition.set_image(cropped_img)
-                            binary_img = self.counter_recognition.get_binary_img()
-                            self.counter_recognition.get_contours()
-                            theangle = self.counter_recognition.distinguish_contour(cropped_img.copy())
+                        cropped_img = color_image[y1:y2, x1:x2]
+                        self.counter_recognition.set_image(cropped_img)
+                        binary_img = self.counter_recognition.get_binary_img()
+                        self.counter_recognition.get_contours()
+                        theangle = self.counter_recognition.distinguish_contour(cropped_img.copy())
+                        print(f"Angle: ", theangle)
+                        try:
+                            global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
+                        
+                        except Exception as e:
+                            self.get_logger().error(f"Transform failed: {str(e)}")
+                        if(global_posem is not None):
+                            finalpose = Pose()
+                            finalpose = global_posem
+                            if(finalpose.position.x >= 2.85 or finalpose.position.x <= 0.15):
+                                theangle = (math.pi)/2
+                            finalpose.orientation.x = theangle
+                            finalpose.orientation.y = 0.0
+                            finalpose.orientation.z = math.sin(theangle / 2)
+                            finalpose.orientation.w = math.cos(theangle / 2)
+                            pose_array_platform.poses.append(finalpose)  
 
-                            print(f"Angle: ", theangle)
-                            # cv2.imshow("Binary Image", counter_recognition.binary_img)
-                            # cv2.imshow("Contours", counter_recognition.img)
-                            # cv2.waitKey(0)
-                            # cv2.destroyAllWindows()
-                            try:
-                                # global_pose1 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose1)
-                                # global_pose2 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose2)
-                                global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
-                            
-                            except Exception as e:
-                                self.get_logger().error(f"Transform failed: {str(e)}")
-                            if(global_posem is not None):
-                                finalpose = Pose()
-                                finalpose = global_posem
-                                # finalpose.position.x = (global_pose1.position.x + global_pose2.position.x)/2
-                                # finalpose.position.y = (global_pose1.position.y + global_pose2.position.y)/2
-                                # finalpose.position.z = global_posem.position.z
-                                # length = (global_pose1.position.x - global_pose2.position.x)*100
-                                # height = (global_pose1.position.y - global_pose2.position.y)*100
-                                # if(length<=10):
-                                #     length=10.00001
-                                # elif(length>41.231056):
-                                #     length=41.231056
-                                # if(height<=10):
-                                #     height=10.00001
-                                # elif(height>41.231056):
-                                #     height=41.231056
-
-                                # if (length>=height):
-                                #     angle = math.acos(height/41.231056)+1.3258176
-                                # else:
-                                #     angle = math.acos(length/41.231056)+0.2449786
-                                finalpose.orientation.x = 0.0 #theangle
-                                finalpose.orientation.y = 0.0
-                                finalpose.orientation.z = math.sin(theangle / 2)
-                                finalpose.orientation.w = math.cos(theangle / 2)
-                                pose_array_platform.poses.append(finalpose)  
-
-                        elif(label==1):
-                            try:
-                                # global_pose1 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose1)
-                                # global_pose2 = self.transform_pose(self.from_frame_id,self.to_frame_id,pose2)
-                                global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
-        
-                            except Exception as e:
-                                self.get_logger().error(f"Transform failed: {str(e)}")
-                            if(global_posem is not None):
-                                finalpose = Pose()
-                                finalpose = global_posem
-                                # finalpose.position.x = (global_pose1.position.x + global_pose2.position.x)/2
-                                # finalpose.position.y = (global_pose1.position.y + global_pose2.position.y)/2
-                                # finalpose.position.z = global_posem.position.z
-                                finalpose.orientation.x = 0.0
-                                finalpose.orientation.y = 0.0
-                                finalpose.orientation.z = 0.0
-                                finalpose.orientation.w = 1.0
-                                pose_array_column.poses.append(finalpose)
+                    elif((label_name=="column" or label_name=="overturn")and confidence >= 0.40):
+                        posem = self.switch_to_cam_pose(x,y,z)
+                        try:
+                            global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
+    
+                        except Exception as e:
+                            self.get_logger().error(f"Transform failed: {str(e)}")
+                        if(global_posem is not None):
+                            finalpose = Pose()
+                            finalpose = global_posem
+                            finalpose.orientation.x = 0.0
+                            finalpose.orientation.y = 0.0
+                            finalpose.orientation.z = 0.0
+                            finalpose.orientation.w = 1.0
+                            pose_array_column.poses.append(finalpose)
             self.center_pub_platform.publish(pose_array_platform)
             self.center_pub_column.publish(pose_array_column)
 

@@ -18,10 +18,10 @@ class RegionDetector(Node):
     def pose_callback(self, msg):
         region_flags = [0] * len(self.material_points)  
         for pose in msg.poses:
-            x, y = pose.position.x, pose.position.y
+            x, y, z = pose.position.x, pose.position.y, pose.position.z
             for i, (point_x,point_y) in enumerate(self.material_points):
                 self.get_logger().info(f'Checking distance between ({x},{y}) and ({point_x},{point_y})')
-                if (self.get_distance(x, y, point_x, point_y) < 0.15):
+                if (self.get_distance(x, y, point_x, point_y) < 0.15 and z <0.05):
                     region_flags[i] = 1
 
         region_msg = Int32MultiArray()

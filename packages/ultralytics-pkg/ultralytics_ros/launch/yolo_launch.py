@@ -16,7 +16,7 @@ def generate_launch_description():
             executable="yolo_all_node", 
             name="yolo_all_node",  
             parameters=[{
-                "model_path": "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver5.pt",
+                "model_path": "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/best.pt",
                 "color_topic": "/realsense/stitched_image/color/image_raw",
                 "depth_topic": "/realsense/stitched_image/depth/image_raw",
                 "bbox_topic": "/detected/bounding_boxes",
