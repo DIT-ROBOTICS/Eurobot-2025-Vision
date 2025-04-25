@@ -1,4 +1,3 @@
-from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -12,7 +11,6 @@ class MultiCamNode(Node):
     def __init__(self):
         super().__init__('multi_cam_node')
         self.bridge = CvBridge()
-        self.callback_group = ReentrantCallbackGroup()
         
         self.fps = 0
         self.image_queue = []
@@ -35,15 +33,15 @@ class MultiCamNode(Node):
             self.encoding = msg_mid.encoding
             self._encoding_trans(self.encoding, msg_mid.height, msg_mid.width)
 
-        image_left = self.prepocess_image_data(msg_left.data)
-        image_mid = self.prepocess_image_data(msg_mid.data)
-        image_right = self.prepocess_image_data(msg_right.data)
+        image_left = self.preprocess_image_data(msg_left.data)
+        image_mid = self.preprocess_image_data(msg_mid.data)
+        image_right = self.preprocess_image_data(msg_right.data)
         stacked_images = np.stack([image_mid, image_left, image_right])
         if len(self.image_queue) >= 10:
             self.image_queue.pop(0)
         self.image_queue.append(stacked_images)
 
-    def prepocess_image_data(self, data):
+    def preprocess_image_data(self, data):
         try:
             image = np.frombuffer(data, dtype=self.data_type).reshape(self.source_image_shape)
         except ValueError as e:
