@@ -12,22 +12,22 @@ public:
     SimaPoseArray() : Node("sima_pose_array")
     {
         subscription_s1_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-            "/sima1/average_pose", 10,
+            "/vision/aruco/sima1/average_pose", 10,
             std::bind(&SimaPoseArray::s1_callback, this, std::placeholders::_1));
 
         subscription_s2_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-            "/sima2/average_pose", 10,
+            "/vision/aruco/sima2/average_pose", 10,
             std::bind(&SimaPoseArray::s2_callback, this, std::placeholders::_1));
 
         subscription_s3_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-            "/sima3/average_pose", 10,
+            "/vision/aruco/sima3/average_pose", 10,
             std::bind(&SimaPoseArray::s3_callback, this, std::placeholders::_1));
 
         subscription_s4_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-            "/sima4/average_pose", 10,
+            "/vision/aruco/sima4/average_pose", 10,
             std::bind(&SimaPoseArray::s4_callback, this, std::placeholders::_1));
         // 建立發布者
-        publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/sima_pose", 10);
+        publisher_ = this->create_publisher<geometry_msgs::msg::PoseArray>("/vision/aruco/sima_poseArray", 10);
 
         // 設定定時器，每 100 ms 執行一次平均計算
         timer_ = this->create_wall_timer(10ms, std::bind(&SimaPoseArray::publish_pose, this));

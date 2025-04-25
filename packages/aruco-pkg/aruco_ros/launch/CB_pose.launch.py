@@ -10,6 +10,12 @@ def launch_setup(context, *args, **kwargs):
     position_processor = Node(
         package='aruco_ros',
         executable='position_processor',
+        remappings=[
+            ('/left/single/pose', '/vision/aruco/left/robot/pose'),
+            ('/mid/single/pose', '/vision/aruco/mid/robot/pose'),
+            ('/right/single/pose', '/vision/aruco/right/robot/pose'),
+            ('/average_pose', '/vision/aruco/robot/average_pose')
+        ],
         parameters=[]
     )
     
@@ -18,10 +24,10 @@ def launch_setup(context, *args, **kwargs):
         namespace='sima1',
         executable='position_processor',
         remappings=[
-            ('/left/single/pose', '/sima1/left/sima/pose'),
-            ('/mid/single/pose', '/sima1/mid/sima/pose'),
-            ('/right/single/pose', '/sima1/right/sima/pose'),
-            ('/average_pose', '/sima1/average_pose')
+            ('/left/single/pose', '/vision/aruco/sima1/left/sima/pose'),
+            ('/mid/single/pose', '/vision/aruco/sima1/mid/sima/pose'),
+            ('/right/single/pose', '/vision/aruco/sima1/right/sima/pose'),
+            ('/average_pose', '/vision/aruco/sima1/average_pose')
         ],
         parameters=[]
     )
@@ -31,10 +37,10 @@ def launch_setup(context, *args, **kwargs):
         namespace='sima2',
         executable='position_processor',
         remappings=[
-            ('/left/single/pose', '/sima2/left/sima/pose'),
-            ('/mid/single/pose', '/sima2/mid/sima/pose'),
-            ('/right/single/pose', '/sima2/right/sima/pose'),
-            ('/average_pose', '/sima2/average_pose')
+            ('/left/single/pose', '/vision/aruco/sima2/left/sima/pose'),
+            ('/mid/single/pose', '/vision/aruco/sima2/mid/sima/pose'),
+            ('/right/single/pose', '/vision/aruco/sima2/right/sima/pose'),
+            ('/average_pose', '/vision/aruco/sima2/average_pose')
         ],
         parameters=[]
     )
@@ -44,10 +50,10 @@ def launch_setup(context, *args, **kwargs):
         namespace='sima3',
         executable='position_processor',
         remappings=[
-            ('/left/single/pose', '/sima3/left/sima/pose'),
-            ('/mid/single/pose', '/sima3/mid/sima/pose'),
-            ('/right/single/pose', '/sima3/right/sima/pose'),
-            ('/average_pose', '/sima3/average_pose')
+            ('/left/single/pose', '/vision/aruco/sima3/left/sima/pose'),
+            ('/mid/single/pose', '/vision/aruco/sima3/mid/sima/pose'),
+            ('/right/single/pose', '/vision/aruco/sima3/right/sima/pose'),
+            ('/average_pose', '/vision/aruco/sima3/average_pose')
         ],
         parameters=[]
     )
@@ -57,10 +63,10 @@ def launch_setup(context, *args, **kwargs):
         namespace='sima4',
         executable='position_processor',
         remappings=[
-            ('/left/single/pose', '/sima4/left/sima/pose'),
-            ('/mid/single/pose', '/sima4/mid/sima/pose'),
-            ('/right/single/pose', '/sima4/right/sima/pose'),
-            ('/average_pose', '/sima4/average_pose')
+            ('/left/single/pose', '/vision/aruco/sima4/left/sima/pose'),
+            ('/mid/single/pose', '/vision/aruco/sima4/mid/sima/pose'),
+            ('/right/single/pose', '/vision/aruco/sima4/right/sima/pose'),
+            ('/average_pose', '/vision/aruco/sima4/average_pose')
         ],
         parameters=[]
     )

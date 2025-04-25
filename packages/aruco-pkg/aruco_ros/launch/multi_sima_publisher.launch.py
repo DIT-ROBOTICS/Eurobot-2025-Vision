@@ -8,10 +8,10 @@ import os
 def generate_launch_description():
     # Define namespaces and corresponding marker IDs
     camera_configs = [
-        {'namespace': 'sima1', 'marker_id': '0'},
-        {'namespace': 'sima2', 'marker_id': '1'},
-        {'namespace': 'sima3', 'marker_id': '2'},
-        {'namespace': 'sima4', 'marker_id': '3'},
+        {'namespace': 'sima1', 'marker_id': '1'},
+        {'namespace': 'sima2', 'marker_id': '2'},
+        {'namespace': 'sima3', 'marker_id': '5'},
+        {'namespace': 'sima4', 'marker_id': '4'},
     ]
 
     # IncludeLaunchDescription for each namespace

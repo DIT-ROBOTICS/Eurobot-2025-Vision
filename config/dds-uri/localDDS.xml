@@ -4,15 +4,16 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd"
 >
-  <Domain Id="any">
+
+<Domain Id="0">
     <General>
-      <Interfaces>
-        <NetworkInterface name="wlp2s0"/>
-        <!-- <NetworkInterface name="enx00e04ca8a593"/> -->
-      </Interfaces>
       <AllowMulticast>false</AllowMulticast>
-      <MaxMessageSize>65500B</MaxMessageSize>
+      <NetworkInterface name="lo"/>
     </General>
-    
+    <Discovery>
+      <Peers>
+        <Peer address="127.0.0.1"/>
+      </Peers>
+    </Discovery>
   </Domain>
 </CycloneDDS>

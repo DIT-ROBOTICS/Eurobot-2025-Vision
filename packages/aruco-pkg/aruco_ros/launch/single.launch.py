@@ -40,12 +40,12 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
 
     marker_id_arg = DeclareLaunchArgument(
-        'marker_id', default_value='1',
+        'marker_id', default_value='6',
         description='Marker ID. '
     )
 
     marker_size_arg = DeclareLaunchArgument(
-        'marker_size', default_value='0.1',
+        'marker_size', default_value='0.07',
         description='Marker size in m. '
     )
 
@@ -67,7 +67,7 @@ def generate_launch_description():
     )
 
     corner_refinement_arg = DeclareLaunchArgument(
-        'corner_refinement', default_value='LINES',
+        'corner_refinement', default_value='SUBPIX',
         description='Corner Refinement. ',
         choices=['SUBPIX','LINES','NONE'],
     )

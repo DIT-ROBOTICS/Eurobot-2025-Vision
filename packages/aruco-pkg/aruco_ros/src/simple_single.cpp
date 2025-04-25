@@ -103,7 +103,7 @@
  
  public:
    ArucoSimple()
-   : Node("single"), cam_info_received(false), timestamp_reset_done(false)
+   : Node("robot"), cam_info_received(false), timestamp_reset_done(false)
    {
    }
    bool setup()
@@ -145,12 +145,12 @@
      this->declare_parameter<std::string>("camera_frame", "");
      this->declare_parameter<std::string>("marker_frame", "");
      this->declare_parameter<bool>("image_is_rectified", true);
-     this->declare_parameter<float>("min_marker_size", 0.02);
+     this->declare_parameter<float>("min_marker_size", 0.1);
      this->declare_parameter<std::string>("detection_mode", "");
      this->declare_parameter<std::string>("corner_refinement", "");
  
      float min_marker_size;  // percentage of image area
-     this->get_parameter_or<float>("min_marker_size", min_marker_size, 0.02);
+     this->get_parameter_or<float>("min_marker_size", min_marker_size, 0.1);
      RCLCPP_INFO_STREAM(this->get_logger(), "Marker size min: " << min_marker_size << " of image area");
  
      std::string detection_mode;
@@ -195,11 +195,10 @@
      image_pub = it_->advertise(this->get_name() + std::string("/result"), 1);
      debug_pub = it_->advertise(this->get_name() + std::string("/debug"), 1);
      pose_pub = subNode->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 100);
-     transform_pub =
-       subNode->create_publisher<geometry_msgs::msg::TransformStamped>("transform", 100);
-     position_pub = subNode->create_publisher<geometry_msgs::msg::Vector3Stamped>("position", 100);
-     marker_pub = subNode->create_publisher<visualization_msgs::msg::Marker>("marker", 10);
-     pixel_pub = subNode->create_publisher<geometry_msgs::msg::PointStamped>("pixel", 10);
+     //transform_pub = subNode->create_publisher<geometry_msgs::msg::TransformStamped>("transform", 100);
+     //position_pub = subNode->create_publisher<geometry_msgs::msg::Vector3Stamped>("position", 100);
+     //marker_pub = subNode->create_publisher<visualization_msgs::msg::Marker>("marker", 10);
+     //pixel_pub = subNode->create_publisher<geometry_msgs::msg::PointStamped>("pixel", 10);
  
      this->get_parameter_or<double>("marker_size", marker_size, 0.05);
      this->get_parameter_or<int>("marker_id", marker_id, 300);
@@ -207,6 +206,8 @@
      this->get_parameter_or<std::string>("camera_frame", camera_frame, "");
      this->get_parameter_or<std::string>("marker_frame", marker_frame, "");
      this->get_parameter_or<bool>("image_is_rectified", useRectifiedImages, true);
+
+     RCLCPP_INFO_STREAM(this->get_logger(), "Marker size: " << marker_size);
  
      rcpputils::assert_true(
        camera_frame != "" && marker_frame != "",
@@ -260,11 +261,7 @@
    {
      if ((image_pub.getNumSubscribers() == 0) &&
        (debug_pub.getNumSubscribers() == 0) &&
-       (pose_pub->get_subscription_count() == 0) &&
-       (transform_pub->get_subscription_count() == 0) &&
-       (position_pub->get_subscription_count() == 0) &&
-       (marker_pub->get_subscription_count() == 0) &&
-       (pixel_pub->get_subscription_count() == 0))
+       (pose_pub->get_subscription_count() == 0))
      {
        RCLCPP_DEBUG(this->get_logger(), "No subscribers, not looking for ArUco markers");
        return;
@@ -340,37 +337,7 @@
              poseMsg.pose.orientation = stampedTransform.transform.rotation;
              pose_pub->publish(poseMsg);
  
-             transform_pub->publish(stampedTransform);
- 
-             geometry_msgs::msg::Vector3Stamped positionMsg;
-             positionMsg.header = stampedTransform.header;
-             positionMsg.vector = stampedTransform.transform.translation;
-             position_pub->publish(positionMsg);
- 
-             geometry_msgs::msg::PointStamped pixelMsg;
-             pixelMsg.header = stampedTransform.header;
-             pixelMsg.point.x = markers[i].getCenter().x;
-             pixelMsg.point.y = markers[i].getCenter().y;
-             pixelMsg.point.z = 0;
-             pixel_pub->publish(pixelMsg);
- 
-             // publish rviz marker representing the ArUco marker patch
-             visualization_msgs::msg::Marker visMarker;
-             visMarker.header = stampedTransform.header;
-             visMarker.id = marker_id;
-             visMarker.type = visualization_msgs::msg::Marker::CUBE;
-             visMarker.action = visualization_msgs::msg::Marker::ADD;
-             visMarker.pose = poseMsg.pose;
-             visMarker.scale.x = marker_size;
-             visMarker.scale.y = marker_size;
-             visMarker.scale.z = 0.001;
-             visMarker.color.r = 1.0;
-             visMarker.color.g = 0;
-             visMarker.color.b = 0;
-             visMarker.color.a = 1.0;
-             visMarker.lifetime = builtin_interfaces::msg::Duration();
-             visMarker.lifetime.sec = 3;
-             marker_pub->publish(visMarker);
+             //transform_pub->publish(stampedTransform);
            }
            // but drawing all the detected markers
            markers[i].draw(inImage, cv::Scalar(0, 0, 255), 2);

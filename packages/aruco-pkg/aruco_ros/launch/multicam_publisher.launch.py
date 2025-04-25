@@ -9,7 +9,7 @@ import os
 def generate_launch_description():
     # Declare global arguments
     marker_size_arg = DeclareLaunchArgument(
-        'marker_size', default_value='0.1',
+        'marker_size', default_value='0.07',
         description='Marker size in meters.'
     )
 
