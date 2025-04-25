@@ -9,8 +9,8 @@ pointcloud.stream_index_filter: 0
 pointcloud.ordered_pc: false
 pointclooud.allow_no_texture_points: false
 # camera settings 
-rgb_camera.profile: 640x360x60
-depth_camera.profile: 640x360x60
+rgb_camera.profile: 640x360x30
+depth_camera.profile: 640x360x30
 rgb_camera.format: BGR8
 depth_camera.format: Z16
 rgb_camera.enable_auto_exposure: false
