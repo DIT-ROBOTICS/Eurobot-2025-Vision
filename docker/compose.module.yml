@@ -3,7 +3,7 @@ services:
     image: vision-main:aruco
     container_name: aruco
     volumes:
-      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
+      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/localDDS.xml:/tmp/dds.xml
       - $LOCAL_WORKSPACE_FOLDER/packages/aruco-pkg:/home/aruco/vision-ws/src/aruco-ros
     command: >
       bash -ic "
@@ -16,7 +16,7 @@ services:
     image: vision-main:ultralytics-ros
     container_name: ultralytics-ros
     volumes:
-      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
+      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/localDDS.xml:/tmp/dds.xml
       - $LOCAL_WORKSPACE_FOLDER/packages/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
     command: >
       bash -ic "
@@ -45,5 +45,5 @@ services:
       # - $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY:/tmp/$WAYLAND_DISPLAY
       # GUI config
       - $LOCAL_WORKSPACE_FOLDER/packages/gui-config:/home/gui/.rviz2
-      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/cycloneDDS.xml:/tmp/cycloneDDS.xml
+      - $LOCAL_WORKSPACE_FOLDER/config/dds-uri/localDDS.xml:/tmp/dds.xml
     command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml address:=localhost port:=8765
