@@ -1,19 +1,18 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>camera_ros</name>
+  <name>center_ros</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="ohin.kyuu@gmail.com">realsense</maintainer>
+  <maintainer email="ohin.kyuu@gmail.com">center</maintainer>
   <license>MIT</license>
 
   <depend>rclpy</depend>
-  <depend>sensor_msgs</depend>
-  <depend>cv_bridge</depend>
-
-  <exec_depend>opencv-python</exec_depend>
-  <exec_depend>launch</exec_depend>
-  <exec_depend>launch_ros</exec_depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>builtin_interfaces</depend> 
+  <depend>opencv-python</depend>
+  <depend>numpy</depend>
 
   <export>
     <build_type>ament_python</build_type>
