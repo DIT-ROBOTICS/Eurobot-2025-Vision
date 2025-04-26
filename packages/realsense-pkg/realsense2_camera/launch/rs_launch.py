@@ -21,15 +21,9 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 
 
-<<<<<<< HEAD:ws/realsense-pkg/realsense2_camera/launch/rs_launch.py
-configurable_parameters = [{'name': 'camera_name',                  'default': 'cam2', 'description': 'camera unique name'},
-                           {'name': 'camera_namespace',             'default': 'realsense', 'description': 'namespace for camera'},
-                           {'name': 'serial_no',                    'default': "_949122070619", 'description': 'choose device by serial number'},
-=======
 configurable_parameters = [{'name': 'camera_name',                  'default': '', 'description': 'camera unique name'},
                            {'name': 'camera_namespace',             'default': '', 'description': 'namespace for camera'},
                            {'name': 'serial_no',                    'default': "", 'description': 'choose device by serial number'},
->>>>>>> 39c7e4a178dca1c3abdd32c600c07fcee7b7433a:packages/realsense-pkg/realsense2_camera/launch/rs_launch.py
                            {'name': 'usb_port_id',                  'default': "''", 'description': 'choose device by usb port id'},
                            {'name': 'device_type',                  'default': "''", 'description': 'choose device by type'},
                            {'name': 'config_file',                  'default': "''", 'description': 'yaml config file'},
