@@ -5,12 +5,13 @@ package_name = 'ultralytics_ros'
 setup(
     name=package_name,
     version='0.0.0',
-    packages=find_packages(exclude=['test']),
+    packages=find_packages(include=['ultralytics_ros', 'ultralytics_ros.*']),
+
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', ['launch/yolo_tf_launch.py']),
+        ('share/' + package_name + '/launch', ['launch/yolo_launch.py']),
     ],
     install_requires=['setuptools', 'ultralytics'],
     zip_safe=True,
@@ -25,6 +26,10 @@ setup(
             'yolo_node = ultralytics_ros.yolo_node:main',
             'tf_node= ultralytics_ros.tf_node:main',
             'yolo_node_nopub = ultralytics_ros.yolo_node_nopub:main',
+            'detect_node= ultralytics_ros.region_detector:main',
+            'yolo_multi_node = ultralytics_ros.yolo_multi_node:main',
+            'yolo_all_node = ultralytics_ros.yolo_all:main',
+
         ],
     },
 )

@@ -20,13 +20,13 @@ services:
       - $LOCAL_WORKSPACE_FOLDER/packages/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
     command: >
       bash -ic "
-      colcon build --base-paths /home/ultralytics/vision-ws;
+      colcon build;
       source /home/ultralytics/vision-ws/install/local_setup.bash;
-      ros2 launch ultralytics_ros yolo_tf_launch.py
+      ros2 launch ultralytics_ros yolo_launch.py
       "
 
   ultralytics-training:
-    image: ultralytics/ultralytics:latest
+    image: ultralytics/ultralytics:8.3.84-jetson-jetpack6
     container_name: ultralytics-training
     volumes:
       - $LOCAL_WORKSPACE_FOLDER/dataset:/root/train

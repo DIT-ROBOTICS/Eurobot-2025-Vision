@@ -2,4 +2,6 @@
 *_bag/
 *.jpg
 *.png
+*.txt
 dataset/
+trainset/

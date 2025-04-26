@@ -7,34 +7,29 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 import time 
-from tf2_ros import Buffer, TransformListener
-import tf2_geometry_msgs
 import math
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
+
 from .importClass.angle import CounterRecognition
+from .importClass.tf_transform import PoseTransformer
 
 class YoloNode(Node):
     def __init__(self):
         super().__init__('yolo_node')
-        self.counter_recognition = CounterRecognition()
         self.declare_parameter("model_path", "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/best.pt")
         self.declare_parameter("color_topic", "/realsense/stitched_image/color/image_raw")
         self.declare_parameter("depth_topic", "/realsense/stitched_image/depth/image_raw")
         self.declare_parameter("bbox_topic", "/detected/bounding_boxes")
         self.declare_parameter("platform_pose_topic", "detected/global_center_poses/platform")
         self.declare_parameter("column_pose_topic", "detected/global_center_poses/column")
-        self.declare_parameter("from_frame_id", "cam_mid_color_optical_frame")
-        self.declare_parameter("to_frame_id", "map")
-
-        model_path = self.get_parameter("model_path").value
         color_topic = self.get_parameter("color_topic").value
         depth_topic = self.get_parameter("depth_topic").value
+        model_path = self.get_parameter("model_path").value
         bbox_topic = self.get_parameter("bbox_topic").value
         platform_pose_topic = self.get_parameter("platform_pose_topic").value
         column_pose_topic = self.get_parameter("column_pose_topic").value
         self.listener_qos = self._create_qos_profile()
-        self.from_frame_id = self.get_parameter("from_frame_id").value
-        self.to_frame_id = self.get_parameter("to_frame_id").value
+
         self.model = YOLO(model_path)
         self.get_logger().info(f"Loaded YOLO model from {model_path}")
 
@@ -45,12 +40,13 @@ class YoloNode(Node):
         self.center_pub_platform = self.create_publisher(PoseArray, platform_pose_topic, 10)
         self.center_pub_column = self.create_publisher(PoseArray, column_pose_topic, 10)
         self.bbox_pub = self.create_publisher(Image, bbox_topic, 10)
-        
         self.bridge = CvBridge()
         self.get_logger().info("YOLO Node initialized and ready.")
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-
+        self.counter_recognition = CounterRecognition()
+        self.pose_transformer = PoseTransformer()
+        
     def depth_callback(self, msg):
         self.depth_msg = msg
         self.predict()
@@ -85,15 +81,15 @@ class YoloNode(Node):
                     label_name = self.model.names[label_id]
 
                     if(label_name =="platform" and confidence >= 0.40):
-                        posem = self.switch_to_cam_pose(x,y,z)
+                        posem = self.pose_transformer.switch_to_cam_pose(x,y,z)
                         cropped_img = color_image[y1:y2, x1:x2]
                         self.counter_recognition.set_image(cropped_img)
                         binary_img = self.counter_recognition.get_binary_img()
                         self.counter_recognition.get_contours()
                         theangle = self.counter_recognition.distinguish_contour(cropped_img.copy())
-                        print(f"Angle: ", theangle)
+                        # print(f"Angle: ", theangle)
                         try:
-                            global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
+                            global_posem = self.pose_transformer.transform_pose(self.from_frame_id,self.to_frame_id,posem)
                         
                         except Exception as e:
                             self.get_logger().error(f"Transform failed: {str(e)}")
@@ -109,9 +105,9 @@ class YoloNode(Node):
                             pose_array_platform.poses.append(finalpose)  
 
                     elif((label_name=="column" or label_name=="overturn")and confidence >= 0.40):
-                        posem = self.switch_to_cam_pose(x,y,z)
+                        posem = self.pose_transformer.switch_to_cam_pose(x,y,z)
                         try:
-                            global_posem = self.transform_pose(self.from_frame_id,self.to_frame_id,posem)
+                            global_posem = self.pose_transformer.transform_pose(self.from_frame_id,self.to_frame_id,posem)
     
                         except Exception as e:
                             self.get_logger().error(f"Transform failed: {str(e)}")
@@ -139,40 +135,6 @@ class YoloNode(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to process depth image: {e}")
         return col,dep
-    
-    def switch_to_cam_pose(self, x, y,z): 
-        f_x = 476.4030# 內參
-        f_y = 467.9718
-        c_x = 533.1214
-        c_y = 291.4719
-        pose = Pose()
-        pose.position.y = (z * (x - c_x) / f_x) / 1000 
-        pose.position.x = -(z * (y - c_y) / f_y) / 1000
-        pose.position.z = z / 1000
-        pose.orientation.x = 0.0
-        pose.orientation.y = 0.0
-        pose.orientation.z = 0.0
-        pose.orientation.w = 1.0
-        return pose
-
-    def transform_pose(self, from_frame, to_frame, pose):
-        try:
-            pose_stamped = PoseStamped()
-            pose_stamped.header.frame_id = from_frame
-            pose_stamped.header.stamp = rclpy.time.Time(seconds=0).to_msg()
-            pose_stamped.pose = pose
-            try:
-                transformed_pose_stamped = self.tf_buffer.transform(pose_stamped, to_frame, timeout=rclpy.duration.Duration(seconds=2.0))
-                return transformed_pose_stamped.pose
-            except Exception as e:
-                self.get_logger().error(f"TF transform failed: {str(e)}")
-                return None
-
-            
-            return transformed_pose_stamped.pose
-        except Exception as e:
-            self.get_logger().error(f"Pose transform failed: {str(e)}")
-            return None
 
     def _create_qos_profile(self):
         return QoSProfile(
