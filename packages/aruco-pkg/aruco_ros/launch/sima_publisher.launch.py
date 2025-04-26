@@ -9,7 +9,7 @@ import os
 def generate_launch_description():
     # Declare global arguments
     marker_size_arg = DeclareLaunchArgument(
-        'marker_size', default_value='0.07',
+        'marker_size', default_value='0.08',
         description='Marker size in meters.'
     )
 
@@ -18,12 +18,17 @@ def generate_launch_description():
         description='Reference frame for the markers.'
     )
 
+    marker_id_arg = DeclareLaunchArgument(
+        'marker_id', default_value='0',
+        description='Marker ID to detect.'
+    )
+
     # Define sides
     sides = ['left', 'right', 'mid']
 
     # IncludeLaunchDescription for each side
     package_name = 'aruco_ros'  # Replace with your package name
-    launch_file_name = 'single.launch.py'  # Original launch file name
+    launch_file_name = 'single_sima.launch.py'  # Original launch file name
 
     # Create a list to store included launches
     include_launches = []
@@ -42,6 +47,7 @@ def generate_launch_description():
                     'eye': TextSubstitution(text=side),
                     'marker_size': LaunchConfiguration('marker_size'),
                     'reference_frame': LaunchConfiguration('reference_frame'),
+                    'marker_id': LaunchConfiguration('marker_id'),
                 }.items(),
             ),
         ])
@@ -51,6 +57,7 @@ def generate_launch_description():
     ld = LaunchDescription([
         marker_size_arg,
         reference_frame_arg,
+        marker_id_arg,
         *include_launches,  # Add all grouped launches
     ])
 

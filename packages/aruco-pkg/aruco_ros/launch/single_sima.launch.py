@@ -28,7 +28,7 @@ def launch_setup(context, *args, **kwargs):
 
     aruco_single = Node(
         package='aruco_ros',
-        executable='single',
+        executable='sima_detect',
         parameters=[aruco_single_params],
         remappings=[('/camera_info', f'/realsense{num}/cam_{eye}/color/camera_info'),
                     ('/image', f'/realsense{num}/cam_{eye}/color/image_raw')],
@@ -40,12 +40,12 @@ def launch_setup(context, *args, **kwargs):
 def generate_launch_description():
 
     marker_id_arg = DeclareLaunchArgument(
-        'marker_id', default_value='6',
-        description='Marker ID. '
+       'marker_id', default_value='1',
+       description='Marker ID. '
     )
 
     marker_size_arg = DeclareLaunchArgument(
-        'marker_size', default_value='0.07',
+        'marker_size', default_value='0.08',
         description='Marker size in m. '
     )
 
@@ -67,7 +67,7 @@ def generate_launch_description():
     )
 
     corner_refinement_arg = DeclareLaunchArgument(
-        'corner_refinement', default_value='SUBPIX',
+        'corner_refinement', default_value='LINES',
         description='Corner Refinement. ',
         choices=['SUBPIX','LINES','NONE'],
     )

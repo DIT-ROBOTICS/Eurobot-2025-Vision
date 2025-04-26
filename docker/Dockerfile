@@ -5,7 +5,7 @@ ARG NVIDIA_BASE_IMAGE=nvcr.io/nvidia/pytorch:24.07-py3
 # Base Stage: nvidia container
 # -----------------------------------------------------------------------------
 FROM --platform=${ARCH} ${BASE_IMAGE} AS base
-LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"
+LABEL org.opencontainers.image.authors="ohin.kyuu@gmail.com"global_center_poses/platform
 LABEL org.opencontainers.image.vendor="DIT-Robotics"
 ENV TERM=xterm-256color
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y \

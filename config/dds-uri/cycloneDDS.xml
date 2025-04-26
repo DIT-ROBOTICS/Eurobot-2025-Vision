@@ -10,10 +10,10 @@
         <NetworkInterface name="wlp2s0"/>
         <!-- <NetworkInterface name="enp2s0"/> -->
       </Interfaces>
-      <AllowMulticast>true</AllowMulticast>
+      <AllowMulticast>false</AllowMulticast>
       <MaxMessageSize>65500B</MaxMessageSize>
     </General>
-
+    
     <!-- <Discovery>
       <EnableTopicDiscoveryEndpoints>true</EnableTopicDiscoveryEndpoints>
     </Discovery> -->
