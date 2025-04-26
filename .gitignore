@@ -4,4 +4,4 @@
 *.png
 *.txt
 dataset/
-train/
+trainset/

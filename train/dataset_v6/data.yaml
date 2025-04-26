@@ -1,9 +1,0 @@
-train: /root/train/dataset_v6/train/images
-val: /root/train/dataset_v6/valid/images
-test: /root/train/dataset_v6/test/images
-
-nc: 2
-names: ['board', 'can']
-
-
-rect: True
