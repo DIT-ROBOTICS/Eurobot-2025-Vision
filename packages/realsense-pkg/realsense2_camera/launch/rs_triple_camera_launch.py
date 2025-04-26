@@ -45,10 +45,6 @@ local_parameters = [{'name': 'camera_name1',        'default': 'cam_left',      
                     {'name': 'serial_no1',          'default': '_215222077504',     'description': 'camera1 serial number'},
                     {'name': 'serial_no2',          'default': '_949122070603',     'description': 'camera2 serial number'},
                     {'name': 'serial_no3',          'default': '_213622074227 ',    'description': 'camera3 serial number'},
-<<<<<<< HEAD:ws/realsense-pkg/realsense2_camera/launch/rs_triple_camera_launch.py
-=======
-                    {'name': 'serial_no3',          'default': '_213622074227',     'description': 'camera3 serial number'},
->>>>>>> 39c7e4a178dca1c3abdd32c600c07fcee7b7433a:packages/realsense-pkg/realsense2_camera/launch/rs_triple_camera_launch.py
                     {'name': 'config_file1',        'default': '/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/config/multi_cam_config.yaml', 'description': 'camera1 config file'},
                     {'name': 'config_file2',        'default': '/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/config/multi_cam_config.yaml', 'description': 'camera2 config file'},
                     {'name': 'config_file3',        'default': '/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/config/multi_cam_config.yaml', 'description': 'camera3 config file'},
