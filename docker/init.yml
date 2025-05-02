@@ -1,0 +1,14 @@
+# Docker
+ARCH: amd64 # amd64 | arm64 | arm64-igpu
+BASE_IMAGE: ros:humble
+
+# ROS DDS
+DDS: cyclone # cyclone | fastdds
+ROS_DOMAIN_ID: 11
+
+# Compose
+PROJECT_NAME: vision-main
+PROFILES: train  # center | camera | aruco | yolo | train | gui
+
+# Build / Run
+ACTION: build # build | run | both

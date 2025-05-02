@@ -22,22 +22,14 @@ x-gpu-vars: &gpu-vars
 
 services:
   center:
-    build:
-      context: .
-      target: center
-      args:
-        USER: center
+    image: vision-main/center:latest
+    container_name: center
     <<: *common-vars
     profiles: ['center']
     
   realsense:
-    build:
-      context: .
-      target: realsense  
-      args:
-        USER: realsense
-        LIBREALSENSE_VERSION: $LIBREALSENSE_VERSION
-        REALSENSE_ROS_VERSION: $REALSENSE_ROS_VERSION
+    image: vision-main/realsense:latest
+    container_name: realsense
     privileged: true
     <<: *common-vars
     cpuset: "0-9"
@@ -46,11 +38,8 @@ services:
     profiles: ['camera']
 
   aruco:
-    build:
-      context: .
-      target: aruco 
-      args:
-        USER: aruco
+    image: vision-main/aruco:latest
+    container_name: aruco
     <<: *common-vars
     cpuset: "10-15"
     cpus: 5.5
@@ -58,33 +47,24 @@ services:
     profiles: ['aruco']
 
   ultralytics-ros:
-    build:
-      context: .
-      target: ultralytics-ros
-      args:
-        USER: ultralytics
+    image: vision-main/ultralytics-ros:latest
+    container_name: ultralytics-ros
     <<: 
       - *common-vars
       - *gpu-vars
     profiles: ['yolo']
 
   ultralytics-training:
-    build:
-      context: .
-      target: ultralytics-ros
+    image: ultralytics/ultralytics:latest
+    container_name: ultralytics-training
     <<: 
       - *common-vars
       - *gpu-vars
     profiles: ['train']
     
   gui:
-    build:
-      context: .
-      target: gui
-      args:
-        USER: gui
+    image: vision-main/gui:latest
+    container_name: gui
     <<: *common-vars
-    # environment:
-    #   DISPLAY: $DISPLAY
     profiles: ['gui']
   
