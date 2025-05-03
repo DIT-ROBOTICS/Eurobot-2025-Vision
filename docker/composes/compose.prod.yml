@@ -4,10 +4,11 @@ x-common-vars: &common-vars
   ipc: host
   network_mode: host
   stop_grace_period: 1s
-  environment:
-    RMW_IMPLEMENTATION: rmw_cyclonedds_cpp 
-    ROS_DOMAIN_ID: $ROS_DOMAIN_ID
-    CYCLONEDDS_URI: /tmp/dds.xml
+
+x-common-env: &common-env
+  RMW_IMPLEMENTATION: rmw_cyclonedds_cpp 
+  ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+  CYCLONEDDS_URI: /tmp/dds.xml
 
 x-gpu-vars: &gpu-vars
   ipc: host
@@ -25,6 +26,8 @@ services:
     image: vision-main/center:latest
     container_name: center
     <<: *common-vars
+    environment:
+      <<: *common-env
     profiles: ['center']
     
   realsense:
@@ -35,6 +38,11 @@ services:
     cpuset: "0-9"
     cpus: 8.5
     cpu_shares: 1024
+    environment:
+      <<: *common-env
+      SERIAL_NO1: _215222077504
+      SERIAL_NO2: _949122070603
+      SERIAL_NO3: _213622074227
     profiles: ['camera']
 
   aruco:
@@ -44,6 +52,8 @@ services:
     cpuset: "10-15"
     cpus: 5.5
     cpu_shares: 1024
+    environment:
+      <<: *common-env
     profiles: ['aruco']
 
   ultralytics-ros:
@@ -52,6 +62,8 @@ services:
     <<: 
       - *common-vars
       - *gpu-vars
+    environment:
+      <<: *common-env
     profiles: ['yolo']
 
   ultralytics-training:
@@ -60,11 +72,15 @@ services:
     <<: 
       - *common-vars
       - *gpu-vars
+    environment:
+      <<: *common-env
     profiles: ['train']
     
   gui:
     image: vision-main/gui:latest
     container_name: gui
     <<: *common-vars
+    environment:
+      <<: *common-env
     profiles: ['gui']
   

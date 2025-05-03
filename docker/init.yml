@@ -8,7 +8,7 @@ ROS_DOMAIN_ID: 11
 
 # Compose
 PROJECT_NAME: vision-main
-PROFILES: train  # center | camera | aruco | yolo | train | gui
+PROFILES: center,camera,aruco,yolo,train,gui # center | camera | aruco | yolo | train | gui
 
 # Build / Run
-ACTION: build # build | run | both
+ACTION: both # build | run | both

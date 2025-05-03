@@ -1,5 +1,6 @@
 #!/bin/bash
 # Color codes
+NC='\033[0m' 
 RED='\033[0;31m'
 GREEN='\033[0;32m'  
 GRBOLD='\033[1;32m'
@@ -7,7 +8,6 @@ YELLOW='\033[1;33m'
 BLUE='\033[1;34m'    
 CYAN='\033[1;36m'
 
-NC='\033[0m' 
 # Environment variables
 ARCH=$(yq e '.ARCH' init.yml)
 BASE_IMAGE=$(yq e '.BASE_IMAGE' init.yml)
@@ -79,87 +79,65 @@ case "$DDS" in
     ;;
 esac
 
+build_image(){
+  echo -e "Building for      ${BLUE}$ARCH${NC}"
+  echo -e "Building Targets  ${BLUE}$BAKE_TARGETS${NC}"
+  echo -e "Base Image        ${CYAN}$BASE_IMAGE${NC}"
+  echo -e "NVIDIA Base Image ${GRBOLD}$NVIDIA_BASE_IMAGE${NC}"
+  echo -e "User UID          ${YELLOW}$(id -u)${NC}"
+  sleep 0.8
+  
+  pushd dockerfiles > /dev/null
+  ARCH=$ARCH \
+  BASE_IMAGE=$BASE_IMAGE \
+  NVIDIA_BASE_IMAGE=$NVIDIA_BASE_IMAGE \
+  USER_UID=$(id -u) \
+  docker buildx bake $BAKE_TARGETS
+  popd > /dev/null
+
+  if [ $? -ne 0 ]; then
+    echo "Build failed. Exiting."
+    exit 1
+  fi
+}
+
+run_image(){
+  echo -e "Running on    ${BLUE}$COMPOSE_PROJECT_NAME${NC}"
+  echo -e "Profiles      ${YELLOW}$COMPOSE_PROFILES${NC}"
+  echo -e "ROS DDS       ${CYAN}$RMW_IMPLEMENTATION${NC}"
+  echo -e "ROS Domain ID ${GRBOLD}$ROS_DOMAIN_ID${NC}"
+  sleep 0.8
+  pushd composes > /dev/null
+  update_env_var "COMPOSE_PROJECT_NAME" "$COMPOSE_PROJECT_NAME"
+  update_env_var "COMPOSE_PROFILES" "$COMPOSE_PROFILES"
+  update_env_var "RMW_IMPLEMENTATION" "$RMW_IMPLEMENTATION"
+  update_env_var "ROS_DOMAIN_ID" "$ROS_DOMAIN_ID"
+  docker compose up -d
+  popd > /dev/null
+}
+
+
 case "$ACTION" in
   "build")
     if [ -z "$BAKE_TARGETS" ]; then
       echo -e "${RED}No valid bake targets. Skipping build.${NC}"
     else
-      echo -e "Building for      ${BLUE}$ARCH${NC}"
-      echo -e "Building Targets  ${BLUE}$BAKE_TARGETS${NC}"
-      echo -e "Base Image        ${CYAN}$BASE_IMAGE${NC}"
-      echo -e "NVIDIA Base Image ${GRBOLD}$NVIDIA_BASE_IMAGE${NC}"
-      echo -e "User UID          ${YELLOW}$(id -u)${NC}"
-      sleep 1
-      cd dockerfiles
-      ARCH=$ARCH \
-      BASE_IMAGE=$BASE_IMAGE \
-      NVIDIA_BASE_IMAGE=$NVIDIA_BASE_IMAGE \
-      USER_UID=$(id -u) \
-      docker buildx bake $BAKE_TARGETS
-      if [ $? -ne 0 ]; then
-        echo "Build failed. Exiting."
-        exit 1
-      fi
+      build_image
     fi
     ;;
   "run")
-    echo -e "Running on    ${BLUE}$COMPOSE_PROJECT_NAME${NC}"
-    echo -e "Profiles      ${YELLOW}$COMPOSE_PROFILES${NC}"
-    echo -e "ROS DDS       ${CYAN}$RMW_IMPLEMENTATION${NC}"
-    echo -e "ROS Domain ID ${GRBOLD}$ROS_DOMAIN_ID${NC}"
-    sleep 1
-    cd composes
-    update_env_var "COMPOSE_PROJECT_NAME" "$COMPOSE_PROJECT_NAME"
-    update_env_var "COMPOSE_PROFILES" "$COMPOSE_PROFILES"
-    update_env_var "RMW_IMPLEMENTATION" "$RMW_IMPLEMENTATION"
-    update_env_var "ROS_DOMAIN_ID" "$ROS_DOMAIN_ID"
-    docker compose up -d
+    run_image
     ;;
   "both")
     if [ -z "$BAKE_TARGETS" ]; then
       echo -e "${RED}No valid bake targets. Skipping build.${NC}"
-      sleep 1
-      echo -e "Running on    ${BLUE}$COMPOSE_PROJECT_NAME${NC}"
-      echo -e "Profiles      ${YELLOW}$COMPOSE_PROFILES${NC}"
-      echo -e "ROS DDS       ${CYAN}$RMW_IMPLEMENTATION${NC}"
-      echo -e "ROS Domain ID ${GRBOLD}$ROS_DOMAIN_ID${NC}"
-      sleep 1
-      cd composes
-      update_env_var "COMPOSE_PROJECT_NAME" "$COMPOSE_PROJECT_NAME"
-      update_env_var "COMPOSE_PROFILES" "$COMPOSE_PROFILES"
-      update_env_var "RMW_IMPLEMENTATION" "$RMW_IMPLEMENTATION"
-      update_env_var "ROS_DOMAIN_ID" "$ROS_DOMAIN_ID"
-      docker compose up -d
+      sleep 0.8
+      run_image
     else 
-      echo -e "Building for      ${BLUE}$ARCH${NC}"
-      echo -e "Building Targets  ${BLUE}$BAKE_TARGETS${NC}"
-      echo -e "Base Image        ${CYAN}$BASE_IMAGE${NC}"
-      echo -e "NVIDIA Base Image ${GRBOLD}$NVIDIA_BASE_IMAGE${NC}"
-      echo -e "User UID          ${YELLOW}$(id -u)${NC}"
-      sleep 0.5
-      cd dockerfiles
-      ARCH=$ARCH \
-      BASE_IMAGE=$BASE_IMAGE \
-      NVIDIA_BASE_IMAGE=$NVIDIA_BASE_IMAGE \
-      USER_UID=$(id -u) \
-      docker buildx bake $BAKE_TARGETS
-      if [ $? -ne 0 ]; then
-        echo "Build failed. Exiting."
-        exit 1
-      fi
+      build_image
       echo -e "${GREEN}Building completed. Now running the image ...${NC}"
-      sleep 1
-      echo -e "Running on    ${BLUE}$COMPOSE_PROJECT_NAME${NC}"
-      echo -e "Profiles      ${YELLOW}$COMPOSE_PROFILES${NC}"
-      echo -e "ROS DDS       ${CYAN}$RMW_IMPLEMENTATION${NC}"
-      echo -e "ROS Domain ID ${GRBOLD}$ROS_DOMAIN_ID${NC}"
-      sleep 1
-      cd ../composes
-      update_env_var "COMPOSE_PROJECT_NAME" "$COMPOSE_PROJECT_NAME"
-      update_env_var "COMPOSE_PROFILES" "$COMPOSE_PROFILES"
-      update_env_var "RMW_IMPLEMENTATION" "$RMW_IMPLEMENTATION"
-      update_env_var "ROS_DOMAIN_ID" "$ROS_DOMAIN_ID"
-      docker compose up -d
+      sleep 0.8
+      run_image
     fi
     ;;
   *)

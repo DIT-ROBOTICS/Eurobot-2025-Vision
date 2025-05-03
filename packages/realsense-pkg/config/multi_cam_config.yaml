@@ -1,0 +1,91 @@
+json_file_path: "/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/visual_presets/HighAccuracyPreset.json"
+initial_reset: true
+accelerate_gpu_with_glsl: false
+
+# Color
+enable_color: true
+rgb_camera:
+  color_profile: 1280,720,30
+  color_format: BGR8
+  enable_auto_exposure: false
+  exposure: 166
+
+# Depth & Infrared
+enable_depth: true
+enable_infra: false
+enable_infra1: false
+enable_infra2: false
+depth_module:
+  # Depth
+  depth_module.depth_profile: 848,480,30
+  depth_format: Z16
+  enable_auto_exposure: false
+  exposure: 8500
+  gain: 16
+
+  # HDR Merge
+  hdr_enabled: false
+  exposure.1: 7500
+  gain.1: 16
+  exposure.2: 1
+  gain.2: 16
+
+  # Infra
+  infra_profile: 0,0,0
+  infra_format: Y8
+  infra1_format: Y8
+  infra2_format: Y8
+
+# Pointcloud
+pointcloud:
+  enable: false
+  stream_filter: 2
+  stream_index_filter: 0
+  ordered_pc: false
+  allow_no_texture_points: false
+
+# IMU
+enable_sync: true
+enable_rgbd: false
+enable_gyro: false
+enable_accel: false
+gyro_fps: 0
+accel_fps: 0
+unite_imu_method: 0
+clip_distance: -2.0
+angular_velocity_cov: 0.01
+linear_accel_cov: 0.01
+diagnostics_period: 0.0
+
+# TF
+publish_tf: true
+tf_publish_rate: 30.0
+
+# Filters
+align_depth:
+  enable: true
+
+colorizer:
+  enable: false
+
+decimation_filter:
+  enable: true
+
+spatial_filter:
+  enable: true
+
+temporal_filter:
+  enable: true
+
+disparity_filter:
+  enable: false
+
+hole_filling_filter:
+  enable: false
+
+hdr_merge:
+  enable: false
+
+# Timeouts
+wait_for_device_timeout: -1.0
+reconnect_timeout: 6.0

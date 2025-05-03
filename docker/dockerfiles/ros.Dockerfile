@@ -98,8 +98,9 @@ RUN mkdir -p /home/$USER/vision-ws/src && \
     # Install ROS2 Realsense package
     git clone --branch $REALSENSE_ROS_VERSION \
         https://github.com/IntelRealSense/realsense-ros.git \
-        /home/$USER/vision-ws/src/realsense-ros && \
-    sh /tmp/rosdep_init.sh $USER
+        /home/$USER/vision-ws/src/realsense-ros
+COPY ../scripts/temp/ /home/$USER/vision-ws/src/realsense-ros/realsense2_camera/launch/
+RUN sh /tmp/rosdep_init.sh $USER
 WORKDIR /home/$USER/vision-ws
 CMD [ "/bin/bash" ]
 
