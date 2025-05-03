@@ -9,6 +9,7 @@ LABEL org.opencontainers.image.vendor="DIT-Robotics"
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm-256color
 COPY ../scripts/build/ /tmp/
+COPY ../scripts/entrypoint/ros_entrypoint.sh /ros_entrypoint.sh
 RUN sh /tmp/install_depend.sh
 
 # -----------------------------------------------------------------------------
@@ -73,6 +74,7 @@ ARG USER
 ARG USER_UID
 ARG USER_GID=$USER_UID
 ARG DEBIAN_FRONTEND=noninteractive
+ENV ROS_WS_PATH=/home/$USER/vision-ws
 # Copy binaries from builder stage
 COPY --from=librealsense-builder /opt/librealsense /usr/local/
 COPY --from=librealsense-builder /usr/lib/python3/dist-packages/pyrealsense2 /usr/lib/python3/dist-packages/pyrealsense2
@@ -91,6 +93,8 @@ RUN apt-get update && apt-get install -y \
     python3-requests \
     libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+RUN chown root:root /ros_entrypoint.sh && chmod 755 /ros_entrypoint.sh
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
 # Add user and setup workspace
 RUN sh /tmp/setup_user.sh $USER $USER_UID $USER_GID
 USER $USER
@@ -102,7 +106,6 @@ RUN mkdir -p /home/$USER/vision-ws/src && \
 COPY ../scripts/temp/ /home/$USER/vision-ws/src/realsense-ros/realsense2_camera/launch/
 RUN sh /tmp/rosdep_init.sh $USER
 WORKDIR /home/$USER/vision-ws
-CMD [ "/bin/bash" ]
 
 ###### Aruco Module ######
 FROM base AS aruco 
