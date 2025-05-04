@@ -58,7 +58,8 @@ target "ultralytics" {
   tags = ["vision-main/ultralytics-ros:latest"]
   args = {
     ARCH = "${ARCH}"
-    BASE_IMAGE = "${NVIDIA_BASE_IMAGE}"
+    BASE_IMAGE = "${BASE_IMAGE}"
+    NVIDIA_BASE_IMAGE = "${NVIDIA_BASE_IMAGE}"
     USER = "ultralytics"
     USER_UID = "${USER_UID}"
   }

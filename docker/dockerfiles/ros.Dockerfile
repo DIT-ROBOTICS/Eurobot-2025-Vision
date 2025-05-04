@@ -10,7 +10,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm-256color
 COPY ../scripts/build/ /tmp/
 COPY ../scripts/entrypoint/ros_entrypoint.sh /ros_entrypoint.sh
-RUN sh /tmp/install_depend.sh
+RUN chown root:root /ros_entrypoint.sh && \
+    chmod 755 /ros_entrypoint.sh && \
+    sh /tmp/install_depend.sh
 
 # -----------------------------------------------------------------------------
 # Builder Stage:
@@ -60,11 +62,13 @@ ARG USER
 ARG USER_UID
 ARG USER_GID=$USER_UID
 ARG DEBIAN_FRONTEND=noninteractive
+ENV ROS_WS_PATH=/home/$USER/vision-ws
 RUN sh /tmp/setup_user.sh $USER $USER_UID $USER_GID
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
 USER $USER
-RUN mkdir -p /home/$USER/vision-ws/src && \
+RUN mkdir -p $ROS_WS_PATH/src && \
     sh /tmp/rosdep_init.sh $USER
-WORKDIR /home/$USER/vision-ws
+WORKDIR $ROS_WS_PATH
 CMD [ "/bin/bash" ]
 
 ###### Realsense Module ######
@@ -93,34 +97,34 @@ RUN apt-get update && apt-get install -y \
     python3-requests \
     libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
-RUN chown root:root /ros_entrypoint.sh && chmod 755 /ros_entrypoint.sh
-ENTRYPOINT [ "/ros_entrypoint.sh" ]
-# Add user and setup workspace
 RUN sh /tmp/setup_user.sh $USER $USER_UID $USER_GID
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
 USER $USER
-RUN mkdir -p /home/$USER/vision-ws/src && \
+RUN mkdir -p $ROS_WS_PATH/src && \
     # Install ROS2 Realsense package
     git clone --branch $REALSENSE_ROS_VERSION \
         https://github.com/IntelRealSense/realsense-ros.git \
-        /home/$USER/vision-ws/src/realsense-ros
-COPY ../scripts/temp/ /home/$USER/vision-ws/src/realsense-ros/realsense2_camera/launch/
+        $ROS_WS_PATH/src/realsense-ros
+COPY ../scripts/temp/ $ROS_WS_PATH/src/realsense-ros/realsense2_camera/launch/
 RUN sh /tmp/rosdep_init.sh $USER
-WORKDIR /home/$USER/vision-ws
+WORKDIR $ROS_WS_PATH
 
 ###### Aruco Module ######
 FROM base AS aruco 
 ARG USER
 ARG USER_UID
 ARG USER_GID=$USER_UID
+ENV ROS_WS_PATH=/home/$USER/vision-ws
 RUN sh /tmp/setup_user.sh $USER $USER_UID $USER_GID
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
 USER $USER
-RUN mkdir -p /home/$USER/vision-ws/src && \
+RUN mkdir -p $ROS_WS_PATH/src && \
     # Install ROS2 Aruco package
     git clone --branch humble-devel \
         https://github.com/pal-robotics/aruco_ros.git \
-        /home/$USER/vision-ws/src/aruco-ros && \
+        $ROS_WS_PATH/src/aruco-ros && \
     sh /tmp/rosdep_init.sh $USER
-WORKDIR /home/$USER/vision-ws
+WORKDIR $ROS_WS_PATH
 CMD [ "/bin/bash" ]
 
 ###### GUI Module ######
@@ -135,6 +139,6 @@ RUN apt-get update && apt-get install -y \
     ros-humble-foxglove-bridge \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 RUN sh /tmp/setup_user.sh $USER $USER_UID $USER_GID
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
 USER $USER
 WORKDIR /home/$USER
-CMD [ "/bin/bash" ]
