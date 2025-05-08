@@ -59,3 +59,20 @@ services:
       - $LOCAL_WS/config/gui-config:/home/gui/.rviz2
       - $LOCAL_WS/config/dds-uri/localDDS.xml:/tmp/dds.xml
     command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml address:=localhost port:=8765
+
+  stitch:
+    volumes:
+      - $LOCAL_WS/config/dds-uri/localDDS.xml:/tmp/dds.xml
+      - $VISION_WS/camera-pkg:/home/stitch/vision-ws/src/camera-ros
+      - $VISION_WS/stitch-pkg:/home/stitch/vision-ws/src/stitch-vulkan
+      - $VISION_WS/pose-pkg:/home/stitch/vision-ws/src/pose-camera
+      # vulkan
+      - $XDG_RUNTIME_DIR:$XDG_RUNTIME_DIR
+      - $HOME/.Xauthority:/home/stitch/.Xauthority:ro
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d
+      - /usr/share/vulkan/explicit_layer.d:/usr/share/vulkan/explicit_layer.d
+      - /usr/share/vulkan/implicit_layer.d:/usr/share/vulkan/implicit_layer.d
+    device_cgroup_rules:
+      - "c 226:* rmw"
+    command: bash

@@ -142,3 +142,32 @@ RUN sh /tmp/setup_user.sh $USER $USER_UID $USER_GID
 ENTRYPOINT [ "/ros_entrypoint.sh" ]
 USER $USER
 WORKDIR /home/$USER
+
+#!-----testing-----!#
+FROM base AS stitch 
+ARG USER
+ARG USER_UID
+ARG USER_GID=$USER_UID
+ENV ROS_WS_PATH=/home/$USER/vision-ws
+ENV VULKAN_SDK_VERSION=1.4.313.0
+ENV VULKAN_SDK_ROOT=/opt/vulkan-sdk
+ENV VULKAN_SDK=${VULKAN_SDK_ROOT}/x86_64
+ENV PATH=${VULKAN_SDK}/bin:$PATH
+ENV LD_LIBRARY_PATH=${VULKAN_SDK}/lib:$LD_LIBRARY_PATH
+RUN sh /tmp/setup_user.sh $USER $USER_UID $USER_GID && \
+    apt-get update && apt-get install -y \
+    mesa-vulkan-drivers \
+    vulkan-tools \
+    libvulkan1 \
+    libgl1-mesa-glx \
+    && rm -rf /var/lib/apt/lists/* && \
+    mkdir -p ${VULKAN_SDK_ROOT} && \
+    curl -sSL https://sdk.lunarg.com/sdk/download/${VULKAN_SDK_VERSION}/linux/vulkansdk-linux-x86_64-${VULKAN_SDK_VERSION}.tar.xz -o /tmp/vulkan-sdk.tar.xz && \
+    tar -xJf /tmp/vulkan-sdk.tar.xz -C ${VULKAN_SDK_ROOT} --strip-components=1 && \
+    rm /tmp/vulkan-sdk.tar.xz
+ENTRYPOINT [ "/ros_entrypoint.sh" ]
+USER $USER
+RUN mkdir -p $ROS_WS_PATH/src && \
+    sh /tmp/rosdep_init.sh $USER
+WORKDIR $ROS_WS_PATH
+CMD [ "/bin/bash" ]~

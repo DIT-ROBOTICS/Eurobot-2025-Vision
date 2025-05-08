@@ -83,4 +83,17 @@ services:
     environment:
       <<: *common-env
     profiles: ['gui']
+
+  stitch:
+    image: vision-main/stitch:latest
+    container_name: stitch
+    privileged: true
+    <<: *common-vars
+    environment:
+      <<: *common-env
+      VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/radeon_icd.json
+      VK_LAYER_PATH: /usr/share/vulkan/explicit_layer.d
+      XDG_RUNTIME_DIR: $XDG_RUNTIME_DIR 
+      DISPLAY: :0
+    profiles: ['stitch']
   

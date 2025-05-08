@@ -25,8 +25,8 @@ def launch_setup(context, *args, **kwargs):
         package='aruco_ros',
         executable='double',
         parameters=[aruco_double_params],
-        remappings=[('/camera_info', '/realsense1/cam_left/color/camera_info'),
-                    ('/image', '/realsense1/cam_left/color/image_raw')],
+        remappings=[('/camera_info', '/vision/cam_left/color/camera_info'),
+                    ('/image', '/vision/cam_left/color/image_raw')],
     )
 
     return [aruco_double]

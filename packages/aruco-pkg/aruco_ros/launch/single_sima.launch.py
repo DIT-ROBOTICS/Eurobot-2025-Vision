@@ -30,8 +30,8 @@ def launch_setup(context, *args, **kwargs):
         package='aruco_ros',
         executable='sima_detect',
         parameters=[aruco_single_params],
-        remappings=[('/camera_info', f'/realsense{num}/cam_{eye}/color/camera_info'),
-                    ('/image', f'/realsense{num}/cam_{eye}/color/image_raw')],
+        remappings=[('/camera_info', f'/vision/cam_{eye}/color/camera_info'),
+                    ('/image', f'/vision/cam_{eye}/color/image_raw')],
     )
 
     return [aruco_single]

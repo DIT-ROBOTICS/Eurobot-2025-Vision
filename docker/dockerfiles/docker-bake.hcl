@@ -7,7 +7,7 @@ variable "LIBREALSENSE_VERSION" { default = "2.55.1" }
 variable "REALSENSE_ROS_VERSION" { default = "4.55.1" }
 
 group "default" {
-  targets = ["center", "realsense", "aruco", "ultralytics", "gui"]
+  targets = ["center", "realsense", "aruco", "ultralytics", "gui", "stitch"]
 }
 
 target "center" {
@@ -74,6 +74,19 @@ target "gui" {
     ARCH = "${ARCH}"
     BASE_IMAGE = "${BASE_IMAGE}"
     USER = "gui"
+    USER_UID = "${USER_UID}"
+  }
+}
+
+target "stitch" {
+  context = "../"
+  dockerfile = "dockerfiles/ros.Dockerfile"
+  target = "stitch"
+  tags = ["vision-main/stitch:latest"]
+  args = {
+    ARCH = "${ARCH}"
+    BASE_IMAGE = "${BASE_IMAGE}"
+    USER = "stitch"
     USER_UID = "${USER_UID}"
   }
 }

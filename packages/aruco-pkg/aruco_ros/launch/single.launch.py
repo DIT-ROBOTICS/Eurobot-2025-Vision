@@ -8,13 +8,6 @@ from launch_ros.actions import Node
 def launch_setup(context, *args, **kwargs):
 
     eye = perform_substitutions(context, [LaunchConfiguration('eye')])
-    if eye == 'left':
-        num = 1
-    elif eye == 'mid':
-        num = 2
-    elif eye == 'right':
-        num = 3
-
     aruco_single_params = {
         'image_is_rectified': True,
         'marker_size': LaunchConfiguration('marker_size'),
@@ -30,8 +23,8 @@ def launch_setup(context, *args, **kwargs):
         package='aruco_ros',
         executable='single',
         parameters=[aruco_single_params],
-        remappings=[('/camera_info', f'/realsense{num}/cam_{eye}/color/camera_info'),
-                    ('/image', f'/realsense{num}/cam_{eye}/color/image_raw')],
+        remappings=[('/camera_info', f'/vision/cam_{eye}/color/camera_info'),
+                    ('/image', f'/vision/cam_{eye}/color/image_raw')],
     )
 
     return [aruco_single]

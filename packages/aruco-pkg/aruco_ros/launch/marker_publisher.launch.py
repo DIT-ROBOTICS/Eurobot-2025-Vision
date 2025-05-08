@@ -27,8 +27,8 @@ def launch_setup(context, *args, **kwargs):
         package='aruco_ros',
         executable='marker_publisher',
         parameters=[aruco_marker_publisher_params],
-        remappings=[('/camera_info', f'/realsense{num}/cam_{side}/color/camera_info'),
-                    ('/image', f'/realsense{num}/cam_{side}/color/image_raw')],
+        remappings=[('/camera_info', f'/vision/cam_{side}/color/camera_info'),
+                    ('/image', f'/vision/cam_{side}/color/image_raw')],
     )
 
     return [aruco_marker_publisher]
