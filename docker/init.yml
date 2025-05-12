@@ -1,5 +1,5 @@
 # Docker
-ARCH: amd64 # amd64 | arm64 | arm64-igpu
+ARCH: arm64-igpu # amd64 | arm64 | arm64-igpu
 BASE_IMAGE: ros:humble
 
 # ROS DDS
@@ -8,7 +8,7 @@ ROS_DOMAIN_ID: 11
 
 # Compose
 PROJECT_NAME: vision-main
-PROFILES: camera,aruco,stitch # center | camera | aruco | yolo | train | gui | stitch
+PROFILES: yolo # center | camera | aruco | yolo | train | gui | stitch
 
 # Build / Run
 ACTION: run # build | run | both

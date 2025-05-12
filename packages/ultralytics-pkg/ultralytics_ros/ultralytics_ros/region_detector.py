@@ -7,23 +7,22 @@ import math
 class RegionDetector(Node):
     def __init__(self):
         super().__init__('region_detector')
-
-        self.pose_subscriber = self.create_subscription(PoseArray, 'detected/global_center_poses/platform', self.pose_callback, 10)
-        self.region_publisher = self.create_publisher(Int32MultiArray, '/detected/global_center_poses/has_material', 10)
-
+        self.declare_parameter("platform_topic", "/vision/global_center_poses/platform")
+        self.declare_parameter("has_material_topic", "/vision/global_center_poses/has_material")
+        platform_topic = self.get_parameter("platform_topic").value
+        has_material_topic = self.get_parameter("has_material_topic").value
+        self.pose_subscriber = self.create_subscription(PoseArray, platform_topic, self.pose_callback, 10)
+        self.region_publisher = self.create_publisher(Int32MultiArray, has_material_topic, 10)
         self.material_points = [(2.18, 1.275),(2.925,1.32),(2.925,0.395),(1.895,0.95),(2.22,0.25),(0.78,0.25),
         (1.095,0.95),(0.075,0.395),(0.075,1.32),(0.82,1.725)]
-            
-
     def pose_callback(self, msg):
         region_flags = [0] * len(self.material_points)  
         for pose in msg.poses:
             x, y, z = pose.position.x, pose.position.y, pose.position.z
             for i, (point_x,point_y) in enumerate(self.material_points):
-                self.get_logger().info(f'Checking distance between ({x},{y}) and ({point_x},{point_y})')
+                # self.get_logger().info(f'Checking distance between ({x},{y}) and ({point_x},{point_y})')
                 if (self.get_distance(x, y, point_x, point_y) < 0.15 and z <0.05):
                     region_flags[i] = 1
-
         region_msg = Int32MultiArray()
         region_msg.data = region_flags
         self.region_publisher.publish(region_msg)
