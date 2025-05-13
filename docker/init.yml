@@ -7,8 +7,8 @@ DDS: cyclone # cyclone | fastdds
 ROS_DOMAIN_ID: 11
 
 # Compose
-PROJECT_NAME: vision-main
-PROFILES: camera,aruco,stitch # center | camera | aruco | yolo | train | gui | stitch
+PROJECT_NAME: vision-test
+PROFILES: camera # center | camera | aruco | yolo | train | gui | stitch
 
 # Build / Run
 ACTION: run # build | run | both

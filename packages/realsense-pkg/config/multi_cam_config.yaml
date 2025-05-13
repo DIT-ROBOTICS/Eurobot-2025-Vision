@@ -5,9 +5,9 @@ accelerate_gpu_with_glsl: false
 # Color
 enable_color: true
 rgb_camera:
-  color_profile: 1280,720,30
+  color_profile: 640,360,30
   color_format: BGR8
-  enable_auto_exposure: false
+  enable_auto_exposure: true
   exposure: 166
 
 # Depth & Infrared
@@ -17,7 +17,7 @@ enable_infra1: false
 enable_infra2: false
 depth_module:
   # Depth
-  depth_module.depth_profile: 848,480,30
+  depth_module.depth_profile: 640,360,30
   depth_format: Z16
   enable_auto_exposure: false
   exposure: 8500
@@ -31,7 +31,7 @@ depth_module:
   gain.2: 16
 
   # Infra
-  infra_profile: 0,0,0
+  infra_profile: 640,360,30
   infra_format: Y8
   infra1_format: Y8
   infra2_format: Y8

@@ -7,6 +7,7 @@ apt-get install -y \
     sudo \
     curl \
     wget \
+    ccache \
     usbutils \
     v4l-utils \
     net-tools \
