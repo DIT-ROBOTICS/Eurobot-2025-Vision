@@ -9,7 +9,7 @@ def generate_launch_description():
             package="ultralytics_ros",  
             executable="detect_node", 
             name="region_detector",  
-            parameters=["/home/ultralytics/vision-ws/src/ultralytics-ros/config/yolo_params.yaml"],
+            parameters=["/home/ultralytics/vision-ws/src/ultralytics-ros/ultralytics_ros/config/yolo_params.yaml"],
             # parameters=[{
             #     "platform_poses": "/vision/global_center_poses/platform",
             #     "has_material": "/vision/global_center_poses/has_material"
@@ -20,7 +20,7 @@ def generate_launch_description():
             package="ultralytics_ros",  
             executable="yolo_all_node", 
             name="yolo_all_node",  
-            parameters=["/home/ultralytics/vision-ws/src/ultralytics-ros/config/yolo_params.yaml"],
+            parameters=["/home/ultralytics/vision-ws/src/ultralytics-ros/ultralytics_ros/config/yolo_params.yaml"],
             # parameters=[{
             #     "model_path": "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver7_0507.pt",
             #     "color_topic": "/vision/stitched_image/color/image_raw",

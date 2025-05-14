@@ -26,7 +26,7 @@ class RegionDetector(Node):
         region_msg = Int32MultiArray()
         region_msg.data = region_flags
         self.region_publisher.publish(region_msg)
-        self.get_logger().info(f'Published Region Flags: {region_flags}')
+        # self.get_logger().info(f'Published Region Flags: {region_flags}')
     
     def get_distance(self, x1, y1, x2, y2):
         return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)

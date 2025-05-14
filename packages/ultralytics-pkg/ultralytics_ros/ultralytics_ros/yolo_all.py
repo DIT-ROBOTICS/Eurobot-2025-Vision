@@ -13,15 +13,17 @@ import math
 import time
 from .importClass.angle import CounterRecognition
 from .importClass.tf_transform import PoseTransformer
+VERBOSE = False
 class YoloNode(Node):
     def __init__(self):
-        super().__init__('yolo_node')
+        super().__init__('yolo_all_node')
         self.declare_parameter("model_path", "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver7_0507.pt")
         self.declare_parameter("color_topic", "/vision/stitched_image/color/image_raw")
         self.declare_parameter("depth_topic", "/vision/stitched_image/depth/image_raw")
         self.declare_parameter("bbox_topic", "/vision/bounding_boxes")
         self.declare_parameter("platform_pose_topic", "/vision/global_center_poses/platform")
         self.declare_parameter("column_pose_topic", "/vision/global_center_poses/column")
+        self.declare_parameter("overturn_pose_topic", "/vision/global_center_poses/overturn")
         self.declare_parameter("from_frame_id", "cam_mid_color_optical_frame")
         self.declare_parameter("to_frame_id", "map")
         self.from_frame_id = self.get_parameter("from_frame_id").value
@@ -32,8 +34,9 @@ class YoloNode(Node):
         bbox_topic = self.get_parameter("bbox_topic").value
         platform_pose_topic = self.get_parameter("platform_pose_topic").value
         column_pose_topic = self.get_parameter("column_pose_topic").value
+        overturn_pose_topic = self.get_parameter("overturn_pose_topic").value
         self.listener_qos = self._create_qos_profile()
-        self.model = YOLO(model_path)
+        self.model = YOLO(model_path).to("cuda")
         self.get_logger().info(f"Loaded YOLO model from {model_path}")
         self.depth_msg = None 
         self.color_msg = None
@@ -41,6 +44,7 @@ class YoloNode(Node):
         self.depth_sub = self.create_subscription(Image, depth_topic, self.depth_callback, self.listener_qos)
         self.center_pub_platform = self.create_publisher(PoseArray, platform_pose_topic, 10)
         self.center_pub_column = self.create_publisher(PoseArray, column_pose_topic, 10)
+        self.center_pub_overturn = self.create_publisher(PoseArray, overturn_pose_topic, 10)
         self.bbox_pub = self.create_publisher(Image, bbox_topic, 10)
         self.bridge = CvBridge()
         self.get_logger().info("YOLO Node initialized and ready.")
@@ -51,24 +55,34 @@ class YoloNode(Node):
         self.timer = self.create_timer(2.0, self.check_image_status)
     def depth_callback(self, msg):
         self.depth_msg = msg
-        self.predict()
+        self.run_if_ready()
     def color_callback(self, msg):
         self.color_msg = msg
-        self.predict()
+        self.run_if_ready()
+    def run_if_ready(self):
+        if self.color_msg is not None and self.depth_msg is not None:
+            self.predict()
+            self.color_msg = None  
+            self.depth_msg = None
     def predict(self):
+        start_time = time.time()
         if self.color_msg is not None and self.depth_msg is not None:
             color_image, depth_image = self.preprocess(self.color_msg, self.depth_msg)
-            results = self.model(color_image)
+            results = self.model(color_image,verbose = VERBOSE,device="cuda")
             results_img = results[0].plot()
             self.bbox_pub.publish(self.bridge.cv2_to_imgmsg(results_img, encoding="bgr8"))
             pose_array_platform = PoseArray()
             pose_array_column = PoseArray()
+            pose_array_overturn = PoseArray()
             global_poses_platform = PoseArray()
             global_poses_column = PoseArray()
+            global_poses_overturn = PoseArray()
             pose_array_platform.header.frame_id = self.from_frame_id
             pose_array_platform.header.stamp = self.get_clock().now().to_msg()
             pose_array_column.header.frame_id = self.to_frame_id
             pose_array_column.header.stamp = self.get_clock().now().to_msg()
+            pose_array_overturn.header.frame_id = self.to_frame_id
+            pose_array_overturn.header.stamp = self.get_clock().now().to_msg()
             for object in results:
                 boxes = object.boxes
                 for box in boxes:
@@ -79,8 +93,7 @@ class YoloNode(Node):
                     label_id = int(box.cls[0].item())
                     label_name = self.model.names[label_id]
                     if(label_name =="platform" and confidence >= 0.60):
-                        posem = self.transformer.switch_to_cam_pose(x,y,z)
-                        
+                        posem = self.transformer.switch_to_cam_pose(x,y,z) 
                         try:
                             global_posem = self.transformer.transform_pose(posem)
                             cropped_img = color_image[y1:y2, x1:x2]
@@ -100,8 +113,7 @@ class YoloNode(Node):
                             pose_array_platform.poses.append(finalpose)  
                     
                     elif(label_name =="overturn" and confidence >= 0.40):
-                        posem = self.transformer.switch_to_cam_pose(x,y,z)
-                        
+                        posem = self.transformer.switch_to_cam_pose(x,y,z)                       
                         try:
                             global_posem = self.transformer.transform_pose(posem)
                             cropped_img = color_image[y1:y2, x1:x2]
@@ -118,13 +130,11 @@ class YoloNode(Node):
                             finalpose.orientation.y = 0.0
                             finalpose.orientation.z = math.sin(theangle / 2)
                             finalpose.orientation.w = math.cos(theangle / 2)
-                            pose_array_column.poses.append(finalpose) 
-
+                            pose_array_overturn.poses.append(finalpose) 
                     elif((label_name=="column")and confidence >= 0.40):
                         posem = self.transformer.switch_to_cam_pose(x,y,z)
                         try:
-                            global_posem = self.transformer.transform_pose(posem)
-    
+                            global_posem = self.transformer.transform_pose(posem)   
                         except Exception as e:
                             self.get_logger().error(f"Transform failed: {str(e)}")
                         if(global_posem is not None):
@@ -135,12 +145,15 @@ class YoloNode(Node):
                             finalpose.orientation.z = 0.0
                             finalpose.orientation.w = 1.0
                             pose_array_column.poses.append(finalpose)
-
             self.center_pub_platform.publish(pose_array_platform)
             self.center_pub_column.publish(pose_array_column)
-
+            self.center_pub_overturn.publish(pose_array_overturn)
+            end_time = time.time()
+            fps = 1.0 / (end_time - start_time)
+            self.get_logger().info(f"Inference FPS: {fps:.2f}")
             pose_array_column.poses.clear()
             pose_array_platform.poses.clear()
+            pose_array_overturn.poses.clear()
     def preprocess(self,color_image,depth_image):
         try:
             col= self.bridge.imgmsg_to_cv2(color_image, desired_encoding='bgr8')
@@ -165,13 +178,13 @@ class YoloNode(Node):
             self.get_logger().warn("Still waiting for depth image...")
 def main(args=None):
     rclpy.init(args=args)
-    yolo_node = YoloNode()
+    yolo_all_node = YoloNode()
     try:
-        rclpy.spin(yolo_node)
+        rclpy.spin(yolo_all_node)
     except KeyboardInterrupt:
         pass
     finally:
-        yolo_node.destroy_node()
+        yolo_all_node.destroy_node()
         rclpy.shutdown()
 if __name__ == '__main__':
     main()
