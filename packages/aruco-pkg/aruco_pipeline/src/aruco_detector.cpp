@@ -1,7 +1,6 @@
-#include "aruco_init/aruco_detector.hpp"
+#include "aruco_pipeline/aruco_detector.hpp"
 
 ArucoDetector::ArucoDetector() {
-    dictionary_ = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
     parameters_ = cv::aruco::DetectorParameters::create();
 
     // === Parameter tuning ===
@@ -44,22 +43,6 @@ void ArucoDetector::detectMarkers(const cv::Mat& image) {
 
     cv::Mat processed = preprocess(image);
     cv::aruco::detectMarkers(processed, dictionary_, corners_, ids_, parameters_, rejectedCorners_);
-}
-
-void ArucoDetector::drawDetectedMarkers(
-    cv::Mat& image,
-    const cv::Mat& cameraMatrix,
-    const cv::Mat& distCoeffs,
-    float markerLength,
-    const std::vector<cv::Vec3d>& rvecs,
-    const std::vector<cv::Vec3d>& tvecs)
-{
-    if (!ids_.empty()) {
-        cv::aruco::drawDetectedMarkers(image, corners_, ids_);
-        for (size_t i = 0; i < ids_.size(); ++i) {
-            cv::aruco::drawAxis(image, cameraMatrix, distCoeffs, rvecs[i], tvecs[i], markerLength * 0.8f);
-        }
-    }
 }
 
 cv::Mat ArucoDetector::drawDebugImg(const cv::Mat& image) {

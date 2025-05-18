@@ -9,13 +9,6 @@ public:
     ~ArucoDetector();
 
     void detectMarkers(const cv::Mat& image);
-    void drawDetectedMarkers(
-        cv::Mat& image,
-        const cv::Mat& cameraMatrix,
-        const cv::Mat& distCoeffs,
-        float markerLength,
-        const std::vector<cv::Vec3d>& rvecs = {},
-        const std::vector<cv::Vec3d>& tvecs = {});
     cv::Mat drawDebugImg(const cv::Mat& image);
 
     const std::vector<int>& getIds() const;
