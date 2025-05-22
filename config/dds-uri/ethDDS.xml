@@ -4,22 +4,25 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd"
 >
-
-<Domain Id="0">
+  <Domain Id="any">
     <General>
-      <NetworkInterface name="docker0"/>
-      <AllowMulticast>false</AllowMulticast>
+      <Interfaces>
+        <NetworkInterface name="enx00e04ca8a593"/>
+      </Interfaces>
+      <MaxMessageSize>65500B</MaxMessageSize>
+      <FragmentSize>1300B</FragmentSize>
     </General>
 
     <Discovery>
       <Peers>
-        <Peer address="172.17.0.1"/>
+        <Peer address="192.168.55.1"/>
       </Peers>
     </Discovery>
 
-    <!-- <SharedMemory>
-      <Enable>true</Enable>
-      <LogLevel>warn</LogLevel> 
-    </SharedMemory> -->
+    <Internal>
+      <Watermarks>
+        <WhcHigh>16777216</WhcHigh>
+      </Watermarks>
+    </Internal>
   </Domain>
 </CycloneDDS>

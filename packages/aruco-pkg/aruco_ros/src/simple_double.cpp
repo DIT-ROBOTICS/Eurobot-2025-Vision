@@ -64,7 +64,7 @@ cv::Mat inImage;
 aruco::CameraParameters camParam;
 bool useRectifiedImages, normalizeImageIllumination;
 int dctComponentsToRemove;
-aruco::MarkerDetector mDetector{"ARUCO_MIP_16h3",0.8};
+aruco::MarkerDetector mDetector{"ARUCO_MIP_16h3", 0.5}; //ARUCO_MIP_16h3
 std::vector<aruco::Marker> markers;
 rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr cam_info_sub;
 bool cam_info_received;

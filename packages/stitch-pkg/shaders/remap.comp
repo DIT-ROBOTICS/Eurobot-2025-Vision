@@ -1,0 +1,46 @@
+// include/shaders/remap.comp
+#version 450
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0) readonly buffer SrcImage {
+    vec4 pixels[];
+} srcImage;
+
+layout(binding = 1) readonly buffer MapX {
+    float xMap[];
+};
+
+layout(binding = 2) readonly buffer MapY {
+    float yMap[];
+};
+
+layout(binding = 3) writeonly buffer DstImage {
+    vec4 pixels[];
+} dstImage;
+
+layout(push_constant) uniform PushConstants {
+    int width;
+    int height;
+} pc;
+
+void main() {
+    uint x = gl_GlobalInvocationID.x;
+    uint y = gl_GlobalInvocationID.y;
+    if (x >= uint(pc.width) || y >= uint(pc.height)) {
+        return;
+    }
+
+    uint idx = y * uint(pc.width) + x;
+    float src_x = xMap[idx];
+    float src_y = yMap[idx];
+
+    // Nearest neighbor sampling (for simplicity)
+    int sx = int(src_x);
+    int sy = int(src_y);
+    if (sx >= 0 && sx < pc.width && sy >= 0 && sy < pc.height) {
+        dstImage.pixels[idx] = srcImage.pixels[sy * pc.width + sx];
+    } else {
+        dstImage.pixels[idx] = vec4(0.0);
+    }
+}

@@ -1,0 +1,100 @@
+x-common-vars: &common-vars
+  tty: true
+  stdin_open: true
+  ipc: host
+  network_mode: host
+  stop_grace_period: 1s
+
+x-common-env: &common-env
+  RMW_IMPLEMENTATION: rmw_cyclonedds_cpp 
+  ROS_DOMAIN_ID: $ROS_DOMAIN_ID
+  CYCLONEDDS_URI: /tmp/dds.xml
+  # ROS_LOCALHOST_ONLY: 1
+
+x-gpu-vars: &gpu-vars
+  ipc: host
+  shm_size: 8gb
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+
+services:
+  center:
+    image: vision-main/center:latest
+    container_name: center
+    <<: *common-vars
+    environment:
+      <<: *common-env
+    profiles: ['center']
+    
+  realsense:
+    image: vision-main/realsense:latest
+    container_name: realsense
+    privileged: true
+    <<: *common-vars
+    cpuset: "0-9"
+    cpus: 8.5
+    cpu_shares: 1024
+    environment:
+      <<: *common-env
+      SERIAL_NO1: _215222077504
+      SERIAL_NO2: _949122070603
+      SERIAL_NO3: _213622074227
+    profiles: ['camera']
+
+  aruco:
+    image: vision-main/aruco:latest
+    container_name: aruco-test
+    <<: *common-vars
+    cpuset: "10-15"
+    cpus: 5.5
+    cpu_shares: 1024
+    environment:
+      <<: *common-env
+    profiles: ['aruco']
+
+  ultralytics-ros:
+    image: vision-main/ultralytics-ros:latest
+    container_name: ultralytics-ros
+    <<: 
+      - *common-vars
+      - *gpu-vars
+    environment:
+      <<: *common-env
+    profiles: ['yolo']
+
+  ultralytics-training:
+    image: ultralytics/ultralytics:latest
+    container_name: ultralytics-training
+    <<: 
+      - *common-vars
+      - *gpu-vars
+    environment:
+      <<: *common-env
+    profiles: ['train']
+    
+  gui:
+    image: vision-main/gui:latest
+    container_name: gui
+    <<: *common-vars
+    environment:
+      <<: *common-env
+    profiles: ['gui']
+
+  stitch:
+    image: vision-main/stitch:latest
+    container_name: stitch
+    privileged: true
+    <<: *common-vars
+    environment:
+      <<: *common-env
+      VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/radeon_icd.json
+      VK_LAYER_PATH: /usr/share/vulkan/explicit_layer.d
+      XDG_RUNTIME_DIR: $XDG_RUNTIME_DIR 
+      DISPLAY: :0
+    profiles: ['stitch']
+  
