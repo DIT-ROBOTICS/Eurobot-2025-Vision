@@ -9,8 +9,20 @@
       <Interfaces>
         <NetworkInterface name="wlp2s0"/>
       </Interfaces>
-      <AllowMulticast>false</AllowMulticast>
-      <MaxMessageSize>128000B</MaxMessageSize>
+      <MaxMessageSize>65500B</MaxMessageSize>
+      <FragmentSize>1300B</FragmentSize>
     </General>
+
+    <Discovery>
+      <Peers>
+        <Peer address="192.168.10.14"/>
+      </Peers>
+    </Discovery>
+
+    <Internal>
+      <Watermarks>
+        <WhcHigh>16777216</WhcHigh>
+      </Watermarks>
+    </Internal>
   </Domain>
 </CycloneDDS>

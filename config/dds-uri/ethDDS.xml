@@ -7,19 +7,18 @@
   <Domain Id="any">
     <General>
       <Interfaces>
-        <!-- <NetworkInterface name="wlp2s0"/> -->
         <NetworkInterface name="enx00e04ca8a593"/>
       </Interfaces>
-      <!-- <AllowMulticast>false</AllowMulticast> -->
-      <!-- <EnableMulticastLoopback>false</EnableMulticastLoopback> -->
       <MaxMessageSize>65500B</MaxMessageSize>
       <FragmentSize>1300B</FragmentSize>
     </General>
+
     <Discovery>
       <Peers>
         <Peer address="192.168.55.1"/>
       </Peers>
     </Discovery>
+
     <Internal>
       <Watermarks>
         <WhcHigh>16777216</WhcHigh>

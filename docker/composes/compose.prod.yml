@@ -9,6 +9,7 @@ x-common-env: &common-env
   RMW_IMPLEMENTATION: rmw_cyclonedds_cpp 
   ROS_DOMAIN_ID: $ROS_DOMAIN_ID
   CYCLONEDDS_URI: /tmp/dds.xml
+  # ROS_LOCALHOST_ONLY: 1
 
 x-gpu-vars: &gpu-vars
   ipc: host

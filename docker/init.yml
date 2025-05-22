@@ -4,11 +4,11 @@ BASE_IMAGE: ros:humble
 
 # ROS DDS
 DDS: cyclone # cyclone | fastdds
-ROS_DOMAIN_ID: 11
+ROS_DOMAIN_ID: 14
 
 # Compose
 PROJECT_NAME: vision-test
-PROFILES: camera # center | camera | aruco | yolo | train | gui | stitch
+PROFILES: center,camera # center | camera | aruco | yolo | train | gui | stitch
 
 # Build / Run
 ACTION: run # build | run | both

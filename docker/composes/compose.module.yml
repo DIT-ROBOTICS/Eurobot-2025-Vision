@@ -1,14 +1,14 @@
 services:
   center:
     volumes:
-      - $LOCAL_WS/config/dds-uri/centerDDS.xml:/tmp/dds.xml
+      - $LOCAL_WS/config/dds-uri/localDDS.xml:/tmp/dds.xml
       - $VISION_WS/center-pkg:/home/center/vision-ws/src/center-ros
     command: bash
 
   realsense:
     volumes:
       - /dev:/dev
-      - $LOCAL_WS/config/dds-uri/centerDDS.xml:/tmp/dds.xml
+      - $LOCAL_WS/config/dds-uri/ethDDS.xml:/tmp/dds.xml
       - $VISION_WS/realsense-pkg/config:/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/config
       - $VISION_WS/realsense-pkg/visual_presets:/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/visual_presets
       - $VISION_WS/camera-pkg:/home/realsense/vision-ws/src/camera-ros
