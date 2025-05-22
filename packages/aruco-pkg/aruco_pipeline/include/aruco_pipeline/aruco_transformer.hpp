@@ -28,4 +28,5 @@ private:
     float markerLength_; // meter
     std::vector<cv::Vec3d> rvecs_;
     std::vector<cv::Vec3d> tvecs_;
+    std::vector<cv::Point3f> objectPoints_;
 };

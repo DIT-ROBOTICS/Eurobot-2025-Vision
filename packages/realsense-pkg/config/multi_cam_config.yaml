@@ -10,7 +10,7 @@ infra_qos: SENSOR_DATA
 # Color
 enable_color: true
 rgb_camera:
-  color_profile: 1280,720,30
+  color_profile: 640,360,30
   color_format: BGR8
   enable_auto_exposure: true
   exposure: 166

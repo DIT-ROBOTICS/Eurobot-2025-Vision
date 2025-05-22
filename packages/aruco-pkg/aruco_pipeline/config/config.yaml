@@ -22,3 +22,8 @@ aruco_pipeline:
       left: "/vision/cam_left/color/image_raw"
       mid: "/vision/cam_mid/color/image_raw"
       right: "/vision/cam_right/color/image_raw"
+
+    tf_frame_id:
+      left: "cam_left_color_optical_frame"
+      mid: "cam_mid_color_optical_frame"
+      right: "cam_right_color_optical_frame"

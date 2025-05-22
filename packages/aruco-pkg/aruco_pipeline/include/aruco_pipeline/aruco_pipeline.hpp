@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
-#include <rclcpp_lifecycle/state.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -22,37 +21,35 @@
 // #include "transform_validator.hpp"
 #include "thread_pool.hpp"
 
-using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
-
-class ArucoPipeline : public rclcpp_lifecycle::LifecycleNode {
+class ArucoPipeline : public rclcpp::Node
+{
 public:
-  ArucoPipeline(const std::string & node_name, size_t num_threads);
-
-  // Lifecycle callback
-  CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
-  CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
-  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
-  CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
-  CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
-
+  ArucoPipeline(const std::string & node_name);
+  bool initialize();
   void processAruco(const cv::Mat &color, const std::string& cam_name, 
-                    image_transport::Publisher &pub);
+                    image_transport::Publisher &pub, const std::string &tf_frame_id);
 
-  std::shared_ptr<rclcpp::Node> get_helper_node() const { return helper_node_; }
-  
+protected:
+  void setupImageTransport();
+  void setupCameraInfoSubscriptions(const std::map<std::string, std::string>& cam_info_topics);
+  void initTransformers();
+  void setupImageSubscriptions();
+
+  std::shared_ptr<ImageBuffer> image_buffer_;
+  std::shared_ptr<CameraInfoHandler> camera_info_;
+  std::shared_ptr<ArucoDetector> detector_;
+  std::shared_ptr<ThreadPool> thread_pool_;
+  std::map<std::string, std::shared_ptr<ArucoTransformer>> transformer_;
+  // std::shared_ptr<TransformValidator> validator_;
+
 private:
-  rclcpp::Node::SharedPtr helper_node_;
   using Image = sensor_msgs::msg::Image;
   using ImageConstPtr = sensor_msgs::msg::Image::ConstSharedPtr;
     
-  void setupImageTransport();
-  void setupImageSubscriptions();
-  void setupCameraInfoSubscriptions(const std::map<std::string, std::string>& cam_info_topics);
   void imageCallback(const ImageConstPtr &left, const ImageConstPtr &mid, const ImageConstPtr &right);
   void timerProcessAruco();
-  void cameraInfoCallback(const sensor_msgs::msg::CameraInfo::SharedPtr msg, const std::string& camera_name);
-  
-  void initTransformers();
+  bool validateMarkerTf(tf2::Transform &tf_marker_in_map) const;
+
   std::shared_ptr<ArucoTransformer> createTransformer(const std::string& cam_name);
 
   // ROS params
@@ -62,20 +59,14 @@ private:
   std::map<std::string, std::string> cam_info_topics_;
   std::map<std::string, std::string> image_pub_topics_;
   std::map<std::string, std::string> image_sub_topics_;
+  std::map<std::string, std::string> tf_frame_id_;
+  std::string tf_parent_frame_id_;
   int sync_queue_size_;
   std::string image_encoding_;
 
-  std::shared_ptr<ImageBuffer> image_buffer_;
-  std::shared_ptr<CameraInfoHandler> camera_info_;
-  std::shared_ptr<ArucoDetector> detector_;
-  // std::shared_ptr<ArucoTransformer> transformer_;
-  std::map<std::string, std::shared_ptr<ArucoTransformer>> transformer_;
-  // std::shared_ptr<TransformValidator> validator_;
-  std::shared_ptr<ThreadPool> thread_pool_;
-
   // Pose publisher
-  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_robot_pose_;
-  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_rival_pose_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_robot_pose_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_rival_pose_;
 
   // ImageTransport
   std::shared_ptr<image_transport::ImageTransport> it_;
@@ -95,7 +86,7 @@ private:
   std::set<std::string> received_cams_;
 
   // TransformerMap
-  std::map<std::string, std::shared_ptr<ArucoTransformer>> transformer_map_;
+  std::unordered_map<std::string, std::shared_ptr<ArucoTransformer>> transformer_map_;
 
   // TF2
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
@@ -103,4 +94,11 @@ private:
 
   // Timer
   rclcpp::TimerBase::SharedPtr aruco_timer_;
+
+  // Mutes
+  // std::mutex detector_mutex_;
+  // std::mutex transformer_mutex_;
+  // std::mutex pub_mutex_;
+  // std::mutex pub_robot_pose_mutex_;
+  // std::mutex pub_rival_pose_mutex_;
 };

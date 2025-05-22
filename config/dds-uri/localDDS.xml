@@ -8,6 +8,7 @@
 <Domain Id="0">
     <General>
       <AllowMulticast>false</AllowMulticast>
+      <MaxMessageSize>1048576B</MaxMessageSize>
       <NetworkInterface name="lo"/>
     </General>
     <Discovery>

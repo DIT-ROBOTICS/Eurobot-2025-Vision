@@ -17,12 +17,15 @@ def generate_launch_description():
     aruco_node = Node(
         package='aruco_pipeline',
         executable='aruco_pipeline',
+        name='aruco_pipeline',
         output='screen',
         parameters=[config_file],
         remappings=[
             ('/aruco/robot_pose', config['aruco_pipeline']['ros__parameters']['robot_pose_topic']),
             ('/aruco/rival_pose', config['aruco_pipeline']['ros__parameters']['rival_pose_topic'])
         ],
+        respawn=True,
+        respawn_delay=5.0,
     )
 
     return LaunchDescription([

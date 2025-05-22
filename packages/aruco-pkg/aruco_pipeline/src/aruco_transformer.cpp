@@ -1,15 +1,41 @@
 #include "aruco_pipeline/aruco_transformer.hpp"
 
 ArucoTransformer::ArucoTransformer(const cv::Mat& K, const cv::Mat& D, float markerLength)
-    : K_(K), D_(D), markerLength_(markerLength) {}
+    : K_(K), D_(D), markerLength_(markerLength)
+{
+    // objectPoints_ = {
+    //     {0, 0, 0},
+    //     {markerLength_, 0, 0},
+    //     {markerLength_, markerLength_, 0},
+    //     {0, markerLength_, 0}
+    // };
+    float half_len = markerLength_ / 2.0f;
+    objectPoints_ = {
+        {-half_len,  half_len, 0},
+        { half_len,  half_len, 0},
+        { half_len, -half_len, 0},
+        {-half_len, -half_len, 0}
+    };
+}
 
 void ArucoTransformer::estimatePose(const std::vector<std::vector<cv::Point2f>>& corners) {
     rvecs_.clear();
     tvecs_.clear();
 
-    // Estimate Pose for all detected markers
-    if (!corners.empty()) {
-        cv::aruco::estimatePoseSingleMarkers(corners, markerLength_, K_, D_, rvecs_, tvecs_);
+    if (corners.empty()) return;
+
+    for (const auto& corner : corners) {
+        cv::Vec3d rvec, tvec;
+        bool success = cv::solvePnP(objectPoints_, corner, K_, D_, rvec, tvec, 
+                                                false, cv::SOLVEPNP_IPPE_SQUARE);
+
+        if (success) {
+            rvecs_.push_back(rvec);
+            tvecs_.push_back(tvec);
+        } else {
+            rvecs_.push_back(cv::Vec3d(0, 0, 0));
+            tvecs_.push_back(cv::Vec3d(0, 0, 0));
+        }
     }
 }
 
