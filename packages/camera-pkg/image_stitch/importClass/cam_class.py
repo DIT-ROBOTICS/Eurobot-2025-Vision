@@ -20,9 +20,8 @@ class MultiCamNode(Node):
         self.publisher_qos = self._create_qos_profile()
         self._init_endpoints()
 
-
         self.ts = message_filters.ApproximateTimeSynchronizer(
-            [self.sub_left, self.sub_mid, self.sub_right], queue_size=10, slop=0.05
+            [self.sub_left, self.sub_mid, self.sub_right], queue_size=10, slop=0.05,
         )
         self.ts.registerCallback(self.image_callback)
 
@@ -134,11 +133,14 @@ class MultiCamNode(Node):
                                                self.publisher_qos)
 
         self.sub_left = message_filters.Subscriber(self, Image,
-                                                   self.get_parameter('left_topic').get_parameter_value().string_value)
+                                                   self.get_parameter('left_topic').get_parameter_value().string_value,
+                                                   qos_profile=self._create_qos_profile())
         self.sub_mid = message_filters.Subscriber(self, Image,
-                                                  self.get_parameter('mid_topic').get_parameter_value().string_value)
+                                                  self.get_parameter('mid_topic').get_parameter_value().string_value,
+                                                  qos_profile=self._create_qos_profile())
         self.sub_right = message_filters.Subscriber(self, Image,
-                                                    self.get_parameter('right_topic').get_parameter_value().string_value)
+                                                    self.get_parameter('right_topic').get_parameter_value().string_value,
+                                                    qos_profile=self._create_qos_profile())
         
     def _create_qos_profile(self):
         return QoSProfile(
