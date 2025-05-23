@@ -1,6 +1,6 @@
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped, PoseArray
-from std_msgs.msg import Int16
+from std_msgs.msg import Int16, Int32
 import threading
 
 class SensorCallback(Node):
@@ -19,6 +19,7 @@ class SensorCallback(Node):
         self.last_layer_ = None
         self.last_robot_pose_ = None
         self.last_platform_pose_array_ = None
+        self.last_mission_ = None
 
     def _init_subscriptions(self):
         self.get_logger().info('Creating subscriptions...')
@@ -57,6 +58,14 @@ class SensorCallback(Node):
             self.platform_callback,
             10
         )
+
+        self.create_subscription(
+            Int32,
+            '/success',
+            self.main_callback,
+            10
+        )
+
     def superstar_callback(self, msg: PoseStamped):
         with self.lock:
             self.last_superstar_pose_ = msg
@@ -77,6 +86,10 @@ class SensorCallback(Node):
         with self.lock:
             self.last_platform_pose_array_ = msg
 
+    def main_callback(self, msg: Int32):
+        with self.lock:
+            self.last_mission_ = msg
+
     def get_sensor_data(self):
         with self.lock:
             return {
@@ -84,5 +97,6 @@ class SensorCallback(Node):
                 'sima_pose_array': self.last_sima_pose_array_,
                 'layer': self.last_layer_,
                 'robot_pose': self.last_robot_pose_,
-                'platform_pose_array': self.last_platform_pose_array_
+                'platform_pose_array': self.last_platform_pose_array_,
+                'mission_state': self.last_mission_
             }

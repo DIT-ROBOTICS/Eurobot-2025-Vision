@@ -59,6 +59,26 @@ STAGE_REGION = {
     'y_max': 1.55,
 }
 
+TRIBUNE_REGION = {
+    'x_min': 0,
+    'x_max': 0,
+    'y_min': 0,
+    'y_max': 0
+}
+
+def euler_from_quaternion(x, y, z, w):
+    t3, t4 = +2.0 * (w * z + x * y), +1.0 - 2.0 * (y * y + z * z)
+    yaw = math.atan2(t3, t4) 
+    return yaw
+
+def update_tribune_region(x, y, yaw):
+    TRIBUNE_REGION = {
+        'min_x': x - ( 0.2 * cos(yaw) - 0.05 * sin(yaw) ),
+        'max_x': x + ( 0.2 * cos(yaw) - 0.05 * sin(yaw) ),
+        'min_y': y - ( 0.2 * sin(yaw) + 0.05 * cos(yaw) ),
+        'max_y': y + ( 0.2 * sin(yaw) + 0.05 * cos(yaw) )
+    }
+
 class RegionLogic():
     def __init__(self, sensor_node):
         self.sensor_node = sensor_node
@@ -117,6 +137,12 @@ class RegionLogic():
 
         x = robot_pose.pose.position.x
         y = robot_pose.pose.position.y
+        yaw = euler_from_quaternion(robot_pose.pose.orientation.x, 
+                                         robot_pose.pose.orientation,
+                                         robot_pose.pose.orientation.z,
+                                         robot_pose.pose.orientation.w)
+        update_tribune_region(x, y, yaw)
+        
 
         if HOME_REGION['x_min'] <= x <= HOME_REGION['x_max'] and \
            HOME_REGION['y_min'] <= y <= HOME_REGION['y_max']:
@@ -137,13 +163,30 @@ class RegionLogic():
                 y = pose.position.y
                 z = pose.position.z
                 if region['x_min'] <= x <= region['x_max'] and \
-                    region['y_min'] <= y <= region['y_max']:
-                    
-                    if z > 0.3:
-                        build_point += 28
-                    elif z > 0.1:
-                        build_point += 12
-                    elif z > 0:
-                        build_point += 4
+                    region['y_min'] <= y <= region['y_max'] and \
+                    TRIBUNE_REGION['min_x'] <= x <= TRIBUNE_REGION['x_max'] and \
+                    TRIBUNE_REGION['min_y'] <= y <= TRIBUNE_REGION['max_y'] :
+                            
+                        build_point = RegionLogic.check_building_tribune()
 
         return build_point
+    
+    def check_building_tribune(self):
+        layer_point = 0
+        data = self.sensor_node.get_sensor_data()
+        done_mission = data['mission_state']
+        layer = data['layer']
+        
+        if self.scored_mission == done_mission:
+            return 0
+        
+        else:
+            if layer == 3:
+                layer_point == 28
+            elif layer == 2:
+                layer_point == 12
+            elif layer == 1:
+                layer_point == 4
+        
+        self.scored_mission = done_mission
+        return layer_point
