@@ -74,7 +74,6 @@ void ArucoPipeline::setupImageTransport() {
   if (gui_) {
     RCLCPP_INFO(get_logger(), "GUI is enabled. Setting up image transport...");
     it_ = std::make_shared<image_transport::ImageTransport>(shared_from_this());
-
     for (const auto& cam_name : camera_lists_) {
       image_publishers_[cam_name] = it_->advertise(image_pub_topics_[cam_name], 10);
     }
@@ -215,7 +214,7 @@ bool ArucoPipeline::initialize() {
   RCLCPP_INFO(this->get_logger(), "Transformers initialized.");
   setupImageSubscriptions();
   RCLCPP_INFO(this->get_logger(), "Image subscriptions set up.");
-
+  
   aruco_timer_ = this->create_wall_timer(
     std::chrono::milliseconds(33),
     std::bind(&ArucoPipeline::timerProcessAruco, this));

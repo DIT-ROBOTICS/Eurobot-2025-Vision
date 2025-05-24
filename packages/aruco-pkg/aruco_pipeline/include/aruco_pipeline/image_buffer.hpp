@@ -77,34 +77,3 @@ public:
         }
     }
 };
-
-// 使用範例
-/*
-// 創建 ImageBuffer
-ImageBuffer buffer;
-
-// 動態添加相機
-buffer.setImage("camera_0", img_ptr_0);
-buffer.setImage("camera_1", img_ptr_1);
-buffer.setImage("front_cam", img_ptr_2);
-buffer.setImage("rear_cam", img_ptr_3);
-
-// 獲取圖像
-auto front_img = buffer.getImage("front_cam");
-
-// 獲取所有相機 ID
-auto camera_ids = buffer.getCameraIds();
-for (const auto& id : camera_ids) {
-    auto img = buffer.getImage(id);
-    // 處理圖像...
-}
-
-// 移除不需要的相機
-buffer.removeCamera("camera_0");
-
-// 重置特定相機
-buffer.resetCamera("front_cam");
-
-// 檢查相機數量
-std::cout << "Total cameras: " << buffer.getCameraCount() << std::endl;
-*/
