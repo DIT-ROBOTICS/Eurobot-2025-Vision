@@ -40,7 +40,8 @@ ArucoPipeline::ArucoPipeline(const std::string &node_name) : rclcpp::Node(node_n
       "tf_frame_id." + cam_name, "cam_" + cam_name);
   }
 
-  // Make Shared 
+  // Make Shared
+  image_buffer_ = std::make_shared<ImageBuffer>();
   camera_info_ = std::make_shared<CameraInfoHandler>(std::set<std::string>(camera_lists_.begin(), camera_lists_.end()));
   detector_ = std::make_shared<ArucoDetector>();
   thread_pool_ = std::make_shared<ThreadPool>(num_threads_);
@@ -160,17 +161,27 @@ void ArucoPipeline::imageCallback(const sensor_msgs::msg::Image::SharedPtr img, 
 
   try {
     auto cv_ptr = cv_bridge::toCvShare(img, image_encoding_);
-    
-    thread_pool_->enqueue([this, cv_ptr, cam_name]() {
-      auto pub_it = image_publishers_.find(cam_name);
-      image_transport::Publisher* pub = (pub_it != image_publishers_.end()) ? &pub_it->second : nullptr;
+    image_buffer_->setImage(cam_name, cv_ptr);
+  } catch(const std::exception& e){
+    RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
+  }
+}
 
-      this->processAruco(cv_ptr->image, cam_name, pub, tf_frame_id_[cam_name]);
-    });
-    
-  } catch (const cv_bridge::Exception &e) {
-    RCLCPP_ERROR(this->get_logger(), "cv_bridge exception for %s: %s", cam_name.c_str(), e.what());
-    return;
+void ArucoPipeline::timerProcessAruco() {
+  for (const auto& cam_name : camera_lists_) {
+    if (!image_buffer_->hasCamera(cam_name)) {
+      continue;
+    }
+    auto img = image_buffer_->getImage(cam_name);
+    thread_pool_->enqueue(
+      [this, img, cam_name]() {
+        auto it = transformer_.find(cam_name);
+        if (it != transformer_.end()) {
+          processAruco(img->image, cam_name, &image_publishers_[cam_name], tf_frame_id_[cam_name]);
+        } else {
+          RCLCPP_ERROR(get_logger(), "Transformer not found for camera: %s", cam_name.c_str());
+        }
+      });
   }
 }
 
@@ -204,6 +215,10 @@ bool ArucoPipeline::initialize() {
   RCLCPP_INFO(this->get_logger(), "Transformers initialized.");
   setupImageSubscriptions();
   RCLCPP_INFO(this->get_logger(), "Image subscriptions set up.");
+
+  aruco_timer_ = this->create_wall_timer(
+    std::chrono::milliseconds(33),
+    std::bind(&ArucoPipeline::timerProcessAruco, this));
   
   RCLCPP_INFO(this->get_logger(), "ArucoPipeline initialization completed successfully!");
   return true;
@@ -309,8 +324,8 @@ int main(int argc, char *argv[])
 
   rclcpp::executors::MultiThreadedExecutor executor;
   executor.add_node(node);
-  
   executor.spin();
+
   rclcpp::shutdown();
   return 0;
 }

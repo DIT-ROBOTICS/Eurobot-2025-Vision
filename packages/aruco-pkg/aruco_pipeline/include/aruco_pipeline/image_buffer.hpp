@@ -1,58 +1,110 @@
 #pragma once
 
+#include <unordered_map>
 #include <mutex>
+#include <string>
+#include <vector>
 #include <cv_bridge/cv_bridge.h>
 
-struct ImageBuffer
-{
-  using CvImagePtr = cv_bridge::CvImageConstPtr;
+struct ImageBuffer {
+    using CvImagePtr = cv_bridge::CvImageConstPtr;
+    
+private:
+    std::unordered_map<std::string, CvImagePtr> images_;
+    mutable std::unordered_map<std::string, std::unique_ptr<std::mutex>> mutexes_;
+    mutable std::mutex map_mutex_; 
+    
+    std::mutex& getMutex(const std::string& camera_id) const {
+        std::lock_guard<std::mutex> lock(map_mutex_);
+        if (mutexes_.find(camera_id) == mutexes_.end()) {
+            mutexes_[camera_id] = std::make_unique<std::mutex>();
+        }
+        return *mutexes_[camera_id];
+    }
+    
+public:
+    void setImage(const std::string& camera_id, CvImagePtr img) {
+        std::lock_guard<std::mutex> lock(getMutex(camera_id));
+        images_[camera_id] = img;
+    }
+    
+    CvImagePtr getImage(const std::string& camera_id) const {
+        std::lock_guard<std::mutex> lock(getMutex(camera_id));
+        auto it = images_.find(camera_id);
+        return (it != images_.end()) ? it->second : nullptr;
+    }
+    
+    void removeCamera(const std::string& camera_id) {
+        std::lock_guard<std::mutex> map_lock(map_mutex_);
+        std::lock_guard<std::mutex> img_lock(getMutex(camera_id));
+        images_.erase(camera_id);
+        mutexes_.erase(camera_id);
+    }
+    
+    bool hasCamera(const std::string& camera_id) const {
+        std::lock_guard<std::mutex> lock(getMutex(camera_id));
+        return images_.find(camera_id) != images_.end();
+    }
+    
+    std::vector<std::string> getCameraIds() const {
+        std::lock_guard<std::mutex> lock(map_mutex_);
+        std::vector<std::string> ids;
+        for (const auto& pair : images_) {
+            ids.push_back(pair.first);
+        }
+        return ids;
+    }
+    
+    size_t getCameraCount() const {
+        std::lock_guard<std::mutex> lock(map_mutex_);
+        return images_.size();
+    }
+    
+    void reset() {
+        std::lock_guard<std::mutex> map_lock(map_mutex_);
+        std::vector<std::unique_lock<std::mutex>> locks;
+        for (auto& [_, mutex_ptr] : mutexes_) {
+            locks.emplace_back(*mutex_ptr);
+        }
+        images_.clear();
+    }
 
-  CvImagePtr left;
-  CvImagePtr mid;
-  CvImagePtr right;
-
-  // mutex lock
-  mutable std::mutex mutex_left;
-  mutable std::mutex mutex_mid;
-  mutable std::mutex mutex_right;
-
-  // set Image
-  void setLeft(CvImagePtr img) {
-    std::lock_guard<std::mutex> lock(mutex_left);
-    left = img;
-  }
-
-  void setMid(CvImagePtr img) {
-    std::lock_guard<std::mutex> lock(mutex_mid);
-    mid = img;
-  }
-
-  void setRight(CvImagePtr img) {
-    std::lock_guard<std::mutex> lock(mutex_right);
-    right = img;
-  }
-
-  // get Image
-  CvImagePtr getLeft() const {
-    std::lock_guard<std::mutex> lock(mutex_left);
-    return left;
-  }
-
-  CvImagePtr getMid() const {
-    std::lock_guard<std::mutex> lock(mutex_mid);
-    return mid;
-  }
-
-  CvImagePtr getRight() const {
-    std::lock_guard<std::mutex> lock(mutex_right);
-    return right;
-  }
-
-  // reset all images
-  void reset() {
-    std::scoped_lock lock(mutex_left, mutex_mid, mutex_right);
-    left.reset();
-    mid.reset();
-    right.reset();
-  }
+    void resetCamera(const std::string& camera_id) {
+        std::lock_guard<std::mutex> lock(getMutex(camera_id));
+        auto it = images_.find(camera_id);
+        if (it != images_.end()) {
+            it->second.reset();
+        }
+    }
 };
+
+// 使用範例
+/*
+// 創建 ImageBuffer
+ImageBuffer buffer;
+
+// 動態添加相機
+buffer.setImage("camera_0", img_ptr_0);
+buffer.setImage("camera_1", img_ptr_1);
+buffer.setImage("front_cam", img_ptr_2);
+buffer.setImage("rear_cam", img_ptr_3);
+
+// 獲取圖像
+auto front_img = buffer.getImage("front_cam");
+
+// 獲取所有相機 ID
+auto camera_ids = buffer.getCameraIds();
+for (const auto& id : camera_ids) {
+    auto img = buffer.getImage(id);
+    // 處理圖像...
+}
+
+// 移除不需要的相機
+buffer.removeCamera("camera_0");
+
+// 重置特定相機
+buffer.resetCamera("front_cam");
+
+// 檢查相機數量
+std::cout << "Total cameras: " << buffer.getCameraCount() << std::endl;
+*/

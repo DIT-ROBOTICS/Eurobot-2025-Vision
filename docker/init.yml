@@ -8,7 +8,7 @@ ROS_DOMAIN_ID: 11
 
 # Compose
 PROJECT_NAME: vision-test
-PROFILES: stitch # center | camera | aruco | yolo | train | gui | stitch
+PROFILES: camera # center | camera | aruco | yolo | train | gui | stitch
 
 # Build / Run
-ACTION: both # build | run | both
+ACTION: run # build | run | both

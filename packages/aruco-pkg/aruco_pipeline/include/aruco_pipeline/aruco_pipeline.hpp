@@ -20,6 +20,7 @@
 #include "camera_info_handler.hpp"
 #include "aruco_detector.hpp"
 #include "aruco_transformer.hpp"
+#include "image_buffer.hpp"
 #include "thread_pool.hpp"
 
 using Image = sensor_msgs::msg::Image;
@@ -28,6 +29,24 @@ using ImageConstPtr = sensor_msgs::msg::Image::SharedPtr;
 class ArucoPipeline : public rclcpp::Node {
 public:
   explicit ArucoPipeline(const std::string &node_name);
+  ~ArucoPipeline() {
+    RCLCPP_INFO(get_logger(), "ArucoPipeline Destructor");
+    image_buffer_.reset();
+    thread_pool_.reset();
+    detector_.reset();
+    camera_info_.reset();
+    transformer_.clear();
+    image_subs_.clear();
+    cam_info_subs_.clear();
+    image_publishers_.clear();
+    tf_buffer_.reset();
+    tf_listener_.reset();
+    if(aruco_timer_) {
+      aruco_timer_->cancel();
+    }
+    aruco_timer_.reset();
+    RCLCPP_INFO(get_logger(), "ArucoPipeline Destructor Done");
+  }
   bool initialize();
 
 private:
@@ -36,6 +55,7 @@ private:
   void setupCameraInfoSubscriptions();
   void setupImageSubscriptions();
   void initTransformers();
+  void timerProcessAruco();
   std::shared_ptr<ArucoTransformer> createTransformer(const std::string &cam_name);
 
   // Callback
@@ -62,6 +82,7 @@ private:
   std::shared_ptr<CameraInfoHandler> camera_info_;
   std::shared_ptr<ArucoDetector> detector_;
   std::shared_ptr<ThreadPool> thread_pool_;
+  std::shared_ptr<ImageBuffer> image_buffer_;
   std::map<std::string, std::shared_ptr<ArucoTransformer>> transformer_;
 
   // ROS Publisher & Subscriber
@@ -79,4 +100,7 @@ private:
   // TF
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+
+  // Timer 
+  rclcpp::TimerBase::SharedPtr aruco_timer_;
 };
