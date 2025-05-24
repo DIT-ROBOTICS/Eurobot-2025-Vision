@@ -9,6 +9,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
 
 #include <opencv2/opencv.hpp>
 #include <memory>
@@ -77,6 +78,8 @@ private:
   std::map<std::string, std::string> image_pub_topics_;
   std::map<std::string, std::string> image_sub_topics_;
   std::map<std::string, std::string> tf_frame_id_;
+  std::string blue_pose_topic_;
+  std::string yellow_pose_topic_;
   
   // Make Shared
   std::shared_ptr<CameraInfoHandler> camera_info_;
@@ -88,6 +91,8 @@ private:
   // ROS Publisher & Subscriber
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_blue_pose_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_yellow_pose_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_superstar_pose_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr pub_sima_pose_array_;
   
   std::vector<rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr> cam_info_subs_;
   std::unordered_set<std::string> received_cam_info_;

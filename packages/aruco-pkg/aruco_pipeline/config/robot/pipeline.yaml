@@ -1,0 +1,36 @@
+aruco_pipeline:
+  # === Camera Lists ===
+  camera_lists: ["one", "two", "three"]
+  
+  # === Params ===
+  num_threads: 4
+  marker_length: 0.07
+  gui: true
+  image_encoding: "bgr8"
+  
+  # === TF ===
+  tf_frame_id:
+    parent: "map"
+    one: "cam_left_color_optical_frame"
+    two: "cam_mid_color_optical_frame"
+    three: "cam_right_color_optical_frame"
+  
+  # === Subscribe Topics ===
+  camera_info:
+    one: "/vision/cam_left/color/camera_info"
+    two: "/vision/cam_mid/color/camera_info"
+    three: "/vision/cam_right/color/camera_info"
+  
+  image_sub:
+    one: "/vision/cam_left/color/image_raw"
+    two: "/vision/cam_mid/color/image_raw"
+    three: "/vision/cam_right/color/image_raw"
+  
+  # === Publish Topics ===
+  image_pub:
+    one: "/vision/aruco/robot/left/debug_image"
+    two: "/vision/aruco/robot/mid/debug_image"
+    three: "/vision/aruco/robot/right/debug_image"
+  
+  blue_pose_topic: "/vision/aruco/robot_pose"
+  yellow_pose_topic: "/vision/aruco/rival_pose"

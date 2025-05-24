@@ -47,11 +47,13 @@ ArucoPipeline::ArucoPipeline(const std::string &node_name) : rclcpp::Node(node_n
   thread_pool_ = std::make_shared<ThreadPool>(num_threads_);
 
   // Pose Publisher
-  pub_blue_pose_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/aruco/blue_pose", 10);
-  pub_yellow_pose_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/aruco/yellow_pose", 10);
+  blue_pose_topic_ = this->declare_parameter<std::string>("blue_pose_topic", "/aruco/superstar_pose");
+  yellow_pose_topic_ = this->declare_parameter<std::string>("yellow_pose_topic", "/aruco/sima_pose_array");
+  pub_superstar_pose_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(blue_pose_topic_, 10);
+  pub_sima_pose_array_ = this->create_publisher<geometry_msgs::msg::PoseArray>(yellow_pose_topic_, 10);
   RCLCPP_INFO(get_logger(), "Pose Publishers:");
-  RCLCPP_INFO(get_logger(), "  - %s", pub_blue_pose_->get_topic_name());
-  RCLCPP_INFO(get_logger(), "  - %s", pub_yellow_pose_->get_topic_name());
+  RCLCPP_INFO(get_logger(), "  - %s", pub_superstar_pose_->get_topic_name());
+  RCLCPP_INFO(get_logger(), "  - %s", pub_sima_pose_array_->get_topic_name());
 
   // TF initialize
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
@@ -265,6 +267,17 @@ void ArucoPipeline::processAruco(const cv::Mat &image, const std::string &cam_na
   
   auto &rvecs = it->second->getRvecs();
   auto &tvecs = it->second->getTvecs();
+  geometry_msgs::msg::PoseStamped pose_msg;
+  pose_msg.header.stamp = this->now();
+  pose_msg.header.frame_id = tf_parent_frame_id_;
+  
+  geometry_msgs::msg::PoseStamped superstar_pose_msg;
+  geometry_msgs::msg::PoseArray sima_pose_array_msg;
+  superstar_pose_msg.header.stamp = this->now();
+  sima_pose_array_msg.header.stamp = this->now();
+  superstar_pose_msg.header.frame_id = tf_parent_frame_id_;
+  sima_pose_array_msg.header.frame_id = tf_parent_frame_id_;
+  
   for (size_t i = 0; i < ids.size(); ++i) {
     int id = ids[i];
     const auto &rvec = rvecs[i];
@@ -273,17 +286,20 @@ void ArucoPipeline::processAruco(const cv::Mat &image, const std::string &cam_na
     if (!validateMarkerTf(tf_marker_in_map)) {
       continue;
     }
-
-    geometry_msgs::msg::PoseStamped pose_msg;
-    pose_msg.header.stamp = this->now();
-    pose_msg.header.frame_id = tf_parent_frame_id_;
-    tf2::toMsg(tf_marker_in_map, pose_msg.pose);
-
-    if (id >= 1 && id <= 5) {
-      pub_blue_pose_->publish(pose_msg);
-    } else if (id >= 6 && id <= 10) {
-      pub_yellow_pose_->publish(pose_msg);
+      //要改id~~
+    if (id == 0) {
+      tf2::toMsg(tf_marker_in_map, superstar_pose_msg.pose);
+    } else if (id >= 1 && id <= 10) {
+      tf2::toMsg(tf_marker_in_map, pose_msg.pose);
+      sima_pose_array_msg.poses.push_back(pose_msg.pose);
     }
+
+  }
+  
+  pub_superstar_pose_->publish(superstar_pose_msg);
+
+  if (!sima_pose_array_msg.poses.empty()) {
+    pub_sima_pose_array_->publish(sima_pose_array_msg);
   }
 }
 
@@ -313,7 +329,7 @@ int main(int argc, char *argv[])
 {
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<ArucoPipeline>("aruco_pipeline");
+  auto node = std::make_shared<ArucoPipeline>("aruco_pipeline_sima");
 
   if (!node->initialize()) {
     RCLCPP_FATAL(node->get_logger(), "ArucoPipeline failed to initialize. Exiting.");
