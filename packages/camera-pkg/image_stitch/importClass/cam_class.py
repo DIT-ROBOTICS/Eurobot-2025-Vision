@@ -20,9 +20,8 @@ class MultiCamNode(Node):
         self.publisher_qos = self._create_qos_profile()
         self._init_endpoints()
 
-
         self.ts = message_filters.ApproximateTimeSynchronizer(
-            [self.sub_left, self.sub_mid, self.sub_right], queue_size=10, slop=0.05
+            [self.sub_left, self.sub_mid, self.sub_right], queue_size=10, slop=0.05,
         )
         self.ts.registerCallback(self.image_callback)
 
@@ -43,10 +42,19 @@ class MultiCamNode(Node):
 
     def preprocess_image_data(self, data):
         try:
-            image = np.frombuffer(data, dtype=self.data_type).reshape(self.source_image_shape)
-        except ValueError as e:
+            image = np.frombuffer(data, dtype=self.data_type)
+            if self.source_image_shape is not None and image.size == np.prod(self.source_image_shape):
+                image = image.reshape(self.source_image_shape)
+            elif image.size == np.prod(self.target_image_shape) * 3:
+                image = image.reshape((*self.target_image_shape, 3))
+            elif image.size == np.prod(self.target_image_shape):
+                image = image.reshape(self.target_image_shape)
+            else:
+                image = image.reshape(-1, 1)
+        except Exception as e:
             self.get_logger().error(f"Reshape failed: {e}")
             return np.zeros((*self.target_image_shape, 3), dtype=np.uint8)
+        # Always resize to target shape
         image = cv2.resize(image, self.target_image_shape)
         rotated_image = np.rot90(image)
         return rotated_image
@@ -57,6 +65,7 @@ class MultiCamNode(Node):
         return self.image_queue.pop(0)
         
     def publish_stitched_image(self, image):
+        # print("Output image shape:", image.shape)
         if image is None:
             return
         msg = self.bridge.cv2_to_imgmsg(image, encoding=self.encoding)
@@ -134,11 +143,14 @@ class MultiCamNode(Node):
                                                self.publisher_qos)
 
         self.sub_left = message_filters.Subscriber(self, Image,
-                                                   self.get_parameter('left_topic').get_parameter_value().string_value)
+                                                   self.get_parameter('left_topic').get_parameter_value().string_value,
+                                                   qos_profile=self._create_qos_profile())
         self.sub_mid = message_filters.Subscriber(self, Image,
-                                                  self.get_parameter('mid_topic').get_parameter_value().string_value)
+                                                  self.get_parameter('mid_topic').get_parameter_value().string_value,
+                                                  qos_profile=self._create_qos_profile())
         self.sub_right = message_filters.Subscriber(self, Image,
-                                                    self.get_parameter('right_topic').get_parameter_value().string_value)
+                                                    self.get_parameter('right_topic').get_parameter_value().string_value,
+                                                    qos_profile=self._create_qos_profile())
         
     def _create_qos_profile(self):
         return QoSProfile(

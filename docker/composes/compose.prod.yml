@@ -96,4 +96,14 @@ services:
       XDG_RUNTIME_DIR: $XDG_RUNTIME_DIR 
       DISPLAY: :0
     profiles: ['stitch']
+
+  stitcher:
+    image: vision-main/stitcher:latest
+    container_name: stitcher
+    <<: 
+      - *common-vars
+      - *gpu-vars
+    environment:
+      <<: *common-env
+    profiles: ['stitcher']
   

@@ -55,8 +55,8 @@ class CounterRecognition:
         mask_dark_blue = cv2.inRange(self.hsv_img, LOWER_DARK_BLUE, UPPER_DARK_BLUE)
         mask_exclude = cv2.bitwise_or(mask_black, mask_dark_blue)
         self.binary_img = cv2.bitwise_and(mask_combined, cv2.bitwise_not(mask_exclude))
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
-        self.binary_img = cv2.morphologyEx(self.binary_img, cv2.MORPH_CLOSE, kernel, iterations=3)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+        self.binary_img = cv2.morphologyEx(self.binary_img, cv2.MORPH_CLOSE, kernel, iterations=4)
         return self.binary_img
 
     def get_contours(self):
@@ -66,9 +66,9 @@ class CounterRecognition:
         angle = 0.0
         for i, contour in enumerate(self.contours):
             if material == "platform":
-                gate = 600
+                gate = 1000
             elif material == "overturn":
-                gate = 80
+                gate = 150
             if cv2.contourArea(contour) > gate:
                 box = cv2.boxPoints(cv2.minAreaRect(contour))
                 box = np.intp(box)
@@ -89,8 +89,8 @@ class CounterRecognition:
                     (0, 0, 255), 2
                 )
                 angle = angle * np.pi / 180
-                if material == "overturn":
-                    print(f"overturn angle: {angle}")
-                if material == "platform":
-                    print(f"platform angle: {angle}")
+                # if material == "overturn":
+                #     print(f"overturn angle: {angle}")
+                # if material == "platform":
+                #     print(f"platform angle: {angle}")
         return angle

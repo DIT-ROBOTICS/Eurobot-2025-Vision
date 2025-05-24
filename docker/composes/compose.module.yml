@@ -35,6 +35,8 @@ services:
       - $LOCAL_WS/config/dds-uri/localDDS.xml:/tmp/dds.xml
       - $VISION_WS/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
     command: bash
+
+    
       # bash -ic "
       # colcon build;
       # source /home/ultralytics/vision-ws/install/local_setup.bash;
@@ -75,4 +77,10 @@ services:
       - /usr/share/vulkan/implicit_layer.d:/usr/share/vulkan/implicit_layer.d
     device_cgroup_rules:
       - "c 226:* rmw"
+    command: bash
+
+  stitcher:
+    volumes:
+      - $LOCAL_WS/config/dds-uri/jethDDS.xml:/tmp/dds.xml
+      - $VISION_WS/camera-pkg:/home/stitcher/vision-ws/src/camera-ros
     command: bash

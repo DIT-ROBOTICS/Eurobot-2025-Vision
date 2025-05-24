@@ -13,10 +13,10 @@ class PoseTransformer:
         try:
             pose_stamped = PoseStamped()
             pose_stamped.header.frame_id = self.from_frame_id
+            # pose_stamped.header.stamp = self.color_msg.header.stamp
             pose_stamped.header.stamp = rclpy.time.Time().to_msg()
             pose_stamped.pose = pose
-
-            transformed = self.tf_buffer.transform(pose_stamped, self.to_frame_id, timeout=rclpy.duration.Duration(seconds=2.0))
+            transformed = self.tf_buffer.transform(pose_stamped, self.to_frame_id, timeout=rclpy.duration.Duration(seconds=3.0))
             return transformed.pose
         except Exception as e:
             print(f"TF transform failed: {str(e)}")

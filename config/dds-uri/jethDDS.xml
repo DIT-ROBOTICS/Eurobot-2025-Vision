@@ -7,15 +7,22 @@
   <Domain Id="any">
     <General>
       <Interfaces>
-        <NetworkInterface name="wlo1"/>
-        <!-- <NetworkInterface name="enp2s0"/> -->
+        <NetworkInterface name="enP8p1s0"/>
       </Interfaces>
-      <AllowMulticast>false</AllowMulticast>
       <MaxMessageSize>65500B</MaxMessageSize>
+      <FragmentSize>1300B</FragmentSize>
     </General>
-    
-    <!-- <Discovery>
-      <EnableTopicDiscoveryEndpoints>true</EnableTopicDiscoveryEndpoints>
-    </Discovery> -->
+
+    <Discovery>
+      <Peers>
+        <Peer address="192.168.55.100"/>
+      </Peers>
+    </Discovery>
+
+    <!-- <Internal>
+      <Watermarks>
+        <WhcHigh>16777216B</WhcHigh>
+      </Watermarks>
+    </Internal> -->
   </Domain>
 </CycloneDDS>

@@ -18,7 +18,7 @@ def main(args=None):
             if synced_images is None:
                 continue
             stitched_img = stitcher.warp(synced_images)
-            if node.encoding == "16UC1":
+            if node.encoding == "mono8":
                 stitched_img = stitcher.depth_cali(stitched_img)
             node.publish_stitched_image(stitched_img)
 

@@ -1,6 +1,7 @@
 variable "ARCH" { default = "linux/amd64" }
 variable "BASE_IMAGE" { default = "ros:humble" }
 variable "NVIDIA_BASE_IMAGE" { default = "nvcr.io/nvidia/pytorch:24.07-py3" }
+variable "NVIDIA_CUDA_IMAGE" { default = "nvcr.io/nvidia/l4t-cuda:12.6.11-runtime" }
 variable "USER_UID" { default = "1000" }
 
 variable "LIBREALSENSE_VERSION" { default = "2.55.1" }
@@ -60,6 +61,7 @@ target "ultralytics" {
     ARCH = "${ARCH}"
     BASE_IMAGE = "${BASE_IMAGE}"
     NVIDIA_BASE_IMAGE = "${NVIDIA_BASE_IMAGE}"
+    NVIDIA_CUDA_IMAGE = "${NVIDIA_CUDA_IMAGE}"
     USER = "ultralytics"
     USER_UID = "${USER_UID}"
   }
@@ -87,6 +89,21 @@ target "stitch" {
     ARCH = "${ARCH}"
     BASE_IMAGE = "${BASE_IMAGE}"
     USER = "stitch"
+    USER_UID = "${USER_UID}"
+  }
+}
+
+target "stitcher" {
+  context = "../"
+  dockerfile = "dockerfiles/nvidia.Dockerfile"
+  target = "stitcher"
+  tags = ["vision-main/stitcher:latest"]
+  args = {
+    ARCH = "${ARCH}"
+    BASE_IMAGE = "${BASE_IMAGE}"
+    NVIDIA_BASE_IMAGE = "${NVIDIA_BASE_IMAGE}"
+    NVIDIA_CUDA_IMAGE = "${NVIDIA_CUDA_IMAGE}"
+    USER = "stitcher"
     USER_UID = "${USER_UID}"
   }
 }

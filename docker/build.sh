@@ -60,8 +60,13 @@ case "$ARCH" in
     ARCH="linux/arm64"
     NVIDIA_BASE_IMAGE="nvcr.io/nvidia/pytorch:24.07-py3-igpu"
     ;;
+  "jetson")
+    ARCH="linux/arm64"
+    NVIDIA_BASE_IMAGE="nvcr.io/nvidia/pytorch:24.07-py3-igpu"
+    NVIDIA_CUDA_IMAGE="ohin112/l4t-opencv-cuda:r36.4.0"
+    ;;
   *)
-    echo "Unsupported ARCH value: $ARCH"
+    echo "Unsupported architecture: $ARCH"
     exit 1
     ;;
 esac
@@ -84,6 +89,11 @@ build_image(){
   echo -e "Building Targets  ${BLUE}$BAKE_TARGETS${NC}"
   echo -e "Base Image        ${CYAN}$BASE_IMAGE${NC}"
   echo -e "NVIDIA Base Image ${GRBOLD}$NVIDIA_BASE_IMAGE${NC}"
+  if [ -z "$NVIDIA_CUDA_IMAGE" ]; then
+    echo -e "NVIDIA CUDA Image ${RED}Not set${NC}"
+  else
+    echo -e "NVIDIA CUDA Image ${GRBOLD}$NVIDIA_CUDA_IMAGE${NC}"
+  fi
   echo -e "User UID          ${YELLOW}$(id -u)${NC}"
   sleep 0.8
   
@@ -91,8 +101,9 @@ build_image(){
   ARCH=$ARCH \
   BASE_IMAGE=$BASE_IMAGE \
   NVIDIA_BASE_IMAGE=$NVIDIA_BASE_IMAGE \
+  NVIDIA_CUDA_IMAGE=$NVIDIA_CUDA_IMAGE \
   USER_UID=$(id -u) \
-  docker buildx bake $BAKE_TARGETS
+  docker buildx bake --allow=fs.read=.. $BAKE_TARGETS
   popd > /dev/null
 
   if [ $? -ne 0 ]; then
