@@ -77,7 +77,7 @@ private:
   std::map<std::string, std::string> image_pub_topics_;
   std::map<std::string, std::string> image_sub_topics_;
   std::map<std::string, std::string> tf_frame_id_;
-
+  
   // Make Shared
   std::shared_ptr<CameraInfoHandler> camera_info_;
   std::shared_ptr<ArucoDetector> detector_;

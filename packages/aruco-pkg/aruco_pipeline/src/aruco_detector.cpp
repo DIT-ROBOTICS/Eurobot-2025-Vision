@@ -40,7 +40,6 @@ ArucoDetector::ArucoDetector(const ArucoDetector& other) {
     }
 
     dictionary_ = other.dictionary_;
-
     ids_ = other.ids_;
     corners_ = other.corners_;
     rejectedCorners_ = other.rejectedCorners_;
@@ -122,10 +121,6 @@ void ArucoDetector::setParametersFromYaml(const std::string& yaml_file_path) {
     fs.release();
 
     std::cout << "[ArucoDetector] Parameters loaded from " << yaml_file_path << std::endl;
-}
-
-std::shared_ptr<ArucoDetector> ArucoDetector::clone() const {
-    return std::make_shared<ArucoDetector>(*this);
 }
 
 cv::Mat ArucoDetector::preprocess(const cv::Mat& image) {

@@ -28,7 +28,6 @@ public:
     const std::vector<int>& getIds() const;
     const std::vector<std::vector<cv::Point2f>>& getCorners() const;
     const std::vector<std::vector<cv::Point2f>>& getRejectedCorners() const;
-
 private:
     cv::Ptr<cv::aruco::Dictionary> dictionary_;
     cv::Ptr<cv::aruco::DetectorParameters> parameters_;
