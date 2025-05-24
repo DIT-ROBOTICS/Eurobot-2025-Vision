@@ -123,6 +123,10 @@ void ArucoDetector::setParametersFromYaml(const std::string& yaml_file_path) {
     std::cout << "[ArucoDetector] Parameters loaded from " << yaml_file_path << std::endl;
 }
 
+std::shared_ptr<ArucoDetector> ArucoDetector::clone() const {
+    return std::make_shared<ArucoDetector>(*this);
+}
+
 cv::Mat ArucoDetector::preprocess(const cv::Mat& image) {
     cv::Mat gray;
 
