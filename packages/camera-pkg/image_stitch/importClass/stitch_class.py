@@ -3,7 +3,7 @@ import cv2
 import cupy as cp
 import time
 
-gpu_available = False
+gpu_available = True
 
 # === Calibration Parameters ===
 PLANE1 = [-1.7524, 2545.5063]  # Plane 1 (slope, intercept)
@@ -90,19 +90,16 @@ class VideoStitcher():
         h_dst, w_dst = height, width*3
         h_src, w_src = height, width
 
-        cache_key = (h_dst, w_dst, inv_H.tobytes())
+        cache_key = (h_dst, w_dst, hash(tuple(inv_H.flatten())))
         if gpu_available:
             if cache_key not in self.coord_cache:
                 map_x, map_y = cp.meshgrid(cp.arange(w_dst), cp.arange(h_dst))
                 map_x = map_x.flatten()
                 map_y = map_y.flatten()
                 coords = cp.vstack((map_x, map_y, cp.ones_like(map_x)))
-
-                # Ensure inv_H is a cupy array before matrix multiplication
-                inv_H = cp.asarray(inv_H) if not isinstance(inv_H, cp.ndarray) else inv_H
-
                 # Ensure coords is a cupy array before matrix multiplication
-                mapped_coords = inv_H @ cp.asarray(coords)
+                inv_H = cp.asarray(inv_H, dtype=cp.float32) if not isinstance(inv_H, cp.ndarray) else inv_H
+                mapped_coords = cp.matmul(inv_H, coords)
                 mapped_coords /= mapped_coords[2, :]
 
                 x_src = mapped_coords[0, :].reshape(h_dst, w_dst).astype(cp.float32)
@@ -171,14 +168,13 @@ class VideoStitcher():
         """
 
         height, width = stitched_img.shape
-        x = np.tile(np.arange(width), (height, 1))
-
-        z = stitched_img.copy()
-        depth_cali_img = z.copy()
+        # x = np.tile(np.arange(width), (height, 1))
+        x = np.arange(width, dtype=np.float32)[None, :]
+        depth_cali_img = stitched_img.copy()
 
         # plane 1 → 2: x = 1~360 → x[:, 0:360]
         x1 = x[:, 0:360]
-        z1 = z[:, 0:360]
+        z1 = depth_cali_img[:, 0:360]
         z_trans_1 = (z1 - (PLANE1[0] * x1 + PLANE1[1])) / np.sqrt(PLANE1[0]**2 + 1) + PLANE2
         depth_cali_img[:, 0:360] = (z_trans_1 - PLANE2) * PLANE1_SCALE + PLANE2
 
@@ -186,9 +182,10 @@ class VideoStitcher():
         right_start = 721
         right_end = min(1081, width)  
         x3 = x[:, right_start:right_end]
-        z3 = z[:, right_start:right_end]
+        z3 = depth_cali_img[:, right_start:right_end]
         z_trans_3 = (z3 - (PLANE3[0] * x3 + PLANE3[1])) / np.sqrt(PLANE3[0]**2 + 1) + PLANE2
         depth_cali_img[:, right_start:right_end] = (z_trans_3 - PLANE2) * PLANE3_SCALE + PLANE2 - 20
+
         depth_cali_img[depth_cali_img < 0] = 0
 
         return depth_cali_img

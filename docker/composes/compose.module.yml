@@ -35,8 +35,6 @@ services:
       - $LOCAL_WS/config/dds-uri/localDDS.xml:/tmp/dds.xml
       - $VISION_WS/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
     command: bash
-
-    
       # bash -ic "
       # colcon build;
       # source /home/ultralytics/vision-ws/install/local_setup.bash;

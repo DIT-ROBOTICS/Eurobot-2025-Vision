@@ -65,16 +65,12 @@ RUN chown root:root /ros_entrypoint.sh && \
     && apt-get clean -y && rm -rf /var/lib/apt/list/* && \
     sh /tmp/setup_user.sh $USER $USER_UID $USER_GID
 # Install CuPy with CUDA support
-RUN pip install --no-cache-dir cupy-cuda12x
+RUN pip install --no-cache-dir cupy-cuda12x && \
+    pip install --no-cache-dir "numpy<2.0"
 
-# Optional: Install CUDA toolkit if needed
-RUN apt-get update && apt-get install -y \
-    cuda-toolkit-11-8 && \
-    apt-get clean -y && rm -rf /var/lib/apt/list/*
 ENTRYPOINT [ "/ros_entrypoint.sh" ]
 USER $USER
-RUN mkdir -p $ROS_WS_PATH/src && \
-    sh /tmp/rosdep_init.sh $USER && \
-    pip install --no-cache-dir "numpy<2.0"
 WORKDIR $ROS_WS_PATH
+RUN mkdir -p $ROS_WS_PATH/src && \
+    sh /tmp/rosdep_init.sh $USER
 CMD [ "/bin/bash" ]

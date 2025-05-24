@@ -12,7 +12,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools', 'opencv-python', 'cv_bridge', 'rclpy', 'numpy'],
+    install_requires=['setuptools', 'opencv-python', 'cv_bridge', 'rclpy', 'numpy', 'message_filters'],
     zip_safe=True,
     maintainer='ohin',
     maintainer_email='ohin.kyuu@gmail.com',

@@ -19,10 +19,10 @@
       </Peers>
     </Discovery>
 
-    <!-- <Internal>
+    <Internal>
       <Watermarks>
         <WhcHigh>16777216B</WhcHigh>
       </Watermarks>
-    </Internal> -->
+    </Internal>
   </Domain>
 </CycloneDDS>
