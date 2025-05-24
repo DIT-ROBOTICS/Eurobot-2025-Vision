@@ -8,7 +8,7 @@ services:
   realsense:
     volumes:
       - /dev:/dev
-      - $LOCAL_WS/config/dds-uri/ethDDS.xml:/tmp/dds.xml
+      - $LOCAL_WS/config/dds-uri/jethDDS.xml:/tmp/dds.xml
       - $VISION_WS/realsense-pkg/config:/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/config
       - $VISION_WS/realsense-pkg/visual_presets:/home/realsense/vision-ws/src/realsense-ros/realsense2_camera/launch/visual_presets
       - $VISION_WS/camera-pkg:/home/realsense/vision-ws/src/camera-ros
@@ -21,7 +21,7 @@ services:
 
   aruco:
     volumes:
-      - $LOCAL_WS/config/dds-uri/localDDS.xml:/tmp/dds.xml
+      - $LOCAL_WS/config/dds-uri/ethDDS.xml:/tmp/dds.xml
       - $VISION_WS/aruco-pkg:/home/aruco/vision-ws/src/aruco-ros
     command: bash
       # bash -ic "
@@ -62,7 +62,7 @@ services:
 
   stitch:
     volumes:
-      - $LOCAL_WS/config/dds-uri/localDDS.xml:/tmp/dds.xml
+      - $LOCAL_WS/config/dds-uri/jethDDS.xml:/tmp/dds.xml
       - $VISION_WS/camera-pkg:/home/stitch/vision-ws/src/camera-ros
       - $VISION_WS/stitch-pkg:/home/stitch/vision-ws/src/stitch-vulkan
       - $VISION_WS/pose-pkg:/home/stitch/vision-ws/src/pose-camera

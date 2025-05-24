@@ -147,3 +147,23 @@ class RegionLogic():
                         build_point += 4
 
         return build_point
+    
+    def check_mission_success(self):
+        build_point = 0
+        data = self.sensor_node.get_sensor_data()
+        layer_count = data['layer']
+        mission_success = data['mission_success']
+        
+        if mission_success is None or not mission_success.data:
+            return 0
+
+        if layer_count == 3 :
+            build_point += 28
+        elif layer_count == 2:
+            build_point += 12
+        elif layer_count == 1:
+            build_point += 4
+        else:
+            build_point += 0
+
+        return build_point

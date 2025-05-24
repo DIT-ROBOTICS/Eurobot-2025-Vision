@@ -7,11 +7,22 @@
   <Domain Id="any">
     <General>
       <Interfaces>
-        <NetworkInterface name="enx00e04c693d7c"/>
+        <NetworkInterface name="enx00e04ca8a56e"/>
       </Interfaces>
-      <AllowMulticast>true</AllowMulticast>
       <MaxMessageSize>65500B</MaxMessageSize>
-      <!-- <EnableMulticastLoopback>false</EnableMulticastLoopback> -->
+      <FragmentSize>1300B</FragmentSize>
     </General>
+
+    <Discovery>
+      <Peers>
+        <Peer address="192.168.55.1"/>
+      </Peers>
+    </Discovery>
+
+    <!-- <Internal>
+      <Watermarks>
+        <WhcHigh>16777216B</WhcHigh>
+      </Watermarks>
+    </Internal> -->
   </Domain>
 </CycloneDDS>

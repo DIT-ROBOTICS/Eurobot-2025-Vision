@@ -48,7 +48,7 @@ services:
 
   aruco:
     image: vision-main/aruco:latest
-    container_name: aruco-test
+    container_name: aruco
     <<: *common-vars
     cpuset: "10-15"
     cpus: 5.5
