@@ -59,6 +59,7 @@ services:
   ultralytics-ros:
     image: vision-main/ultralytics-ros:latest
     container_name: ultralytics-ros
+    runtime: nvidia
     <<: 
       - *common-vars
       - *gpu-vars

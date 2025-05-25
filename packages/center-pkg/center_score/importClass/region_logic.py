@@ -27,28 +27,28 @@ HOME_REGION = {
 
 BUILD_REGION = {
     'build_1': {
-        'x_min': 0.00,
-        'x_max': 0.45,
+        'x_min': 0.00+0.1,
+        'x_max': 0.45+0.1,
         'y_min': 0.65,
         'y_max': 1.10,
     },
     'build_2': {
-        'x_min': 0.00,
-        'x_max': 0.45,
-        'y_min': 0.00,
-        'y_max': 0.15,
+        'x_min': 0.00+0.1,
+        'x_max': 0.45+0.1,
+        'y_min': 0.00+0.1,
+        'y_max': 0.15+0.2,
     },
     'build_3': {
         'x_min': 1.55,
         'x_max': 2.00,
-        'y_min': 0.00,
-        'y_max': 0.45,
+        'y_min': 0.00+0.1,
+        'y_max': 0.45+0.2,
     },
     'build_4': {
         'x_min': 2.00,
         'x_max': 2.45,
-        'y_min': 0.00,
-        'y_max': 0.15,
+        'y_min': 0.00+0.1,
+        'y_max': 0.15+0.2,
     },
 }
 
@@ -131,19 +131,54 @@ class RegionLogic():
         if platform_pose is None or not platform_pose.poses:
             return 0
 
-        for build_id, region in BUILD_REGION.items():
-            for pose in platform_pose.poses:
-                x = pose.position.x
-                y = pose.position.y
-                z = pose.position.z
-                if region['x_min'] <= x <= region['x_max'] and \
-                    region['y_min'] <= y <= region['y_max']:
-                    
-                    if z > 0.3:
-                        build_point += 28
-                    elif z > 0.1:
-                        build_point += 12
-                    elif z > 0:
-                        build_point += 4
+        # for build_id, region in BUILD_REGION.items():
+        for pose in platform_pose.poses:
+            x = pose.position.x
+            y = pose.position.y
+            z = pose.position.z
+            if BUILD_REGION['build_1']['x_min'] <= x <= BUILD_REGION['build_1']['x_max'] and \
+                BUILD_REGION['build_1']['y_min'] <= y <= BUILD_REGION['build_1']['y_max']:
+                if z >=0.32:
+                    build_point += 28
+                elif z >=0.2:
+                    build_point += 12
+                elif z >0.08:
+                    build_point += 4
+        for pose in platform_pose.poses:
+            x = pose.position.x
+            y = pose.position.y
+            z = pose.position.z
+            if BUILD_REGION['build_2']['x_min'] <= x <= BUILD_REGION['build_2']['x_max'] and \
+                BUILD_REGION['build_2']['y_min'] <= y <= BUILD_REGION['build_2']['y_max']:
+                if z >=0.28:
+                    build_point += 28
+                elif z >=0.18:
+                    build_point += 12
+                elif z >0.08:
+                    build_point += 4
+        for pose in platform_pose.poses:
+            x = pose.position.x
+            y = pose.position.y
+            z = pose.position.z
+            if BUILD_REGION['build_3']['x_min'] <= x <= BUILD_REGION['build_3']['x_max'] and \
+                BUILD_REGION['build_3']['y_min'] <= y <= BUILD_REGION['build_3']['y_max']:
+                if z >=0.26:
+                    build_point += 28
+                elif z >=0.16:
+                    build_point += 12
+                elif z >0.06:
+                    build_point += 4
+        for pose in platform_pose.poses:
+            x = pose.position.x
+            y = pose.position.y
+            z = pose.position.z
+            if BUILD_REGION['build_4']['x_min'] <= x <= BUILD_REGION['build_4']['x_max'] and \
+                BUILD_REGION['build_4']['y_min'] <= y <= BUILD_REGION['build_4']['y_max']:
+                if z >=0.26:
+                    build_point += 28
+                elif z >=0.16:
+                    build_point += 12
+                elif z >0.06:
+                    build_point += 4
 
         return build_point

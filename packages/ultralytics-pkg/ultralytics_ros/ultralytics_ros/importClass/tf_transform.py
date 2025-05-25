@@ -9,6 +9,7 @@ class PoseTransformer:
         self.from_frame_id = from_frame_id
         self.to_frame_id = to_frame_id
         self.tf_buffer = tf_buffer
+        
     def transform_pose(self, pose):
         try:
             pose_stamped = PoseStamped()
@@ -30,6 +31,7 @@ class PoseTransformer:
         pose.position.y = (z * (x - c_x) / f_x) / 1000 
         pose.position.x = -(z * (y - c_y) / f_y) / 1000
         pose.position.z = z / 1000
+        # print(f"pose: {pose.position.x}, {pose.position.y}, {pose.position.z}")
         pose.orientation.w = 1.0
         return pose
 

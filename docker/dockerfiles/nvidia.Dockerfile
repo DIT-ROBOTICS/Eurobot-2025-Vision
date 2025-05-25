@@ -34,11 +34,11 @@ RUN chown root:root /ros_entrypoint.sh && \
 ENTRYPOINT [ "/ros_entrypoint.sh" ]
 USER $USER
 RUN pip install --no-cache-dir ultralytics && \
-    pip install --no-cache-dir cupy-cuda11x && \
+    pip install --no-cache-dir cupy-cuda12x && \
+    pip install --no-cache-dir "numpy<2.0" && \
     pip uninstall -y opencv-python-headless && \
-    pip install --no-cache-dir opencv-contrib-python-headless==4.5.5.64 && \
     mkdir -p $ROS_WS_PATH/src && \
-    sh /tmp/rosdep_init.sh $USER    
+    sh /tmp/rosdep_init.sh $USER
 WORKDIR $ROS_WS_PATH
 CMD [ "/bin/bash" ]
 

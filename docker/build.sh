@@ -62,7 +62,7 @@ case "$ARCH" in
     ;;
   "jetson")
     ARCH="linux/arm64"
-    NVIDIA_BASE_IMAGE="nvcr.io/nvidia/pytorch:24.07-py3-igpu"
+    NVIDIA_BASE_IMAGE="ohin112/l4t-pytorch:r36.4.0"
     NVIDIA_CUDA_IMAGE="ohin112/l4t-opencv-cuda:r36.4.0"
     ;;
   *)

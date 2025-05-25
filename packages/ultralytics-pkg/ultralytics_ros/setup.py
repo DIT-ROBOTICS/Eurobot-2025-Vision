@@ -29,7 +29,7 @@ setup(
             'detect_node= ultralytics_ros.region_detector:main',
             'yolo_multi_node = ultralytics_ros.yolo_multi_node:main',
             'yolo_all_node = ultralytics_ros.yolo_all:main',
-
+            'test_node = ultralytics_ros.test:main',
         ],
     },
 )

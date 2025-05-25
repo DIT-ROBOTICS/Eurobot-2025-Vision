@@ -32,7 +32,7 @@ services:
   
   ultralytics-ros:
     volumes:
-      - $LOCAL_WS/config/dds-uri/localDDS.xml:/tmp/dds.xml
+      - $LOCAL_WS/config/dds-uri/wifiDDS.xml:/tmp/dds.xml
       - $VISION_WS/ultralytics-pkg:/home/ultralytics/vision-ws/src/ultralytics-ros
     command: bash
       # bash -ic "
@@ -81,4 +81,9 @@ services:
     volumes:
       - $LOCAL_WS/config/dds-uri/jethDDS.xml:/tmp/dds.xml
       - $VISION_WS/camera-pkg:/home/stitcher/vision-ws/src/camera-ros
-    command: bash
+    command: >
+      bash -ic "
+      colcon build --parallel-workers 6;
+      source /home/stitcher/vision-ws/install/local_setup.bash;
+      ros2 launch camera_ros image_stitch.launch.py;
+      "

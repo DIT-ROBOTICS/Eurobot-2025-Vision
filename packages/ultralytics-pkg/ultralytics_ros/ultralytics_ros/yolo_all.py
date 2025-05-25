@@ -19,7 +19,7 @@ VERBOSE = False
 class YoloNode(Node):
     def __init__(self):
         super().__init__('yolo_all_node')
-        self.declare_parameter("model_path", "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/ver7_0507.pt")
+        self.declare_parameter("model_path", "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/corner.pt")
         self.declare_parameter("color_topic", "/vision/stitched_image/color/image_raw")
         self.declare_parameter("depth_topic", "/vision/stitched_image/depth/image_raw")
         self.declare_parameter("bbox_topic", "/vision/bounding_boxes")
@@ -113,7 +113,8 @@ class YoloNode(Node):
             results = self.model(color_image, verbose=VERBOSE, device="cuda")
             results_img = results[0].plot()
             if self.gui:
-                self.bbox_pub.publish(results_img)
+                results_img = results[0].plot()
+                self.bbox_pub.publish(self.bridge.cv2_to_imgmsg(results_img, encoding="bgr8"))
             pose_array_platform = PoseArray()
             pose_array_column = PoseArray()
             pose_array_overturn = PoseArray()
@@ -132,11 +133,15 @@ class YoloNode(Node):
                     x1, y1, x2, y2 = map(int, box.xyxy[0])  
                     x, y = (x1 + x2) / 2, (y1 + y2) / 2
                     z = depth_image[int(y-1), int(x-1)] if depth_image is not None else 0
+                    if z == 0 or z > 3500:
+                        # self.get_logger().error("Depth value is zero, skipping detection.")
+                        continue
                     confidence = box.conf[0].item()  
                     label_id = int(box.cls[0].item())
                     label_name = self.model.names[label_id]
                     if label_name == "platform" and confidence >= self.platform_confidance:
                         self.detected_countor["platform"] += 1
+                        print(f"Detected platform at ({x}, {y}, {z}) with confidence {confidence}")
                         posem = self.transformer.switch_to_cam_pose(x, y, z) 
                         try:
                             global_posem = self.transformer.transform_pose(posem)
@@ -205,23 +210,32 @@ class YoloNode(Node):
                 }
                 for key in self.detected_countor:
                     self.detected_countor[key] = 0
-            self.center_pub_platform.publish(pose_array_platform)
-            self.center_pub_column.publish(pose_array_column)
-            self.center_pub_overturn.publish(pose_array_overturn)
-            self.center_pub_set.publish(pose_array_set)
-            pose_array_column.poses.clear()
-            pose_array_platform.poses.clear()
-            pose_array_overturn.poses.clear()
+            if pose_array_platform.poses:
+                self.center_pub_platform.publish(pose_array_platform)
+            if pose_array_column.poses:
+                self.center_pub_column.publish(pose_array_column)
+            if pose_array_overturn.poses:
+                self.center_pub_overturn.publish(pose_array_overturn)
+            if pose_array_set.poses:
+                self.center_pub_set.publish(pose_array_set)
+
+            if pose_array_set.poses is not None:
+                self.center_pub_set.publish(pose_array_set)
+                pose_array_column.poses.clear()
+                pose_array_platform.poses.clear()
+                pose_array_overturn.poses.clear()
 
     def preprocess(self, color_image, depth_image):
         try:
             col = self.bridge.imgmsg_to_cv2(color_image, desired_encoding='bgr8')
         except Exception as e:
             self.get_logger().error(f"Failed to process color image: {e}")
+            col = None
         try:
-            dep = self.bridge.imgmsg_to_cv2(depth_image, desired_encoding='16UC1')
+            dep = self.bridge.imgmsg_to_cv2(depth_image, desired_encoding='passthrough')
         except Exception as e:
             self.get_logger().error(f"Failed to process depth image: {e}")
+            dep = None
         return col, dep
 
     def _create_qos_profile(self):
