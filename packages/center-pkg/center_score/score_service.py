@@ -14,13 +14,14 @@ class ScoreService(Node):
         self.timer_period = 0.5
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
 
-        self.score_timer = self.create_timer(100, self.score_timer_callback)
         self.score_pub = self.create_publisher(Float32, 'estimated_score', 1)
 
+        self.time = 0
         self.score = 0
 
     def timer_callback(self):
-        # total_score = 0
+        self.time += self.timer_period
+
         superstar_score = self.region_logic.check_superstar_pose_in_region()
         sima_score = self.region_logic.check_sima_pose_in_region()
         robot_score = self.region_logic.check_robot_pose_in_region()
@@ -29,8 +30,8 @@ class ScoreService(Node):
 
         self.get_logger().info(f'Current Score: {self.score}')
 
-    def score_timer_callback(self):
-        self.score_pub.publish(self.score)
+        if self.time >= 100:
+            self.score_pub.publish(self.score)
 
 
 
