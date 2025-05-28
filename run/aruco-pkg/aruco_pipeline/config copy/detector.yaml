@@ -1,0 +1,16 @@
+aruco_detector:
+  adaptiveThreshWinSizeMin: 3
+  adaptiveThreshWinSizeMax: 11
+  adaptiveThreshWinSizeStep: 8
+  adaptiveThreshConstant: 4
+
+  minMarkerPerimeterRate: 0.002
+  maxMarkerPerimeterRate: 0.5
+  polygonalApproxAccuracyRate: 0.07
+
+  cornerRefinementMethod: "CONTOUR"
+  cornerRefinementWinSize: 2
+  cornerRefinementMaxIterations: 30
+  cornerRefinementMinAccuracy: 0.05
+
+  dictionary: "DICT_4X4_50" # DICT_4X4_50 | DICT_APRILTAG_16h5
