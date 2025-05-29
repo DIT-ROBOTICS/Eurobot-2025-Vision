@@ -7,7 +7,7 @@
   <Domain Id="any">
     <General>
       <Interfaces>
-        <NetworkInterface name="enx00e04ca8a56e"/>
+        <NetworkInterface name="enx00e04ca8a593"/>
       </Interfaces>
       <MaxMessageSize>65500B</MaxMessageSize>
       <FragmentSize>1300B</FragmentSize>
@@ -15,14 +15,14 @@
 
     <Discovery>
       <Peers>
-        <Peer address="192.168.55.1"/>
+        <Peer address="192.168.56.1"/>
       </Peers>
     </Discovery>
 
-    <!-- <Internal>
+    <Internal>
       <Watermarks>
         <WhcHigh>16777216B</WhcHigh>
       </Watermarks>
-    </Internal> -->
+    </Internal>
   </Domain>
 </CycloneDDS>

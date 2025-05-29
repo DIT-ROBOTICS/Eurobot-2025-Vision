@@ -139,9 +139,9 @@ class RegionLogic():
                 if region['x_min'] <= x <= region['x_max'] and \
                     region['y_min'] <= y <= region['y_max']:
                     
-                    if z > 0.3:
+                    if z > 0.5:
                         build_point += 28
-                    elif z > 0.1:
+                    elif z > 0.3:
                         build_point += 12
                     elif z > 0:
                         build_point += 4

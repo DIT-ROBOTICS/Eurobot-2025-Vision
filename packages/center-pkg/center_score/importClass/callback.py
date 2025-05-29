@@ -25,14 +25,14 @@ class SensorCallback(Node):
 
         self.create_subscription(
             PoseStamped,
-            '/vision/aruco/sima4/average_pose',
+            '/vision/aruco/superstar_pose',
             self.superstar_callback,
             10
         )
 
         self.create_subscription(
             PoseArray,
-            '/vision/aruco/sima_poseArray',
+            '/vision/aruco/sima_pose_array',
             self.sima_callback,
             10
         )
@@ -53,7 +53,7 @@ class SensorCallback(Node):
 
         self.create_subscription(
             PoseArray,
-            '/detected/global_center_poses/platform',
+            '/vision/global_center_poses/platform',
             self.platform_callback,
             10
         )

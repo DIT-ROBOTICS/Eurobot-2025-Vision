@@ -41,9 +41,9 @@ services:
     cpu_shares: 1024
     environment:
       <<: *common-env
-      SERIAL_NO1: _215222077504
-      SERIAL_NO2: _949122070603
-      SERIAL_NO3: _213622074227
+      SERIAL_NO1: _313522072696
+      SERIAL_NO2: _327122078464
+      SERIAL_NO3: _313522070126
     profiles: ['camera']
 
   aruco:

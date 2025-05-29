@@ -53,6 +53,12 @@ def load_config_and_create_node(context, *args, **kwargs):
         print(f"{'Pose Topics:':<20}")
         print(f"{' ' * 20}Blue: {blue_topic}")
         print(f"{' ' * 20}Yellow: {yellow_topic}")
+
+        # Print SIMA id
+        superstar_id = node_parameters.get('superstar_id', -1)
+        sima_group_id = node_parameters.get('sima_group_id', [])
+        print(f"{'SuperStar ID:':<20}{superstar_id}")
+        print(f"{'SIMA Group ID:':<20}{sima_group_id if sima_group_id else 'None'}")
         
         print("=" * 70)
         

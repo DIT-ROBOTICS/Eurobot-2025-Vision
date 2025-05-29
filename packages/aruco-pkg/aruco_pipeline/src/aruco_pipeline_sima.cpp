@@ -13,6 +13,9 @@ ArucoPipeline::ArucoPipeline(const std::string &node_name) : rclcpp::Node(node_n
   image_encoding_ = this->declare_parameter<std::string>("image_encoding", "bgr8");
   tf_parent_frame_id_ = this->declare_parameter<std::string>("tf_frame_id.parent", "map");
 
+  superstar_id_ = this->declare_parameter<int>("superstar_id", -1);
+  sima_group_id_ = this->declare_parameter<std::vector<long>>("sima_group_id", std::vector<long>{});
+
   camera_lists_ = this->declare_parameter<std::vector<std::string>>("camera_lists", std::vector<std::string>{"left", "mid", "right"});
 
   if (camera_lists_.empty()) {
@@ -47,10 +50,10 @@ ArucoPipeline::ArucoPipeline(const std::string &node_name) : rclcpp::Node(node_n
   thread_pool_ = std::make_shared<ThreadPool>(num_threads_);
 
   // Pose Publisher
-  blue_pose_topic_ = this->declare_parameter<std::string>("blue_pose_topic", "/aruco/superstar_pose");
-  yellow_pose_topic_ = this->declare_parameter<std::string>("yellow_pose_topic", "/aruco/sima_pose_array");
-  pub_superstar_pose_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(blue_pose_topic_, 10);
-  pub_sima_pose_array_ = this->create_publisher<geometry_msgs::msg::PoseArray>(yellow_pose_topic_, 10);
+  superstar_pose_topic_ = this->declare_parameter<std::string>("superstar_pose_topic", "/aruco/superstar_pose");
+  sima_pose_topic_ = this->declare_parameter<std::string>("sima_pose_array_topic", "/aruco/sima_pose_array");
+  pub_superstar_pose_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(superstar_pose_topic_, 10);
+  pub_sima_pose_array_ = this->create_publisher<geometry_msgs::msg::PoseArray>(sima_pose_topic_, 10);
   RCLCPP_INFO(get_logger(), "Pose Publishers:");
   RCLCPP_INFO(get_logger(), "  - %s", pub_superstar_pose_->get_topic_name());
   RCLCPP_INFO(get_logger(), "  - %s", pub_sima_pose_array_->get_topic_name());
@@ -283,22 +286,44 @@ void ArucoPipeline::processAruco(const cv::Mat &image, const std::string &cam_na
     const auto &rvec = rvecs[i];
     const auto &tvec = tvecs[i];
     tf2::Transform tf_marker_in_map = it->second->getMarkerInMapTf(rvec, tvec, tf_cam_to_map);
+
     if (!validateMarkerTf(tf_marker_in_map)) {
       continue;
     }
-      //要改id~~
-    if (id == 0) {
+
+    if (id == superstar_id_) {
       tf2::toMsg(tf_marker_in_map, superstar_pose_msg.pose);
-    } else if (id >= 1 && id <= 10) {
-      tf2::toMsg(tf_marker_in_map, pose_msg.pose);
-      sima_pose_array_msg.poses.push_back(pose_msg.pose);
+      // superstar_pose_msg.pose.position.y = (0.875 * superstar_pose_msg.pose.position.y) + 0.24;
+      pub_superstar_pose_->publish(superstar_pose_msg);
+    } else if (std::find(sima_group_id_.begin(), sima_group_id_.end(), id) != sima_group_id_.end()) {
+      geometry_msgs::msg::Pose pose;
+      tf2::toMsg(tf_marker_in_map, pose);
+      // pose.position.y = (0.875 * pose.position.y) + 0.24;
+      sima_pose_buffer_[id] = pose;
+    }
+  }
+
+
+  bool sufficient_collected = 0;
+  int collected_count = 0;
+
+  for (int expected_id : sima_group_id_) {
+    if (sima_pose_buffer_.find(expected_id) != sima_pose_buffer_.end()) {
+      ++collected_count;
+    }
+  }
+
+  sufficient_collected = (collected_count > 3);
+
+  if (sufficient_collected) {
+    geometry_msgs::msg::PoseArray sima_pose_array_msg;
+    sima_pose_array_msg.header.stamp = now();
+    sima_pose_array_msg.header.frame_id = tf_parent_frame_id_;
+
+    for (int expected_id : sima_group_id_) {
+      sima_pose_array_msg.poses.push_back(sima_pose_buffer_[expected_id]);
     }
 
-  }
-  
-  pub_superstar_pose_->publish(superstar_pose_msg);
-
-  if (!sima_pose_array_msg.poses.empty()) {
     pub_sima_pose_array_->publish(sima_pose_array_msg);
   }
 }

@@ -13,7 +13,7 @@ aruco_pipeline:
     parent: "map"
     one: "cam_left_color_optical_frame"
     two: "cam_mid_color_optical_frame"
-    three: "cam_mid_color_optical_frame"
+    three: "cam_right_color_optical_frame"
   
   # === Subscribe Topics ===
   camera_info:
@@ -34,3 +34,6 @@ aruco_pipeline:
   
   superstar_pose_topic: "/vision/aruco/superstar_pose"
   sima_pose_array_topic: "/vision/aruco/sima_pose_array"
+
+  superstar_id: 14
+  sima_group_id: [7, 12, 13]

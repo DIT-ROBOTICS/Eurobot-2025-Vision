@@ -51,13 +51,13 @@ local_parameters = [{'name': 'camera_name1',       'default': 'cam_left',       
                     # tf parameters for left & right cameras
                     {'name': 'tf.translation1.x',  'default': '0.08',             'description': 'x'},
                     {'name': 'tf.translation1.y',  'default': '0.0',              'description': 'y'},
-                    {'name': 'tf.translation1.z',  'default': '0.02966025404',    'description': 'z'},
+                    {'name': 'tf.translation1.z',  'default': '0.05',    'description': 'z'},
                     {'name': 'tf.rotation1.yaw',   'default': '0.0',              'description': 'yaw'},
                     {'name': 'tf.rotation1.pitch', 'default': '-0.5235987756',    'description': 'pitch'},
                     {'name': 'tf.rotation1.roll',  'default': '0.0',              'description': 'roll'},
                     {'name': 'tf.translation3.x',  'default': '0.08',             'description': 'x'},
                     {'name': 'tf.translation3.y',  'default': '0.0',              'description': 'y'},
-                    {'name': 'tf.translation3.z',  'default': '-0.02966025404',   'description': 'z'},
+                    {'name': 'tf.translation3.z',  'default': '-0.05',   'description': 'z'},
                     {'name': 'tf.rotation3.yaw',   'default': '0.0',              'description': 'yaw'},
                     {'name': 'tf.rotation3.pitch', 'default': '0.5235987756',     'description': 'pitch'},
                     {'name': 'tf.rotation3.roll',  'default': '0.0',              'description': 'roll'},
@@ -98,7 +98,7 @@ def launch_camera_base_transform_publisher_node(context: LaunchContext):
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            '0', '0.048', '1.63', '1.5707963268', '1.0471975512', '-1.5707963268',
+            '0', '0.056', '1.63', '1.5707963268', '1.0471975512', '-1.5707963268',
             'camera_base_link',
             context.launch_configurations['camera_name2'] + '_link'
         ]
@@ -111,7 +111,7 @@ def launch_map_transform_publisher_node(context: LaunchContext):
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            '1.725', '2.127', '0', '0', '0', '0.99904', '0.04362',
+            '1.725', '2.124', '0', '0', '0', '0.99904', '0.04362',
             'map',
             'camera_base_link'
         ]

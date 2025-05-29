@@ -21,7 +21,7 @@
 
     <Internal>
       <Watermarks>
-        <WhcHigh>16777216</WhcHigh>
+        <WhcHigh>16777216B</WhcHigh>
       </Watermarks>
     </Internal>
   </Domain>

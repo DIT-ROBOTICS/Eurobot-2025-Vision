@@ -281,6 +281,7 @@ void ArucoPipeline::processAruco(const cv::Mat &image, const std::string &cam_na
     pose_msg.header.stamp = this->now();
     pose_msg.header.frame_id = tf_parent_frame_id_;
     tf2::toMsg(tf_marker_in_map, pose_msg.pose);
+    pose_msg.pose.position.y = (0.875 * pose_msg.pose.position.y) + 0.24;
 
     if (id >= 1 && id <= 5) {
       pub_blue_pose_->publish(pose_msg);

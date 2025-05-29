@@ -80,6 +80,11 @@ private:
   std::map<std::string, std::string> tf_frame_id_;
   std::string blue_pose_topic_;
   std::string yellow_pose_topic_;
+  std::string superstar_pose_topic_;
+  std::string sima_pose_topic_;
+
+  int superstar_id_;
+  std::vector<long> sima_group_id_;
   
   // Make Shared
   std::shared_ptr<CameraInfoHandler> camera_info_;
@@ -87,6 +92,8 @@ private:
   std::shared_ptr<ThreadPool> thread_pool_;
   std::shared_ptr<ImageBuffer> image_buffer_;
   std::map<std::string, std::shared_ptr<ArucoTransformer>> transformer_;
+  
+  std::unordered_map<int, geometry_msgs::msg::Pose> sima_pose_buffer_;
 
   // ROS Publisher & Subscriber
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_blue_pose_;
