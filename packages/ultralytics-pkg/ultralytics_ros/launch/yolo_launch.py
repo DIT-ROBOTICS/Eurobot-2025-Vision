@@ -14,8 +14,8 @@ def generate_launch_description():
         ),
         Node(
             package="ultralytics_ros",  
-            executable="yolo_node_nopub", 
-            name="yolo_node_nopub",  
+            executable="yolo_node_noangle", 
+            name="yolo_node_noangle",  
             parameters=["/home/ultralytics/vision-ws/src/ultralytics-ros/ultralytics_ros/config/yolo_params.yaml"],
             output="screen",
         ),

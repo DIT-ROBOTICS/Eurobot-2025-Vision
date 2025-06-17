@@ -61,7 +61,7 @@ COPY ../scripts/entrypoint/ros_entrypoint.sh /ros_entrypoint.sh
 RUN chown root:root /ros_entrypoint.sh && \
     chmod 755 /ros_entrypoint.sh && \
     apt-get update && apt-get install -y \
-    libblas3 liblapack3 \
+    libblas3 liblapack3 sudo\
     && apt-get clean -y && rm -rf /var/lib/apt/list/* && \
     sh /tmp/setup_user.sh $USER $USER_UID $USER_GID
 # Install CuPy with CUDA support

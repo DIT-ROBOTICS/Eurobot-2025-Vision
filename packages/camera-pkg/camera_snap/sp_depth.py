@@ -7,7 +7,7 @@ from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDur
 import cv2
 import os
 
-output_dir = '/home/realsense/vision-ws/images/'
+output_dir = '/home/stitcher/vision-ws/src/camera-ros/images/'
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -25,7 +25,7 @@ class CameraMerger(Node):
 
         self.camera_sub = self.create_subscription(
             Image,
-            '/realsense/stitched_image/depth/image_raw',
+            '/vision/stitched_image/depth/image_raw',
             self.camera_callback,
             qos_profile
         )

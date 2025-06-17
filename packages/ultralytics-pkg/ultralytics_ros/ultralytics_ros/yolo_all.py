@@ -34,8 +34,18 @@ class YoloNode(Node):
         self.declare_parameter("platform_confidance", 0.50)
         self.declare_parameter("overturn_confidance", 0.50)
         self.declare_parameter("set_confidance", 0.40)
+        self.declare_parameter("f_x", 476.4030)
+        self.declare_parameter("f_y", 467.9718)
+        self.declare_parameter("c_x", 533.1214)
+        self.declare_parameter("c_y", 291.4719)
         self.from_frame_id = self.get_parameter("from_frame_id").value
         self.to_frame_id = self.get_parameter("to_frame_id").value
+        self.declare_parameter("source_points_flat", [1.87, 1.06, 2.20, 0.48, 0.87, 0.35, 1.12, 1.027, 0.19, 0.42, 0.19, 1.32, 0.85, 1.72])
+        self.declare_parameter("target_points_flat", [1.895, 0.95, 2.22, 0.25, 0.78, 0.25, 1.095, 0.95, 0.075, 0.395, 0.075, 1.32, 0.82, 1.725])
+        params = self.get_parameter('source_points_flat').value  
+        source_points = [params[i:i+2] for i in range(0, len(params), 2)]
+        params_tgt = self.get_parameter('target_points_flat').value
+        target_points = [params_tgt[i:i+2] for i in range(0, len(params_tgt), 2)]
         model_path = self.get_parameter("model_path").value
         color_topic = self.get_parameter("color_topic").value
         depth_topic = self.get_parameter("depth_topic").value
@@ -48,7 +58,10 @@ class YoloNode(Node):
         self.column_confidance = self.get_parameter("column_confidance").value
         self.overturn_confidance = self.get_parameter("overturn_confidance").value
         self.set_confidance = self.get_parameter("set_confidance").value
-
+        f_x = self.get_parameter("f_x").value
+        f_y = self.get_parameter("f_y").value
+        c_x = self.get_parameter("c_x").value
+        c_y = self.get_parameter("c_y").value
         self.gui = self.get_parameter("gui").value 
         self.listener_qos = self._create_qos_profile()
         self.model = YOLO(model_path)
@@ -68,8 +81,8 @@ class YoloNode(Node):
         self.get_logger().info("YOLO Node initialized and ready.")
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-        self.transformer = PoseTransformer(self.tf_buffer, self.from_frame_id, self.to_frame_id)
         self.counter_recognition = CounterRecognition()
+        self.transformer = PoseTransformer(self.tf_buffer, self.from_frame_id, self.to_frame_id, f_x, f_y, c_x, c_y)
         self.last_color_msg_time = self.get_clock().now()
         self.last_depth_msg_time = self.get_clock().now()
         self.watchdog_timer = self.create_timer(1.0, self.check_image_msg_timeout)
@@ -133,18 +146,16 @@ class YoloNode(Node):
                     x1, y1, x2, y2 = map(int, box.xyxy[0])  
                     x, y = (x1 + x2) / 2, (y1 + y2) / 2
                     z = depth_image[int(y-1), int(x-1)] if depth_image is not None else 0
-                    if z == 0 or z > 3500:
-                        # self.get_logger().error("Depth value is zero, skipping detection.")
+                    if z == 0 or z > 4000:
                         continue
                     confidence = box.conf[0].item()  
                     label_id = int(box.cls[0].item())
                     label_name = self.model.names[label_id]
                     if label_name == "platform" and confidence >= self.platform_confidance:
                         self.detected_countor["platform"] += 1
-                        print(f"Detected platform at ({x}, {y}, {z}) with confidence {confidence}")
                         posem = self.transformer.switch_to_cam_pose(x, y, z) 
+                        global_posem = self.transformer.transform_pose(posem)
                         try:
-                            global_posem = self.transformer.transform_pose(posem)
                             cropped_img = color_image[y1:y2, x1:x2]
                             self.counter_recognition.set_image(cropped_img)
                             binary_img = self.counter_recognition.get_binary_img_plat()
@@ -161,26 +172,27 @@ class YoloNode(Node):
                     elif label_name == "overturn" and confidence >= self.overturn_confidance:
                         posem = self.transformer.switch_to_cam_pose(x, y, z)                    
                         self.detected_countor["overturn"] += 1   
+                        global_posem = self.transformer.transform_pose(posem)
                         try:
-                            global_posem = self.transformer.transform_pose(posem)
                             cropped_img = color_image[y1:y2, x1:x2]
                             self.counter_recognition.set_image(cropped_img)
                             binary_img = self.counter_recognition.get_binary_img_colu()
                             self.counter_recognition.get_contours()
                             theangle = self.counter_recognition.distinguish_contour(cropped_img.copy(), global_posem, "overturn")  
                             finalpose = global_posem
-                            finalpose.orientation.x = 0.0
+                            finalpose.orientation.x = theangle
                             finalpose.orientation.y = 0.0
                             finalpose.orientation.z = math.sin(theangle / 2)
                             finalpose.orientation.w = math.cos(theangle / 2)
+                            pose_array_overturn.poses.append(finalpose)
                             pose_array_overturn.poses.append(finalpose)                     
                         except Exception as e:
                             self.get_logger().error(f"Transform failed: {str(e)}")                          
                     elif label_name == "column" and confidence >= self.column_confidance:
                         self.detected_countor["column"] += 1
                         posem = self.transformer.switch_to_cam_pose(x, y, z)
+                        global_posem = self.transformer.transform_pose(posem) 
                         try:
-                            global_posem = self.transformer.transform_pose(posem) 
                             finalpose = global_posem
                             finalpose.orientation.x = 0.0
                             finalpose.orientation.y = 0.0
@@ -192,8 +204,8 @@ class YoloNode(Node):
                     elif label_name == "set" and confidence >= self.set_confidance:
                         self.detected_countor["set"] += 1
                         posem = self.transformer.switch_to_cam_pose(x, y, z)
-                        try:
-                            global_posem = self.transformer.transform_pose(posem) 
+                        global_posem = self.transformer.transform_pose(posem) 
+                        try:                            
                             finalpose = global_posem
                             finalpose.orientation.x = 0.0
                             finalpose.orientation.y = 0.0
@@ -272,6 +284,5 @@ def main(args=None):
         yolo_node.destroy_node()
         executor.shutdown()
         rclpy.shutdown()
-
 if __name__ == '__main__':
     main()

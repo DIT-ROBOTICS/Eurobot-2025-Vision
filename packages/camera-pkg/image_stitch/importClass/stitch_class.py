@@ -6,23 +6,21 @@ import time
 gpu_available = True
 
 # === Calibration Parameters ===
-PLANE1 = [-1.7524, 2545.5063]  # Plane 1 (slope, intercept)
-PLANE2 = 1770.000              # Reference depth
-PLANE3 = [2.0221, 571.8330]    # Plane 3 (slope, intercept)
-PLANE1_SCALE = 1.8                  # Scaling from plane 1 → 2
-PLANE3_SCALE = 1.8                  # Scaling from plane 3 → 2
+PLANE1 = [-0.2171,1830.5057]  # Plane 1 (slope, intercept)
+PLANE2 = 1788.3972              # Reference depth
+PLANE3 = [-0.0551,1621.6141]    # Plane 3 (slope, intercept)
+PLANE1_SCALE = 1.0                  # Scaling from plane 1 → 2
+PLANE3_SCALE = 1.2                  # Scaling from plane 3 → 2
 
 inv_homography = [
-    np.array([
-        [ 4.49513351e-01,  1.63480510e-02,  2.63303221e+01],
-        [-2.23835724e-01,  6.82183468e-01,  8.68291550e+01],
-        [-7.24774675e-04,  2.13018909e-05,  9.64446193e-01]
+    np.array([[ 3.67543648e-01, -2.39732498e-03,  3.48855044e+01],
+              [-2.51014460e-01,  5.96460151e-01,  1.13341844e+02],
+              [-7.64935836e-04, -1.41529366e-05,  9.22981675e-01]
+    ]), 
+    np.array([[ 1.12357928e+00,  3.47174904e-02, -7.05088792e+02],
+              [ 3.17990404e-01,  1.07313688e+00, -2.16041850e+02],
+              [ 1.14956673e-03,  4.30768603e-05,  2.78485899e-01]
     ]),
-    np.array([
-        [ 1.11729775e+00, -1.27874995e-02, -6.72112101e+02],
-        [ 3.17391523e-01,  1.05354360e+00, -2.09593535e+02],
-        [ 1.07387610e-03, -7.85071157e-06,  3.53929865e-01]
-        ])
 ]
 
 class VideoStitcher():

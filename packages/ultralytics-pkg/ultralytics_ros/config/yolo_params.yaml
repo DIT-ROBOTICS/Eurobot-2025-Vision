@@ -1,6 +1,6 @@
-/yolo_node_nopub:
+/yolo_node_noangle:
   ros__parameters:
-    model_path: "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/corner.pt"
+    model_path: "/home/ultralytics/vision-ws/src/ultralytics-ros/weight/best.pt"
     color_topic: "/vision/stitched_image/color/image_raw"
     depth_topic: "/vision/stitched_image/depth/image_raw"
     bbox_topic: "/vision/bounding_boxes"
@@ -13,11 +13,16 @@
     platform_confidance: 0.5
     overturn_confidance: 0.4
     set_confidance: 0.4
+    f_x: 456.4669
+    f_y: 456.2095
+    c_x: 330.8565
+    c_y: 186.7750
+    source_points_flat: [1.87, 1.06, 2.20, 0.48, 0.87, 0.35, 1.12, 1.027, 0.19, 0.42, 0.19, 1.32, 0.85, 1.72]   #[x,y,x,y,x,y,x,y,x,y,x,y,x,y......]
+    target_points_flat: [1.895, 0.95, 2.22, 0.25, 0.78, 0.25, 1.095, 0.95, 0.075, 0.395, 0.075, 1.32, 0.82, 1.725] # [x,y,x,y,x,y,x,y,x,y,x,y,x,y......]
 /detect_node:
   ros__parameters:
     platform_poses: "/vision/global_center_poses/platform"
     has_material: "/vision/global_center_poses/has_material"
     set_poses: "/vision/global_center_poses/set"
-    toleratence: 0.3
+    toleratence: 0.2
     max_miss_count: 10
-    

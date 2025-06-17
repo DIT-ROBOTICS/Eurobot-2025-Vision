@@ -8,7 +8,7 @@ ROS_DOMAIN_ID: 14
 
 # Compose
 PROJECT_NAME: vision-main
-PROFILES: train # center | camera | aruco | yolo | train | gui | stitch | stitcher
+PROFILES: stitcher,yolo # center | camera | aruco | yolo | train | gui | stitch | stitcher
 
 # Build / Run
-ACTION: run # build | run | both
+ACTION: run  # build | run | both
