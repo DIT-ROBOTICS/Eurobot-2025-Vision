@@ -1,7 +1,7 @@
 services:
   center:
     volumes:
-      - $LOCAL_WS/config/dds-uri/ethDDS.xml:/tmp/dds.xml
+      - $LOCAL_WS/config/dds-uri/localDDS.xml:/tmp/dds.xml
       - $VISION_WS/center-pkg:/home/center/vision-ws/src/center-ros
     command: bash
 
@@ -17,16 +17,15 @@ services:
       - "c 189:* rmw"
       # sleep 5 &&
       # ros2 launch camera_ros image_stitch.launch.py;
-    # command: ["/ros_entrypoint.sh", "ros2", "launch", "realsense2_camera", "rs_triple_camera_launch.py"]
-    command: bash
+    command: ["/ros_entrypoint.sh", "ros2", "launch", "realsense2_camera", "rs_triple_camera_launch.py"]
 
   aruco:
     volumes:
       - $LOCAL_WS/config/dds-uri/ethDDS.xml:/tmp/dds.xml
       - $VISION_WS/aruco-pkg:/home/aruco/vision-ws/src/aruco-ros
-    command: >
+    command: 
       bash -ic "
-      colcon build --parallel-workers 6;
+      colcon build --packages-select aruco_pipeline --parallel-workers 6;
       source /home/aruco/vision-ws/install/local_setup.bash;
       ros2 launch aruco_pipeline aruco_pipeline.launch.py
       "
@@ -47,7 +46,7 @@ services:
       - $LOCAL_WS/dataset:/root/train
     working_dir: /root/train
     command: bash
-      # bash -ic 'nvidia-smi && bash'
+    # bash -ic 'nvidia-smi && bash'
   
   gui:
     volumes:

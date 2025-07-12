@@ -1,0 +1,11 @@
+camera_base_transform:
+  translation: [0, 0.056, 1.73]
+  rotation: [1.5707963268, 0.7971975512, -1.5707963268]
+  parent_frame: camera_base_link
+  child_frame: cam_mid_link
+
+map_transform:
+  translation: [1.725, 2.354, 0]
+  rotation: [0, 0, 1, 0]  # quaternion
+  parent_frame: map
+  child_frame: camera_base_link

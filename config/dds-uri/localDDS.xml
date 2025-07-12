@@ -7,19 +7,15 @@
 
 <Domain Id="0">
     <General>
-      <NetworkInterface name="docker0"/>
-      <AllowMulticast>false</AllowMulticast>
+      <NetworkInterface name="lo"/>
+      <AllowMulticast>true</AllowMulticast>
     </General>
 
     <Discovery>
       <Peers>
-        <Peer address="172.17.0.1"/>
+        <Peer address="127.0.0.1"/>
       </Peers>
     </Discovery>
 
-    <!-- <SharedMemory>
-      <Enable>true</Enable>
-      <LogLevel>warn</LogLevel> 
-    </SharedMemory> -->
   </Domain>
 </CycloneDDS>
